@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useHomeownerSubscriptionStore } from '@/store/homeownerSubscriptionStore';
+import { REGION_PROFILES, formatCurrency, convertCost, type RegionCode, type RegionProfile } from '@/lib/regionConfig';
 import {
   Dialog,
   DialogContent,
@@ -30,9 +30,8 @@ import {
   ArrowRight,
   Printer,
   ChevronLeft,
-  ChevronRight,
   Info,
-  DollarSign
+  Globe
 } from 'lucide-react';
 
 /* ─── Presets for Non-Installers ───────────────────────────────── */
@@ -61,10 +60,11 @@ const APPLIANCE_PRESETS: AppliancePreset[] = [
 ];
 
 export default function HomeownerEstimatorPage() {
-  const router = useRouter();
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
   const homeownerSub = useHomeownerSubscriptionStore();
   const [mounted, setMounted] = React.useState(false);
+  const [regionCode, setRegionCode] = React.useState<RegionCode>('NG');
+  const region: RegionProfile = REGION_PROFILES[regionCode];
 
   React.useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
@@ -83,7 +83,7 @@ export default function HomeownerEstimatorPage() {
   const [nepaHours, setNepaHours] = React.useState<number>(8);
   const [backupHours, setBackupHours] = React.useState<number>(10);
   const [fuelType, setFuelType] = React.useState<'petrol' | 'diesel' | 'none'>('petrol');
-  const [monthlySpend, setMonthlySpend] = React.useState<string>('60000');
+  const [monthlySpend, setMonthlySpend] = React.useState<string>(region.context.defaultMonthlySpend);
   const [activeTab, setActiveTab] = React.useState<'system' | 'financials' | 'guide'>('system');
 
   /* ── Sizing Calculations ── */
@@ -176,10 +176,10 @@ export default function HomeownerEstimatorPage() {
   }, [runningLoad, backupHours]);
 
   const panelPeakWpNeeded = React.useMemo(() => {
-    // Nigeria average peak sun hours is ~4.5 hours. Efficiency ~75%
+    // Region-specific average peak sun hours and panel efficiency
     if (dailyConsumptionWh === 0) return 0;
-    return Math.ceil(dailyConsumptionWh / (4.5 * 0.75));
-  }, [dailyConsumptionWh]);
+    return Math.ceil(dailyConsumptionWh / (region.solar.peakSunHours * region.solar.panelEfficiency));
+  }, [dailyConsumptionWh, region.solar.peakSunHours, region.solar.panelEfficiency]);
 
   const recommendedPanelsQty = React.useMemo(() => {
     if (panelPeakWpNeeded === 0) return 0;
@@ -202,12 +202,14 @@ export default function HomeownerEstimatorPage() {
 
   const annualSolarSavings = solarReplacedSavings * 12;
 
-  const midpointCost = (recommendation.costMin + recommendation.costMax) / 2;
+  const targetCostMin = React.useMemo(() => convertCost(recommendation.costMin, region), [recommendation.costMin, region]);
+  const targetCostMax = React.useMemo(() => convertCost(recommendation.costMax, region), [recommendation.costMax, region]);
+  const targetMidpointCost = (targetCostMin + targetCostMax) / 2;
 
   const paybackPeriodYears = React.useMemo(() => {
     if (annualSolarSavings <= 0) return 0;
-    return midpointCost / annualSolarSavings;
-  }, [midpointCost, annualSolarSavings]);
+    return targetMidpointCost / annualSolarSavings;
+  }, [targetMidpointCost, annualSolarSavings]);
 
   /* ── Event handlers ── */
   const updateQty = (id: string, delta: number) => {
@@ -224,9 +226,9 @@ export default function HomeownerEstimatorPage() {
 - *Sized Recommendation:* ${recommendation.title} (${recommendation.kva})
 - *Sized Batteries:* ${recommendation.battery}
 - *Solar Panels:* ${recommendedPanelsQty}x 450W Panels
-- *Estimated Naira Cost:* ₦${recommendation.costMin.toLocaleString()} - ₦${recommendation.costMax.toLocaleString()}
-- *My Current Generator Fuel Cost:* ₦${currentFuelSpendNaira.toLocaleString()}/month
-- *Estimated Fuel Savings:* ₦${solarReplacedSavings.toLocaleString()}/month (₦${annualSolarSavings.toLocaleString()}/year)
+- *Estimated Cost:* ${formatCurrency(targetCostMin, region)} - ${formatCurrency(targetCostMax, region)}
+- *My Current Fuel Cost:* ${formatCurrency(currentFuelSpendNaira, region)}/month
+- *Estimated Fuel Savings:* ${formatCurrency(solarReplacedSavings, region)}/month (${formatCurrency(annualSolarSavings, region)}/year)
 - *Calculated Payback Period:* ${paybackPeriodYears.toFixed(1)} years
 
 Could we connect to discuss a formal quote and installation assessment?`;
@@ -297,14 +299,36 @@ Could we connect to discuss a formal quote and installation assessment?`;
         {/* ═══ Hero Title ═══ */}
         <section className="text-center space-y-3 mb-10">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/10 rounded-full text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" /> 100% Free & Transparent Sizer
+            <Sparkles className="w-3.5 h-3.5" /> 100% Free &amp; Transparent Sizer
           </div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-850 dark:text-slate-50">
-            Estimate Your Solar Power & Savings
+            Estimate Your Solar Power &amp; Savings
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto leading-relaxed font-medium">
-            No technical knowledge required. Tell us what appliances you use and what you currently spend on fuel, and get an immediate, transparent estimate tailored for the Nigerian market.
+            No technical knowledge required. Tell us what appliances you use and what you currently spend on fuel, and get an immediate, transparent estimate tailored for {region.context.marketName}.
           </p>
+
+          {/* ═══ Region Selector ═══ */}
+          <div className="flex items-center justify-center gap-2 pt-2">
+            <Globe className="w-4 h-4 text-slate-400" />
+            <select
+              title="Select your region"
+              value={regionCode}
+              onChange={(e) => {
+                const code = e.target.value as RegionCode;
+                setRegionCode(code);
+                setNepaHours(REGION_PROFILES[code].grid.avgHoursDefault);
+                setMonthlySpend(REGION_PROFILES[code].context.defaultMonthlySpend);
+              }}
+              className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-slate-700 dark:text-slate-300 cursor-pointer hover:border-teal-500/30 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            >
+              {Object.values(REGION_PROFILES).map((r) => (
+                <option key={r.code} value={r.code}>
+                  {r.flag} {r.name} ({r.currency.code})
+                </option>
+              ))}
+            </select>
+          </div>
         </section>
 
         {/* ═══ Progress Indicators ═══ */}
@@ -444,7 +468,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-350">
-                      How many hours of grid (NEPA) power do you get daily?
+                      {region.grid.label}
                     </label>
                     <span className="text-xs font-black text-teal-650 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">
                       {nepaHours} hours/day
@@ -465,7 +489,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                     className="py-2 text-teal-600"
                   />
                   <p className="text-[10px] text-slate-450">
-                    High NEPA hours mean you can recharge batteries mostly with grid, potentially needing fewer solar panels.
+                    {region.grid.lowGridNote}
                   </p>
                 </div>
 
@@ -473,7 +497,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-350">
-                      How many hours of battery backup do you need when NEPA fails?
+                      How many hours of battery backup do you need when {region.grid.name} fails?
                     </label>
                     <span className="text-xs font-black text-teal-650 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">
                       {backupHours} hours/day
@@ -508,8 +532,8 @@ Could we connect to discuss a formal quote and installation assessment?`;
 
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { id: 'petrol', label: 'Petrol Gen ⛽', desc: 'Standard small/medium gen' },
-                      { id: 'diesel', label: 'Diesel Gen 🚜', desc: 'Large high kVA gen' },
+                      { id: 'petrol', label: region.fuel.petrolLabel, desc: 'Standard small/medium gen' },
+                      { id: 'diesel', label: region.fuel.dieselLabel, desc: 'Large high kVA gen' },
                       { id: 'none', label: 'No Gen / Grid only 🔌', desc: 'No fuel costs to replace' },
                     ].map((g) => (
                       <button
@@ -534,7 +558,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                         How much do you spend on average on fuel (petrol/diesel) monthly?
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-450">₦</span>
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-450">{region.currency.symbol}</span>
                         <Input
                           type="text"
                           value={monthlySpend}
@@ -547,7 +571,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                         />
                       </div>
                       <p className="text-[10px] text-slate-500 flex items-center gap-1 font-semibold">
-                        <Info className="w-3 h-3 text-teal-650" /> Fuel costs are based on current rates (Petrol ₦1,250/L, Diesel ₦1,750/L as of May 2026).
+                        <Info className="w-3 h-3 text-teal-650" /> {region.fuel.priceNote}
                       </p>
                     </div>
                   )}
@@ -598,7 +622,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
                   <h2 className="text-2xl sm:text-3xl font-black tracking-tight">{recommendation.title}</h2>
                   <p className="text-teal-400 font-extrabold text-lg tabular-nums">
-                    ₦{recommendation.costMin.toLocaleString()} - ₦{recommendation.costMax.toLocaleString()}
+                    {formatCurrency(convertCost(recommendation.costMin, region), region)} - {formatCurrency(convertCost(recommendation.costMax, region), region)}
                   </p>
                 </div>
 
@@ -719,7 +743,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                     <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-250 dark:border-amber-900/30 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300 font-semibold leading-relaxed">
                       <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                       <span>
-                        <strong>Note on high-power loads:</strong> Air Conditioners, Water Pumps, and Microwaves consume large amounts of power. Ensure they are run strictly when there is high sun or backup batteries are full, or consider isolating them to NEPA grid power.
+                        <strong>Note on high-power loads:</strong> Air Conditioners, Water Pumps, and Microwaves consume large amounts of power. Ensure they are run strictly when there is high sun or backup batteries are full, or consider isolating them to grid power.
                       </span>
                     </div>
                   </CardContent>
@@ -731,16 +755,16 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 <Card className="border-slate-200 dark:border-slate-850 shadow-md animate-in fade-in duration-250">
                   <CardContent className="p-5 sm:p-6 space-y-4">
                     <h3 className="font-extrabold text-sm text-slate-850 dark:text-slate-100 flex items-center gap-1.5">
-                      <TrendingUp className="w-4 h-4 text-emerald-600" /> Naira ROI savings Analysis
+                      <TrendingUp className="w-4 h-4 text-emerald-650" /> {region.currency.code} ROI &amp; Savings Analysis
                     </h3>
 
                     {fuelType === 'none' ? (
                       <div className="py-8 text-center space-y-2">
                         <p className="text-slate-500 text-sm font-semibold">
-                          You indicated that you do not run a petrol/diesel generator.
+                          You indicated that you do not run a generator.
                         </p>
                         <p className="text-xs text-slate-450 max-w-sm mx-auto">
-                          Your main solar benefit will be providing 100% stable, uninterrupted 24/7 power during NEPA grid blackouts.
+                          Your main solar benefit will be providing 100% stable, uninterrupted 24/7 power during {region.grid.name} grid blackouts.
                         </p>
                       </div>
                     ) : (
@@ -748,14 +772,14 @@ Could we connect to discuss a formal quote and installation assessment?`;
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30">
                             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Current Fuel Bill</p>
-                            <p className="text-lg font-black text-rose-650 dark:text-rose-450 mt-1">₦{currentFuelSpendNaira.toLocaleString()} / mo</p>
-                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">₦{annualFuelSpend.toLocaleString()} / year</p>
+                            <p className="text-lg font-black text-rose-650 dark:text-rose-450 mt-1">{formatCurrency(currentFuelSpendNaira, region)} / mo</p>
+                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">{formatCurrency(annualFuelSpend, region)} / year</p>
                           </div>
 
                           <div className="border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30">
                             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Replaced by Solar</p>
-                            <p className="text-lg font-black text-emerald-650 dark:text-emerald-400 mt-1">₦{solarReplacedSavings.toLocaleString()} / mo</p>
-                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">₦{annualSolarSavings.toLocaleString()} / year</p>
+                            <p className="text-lg font-black text-emerald-650 dark:text-emerald-400 mt-1">{formatCurrency(solarReplacedSavings, region)} / mo</p>
+                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">{formatCurrency(annualSolarSavings, region)} / year</p>
                           </div>
 
                           <div className="border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30">
@@ -774,7 +798,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                             <div>
                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                                 <span>Accumulated Fuel Expense (Gen)</span>
-                                <span className="text-rose-500">₦{(annualFuelSpend * 5).toLocaleString()}</span>
+                                <span className="text-rose-500">{formatCurrency(annualFuelSpend * 5, region)}</span>
                               </div>
                               <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div className="h-full bg-rose-500 rounded-full" style={{ width: '100%' }} />
@@ -784,15 +808,15 @@ Could we connect to discuss a formal quote and installation assessment?`;
                             <div>
                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                                 <span>Solar System Cost + Maintenance</span>
-                                <span className="text-teal-500">₦{(midpointCost * 1.1).toLocaleString()}</span>
+                                <span className="text-teal-500">{formatCurrency(targetMidpointCost * 1.1, region)}</span>
                               </div>
                               <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-teal-500 rounded-full" style={{ width: `${(midpointCost * 1.1 / (annualFuelSpend * 5) * 100).toFixed(0)}%` }} />
+                                <div className="h-full bg-teal-500 rounded-full" style={{ width: `${(targetMidpointCost * 1.1 / (annualFuelSpend * 5) * 100).toFixed(0)}%` }} />
                               </div>
                             </div>
                           </div>
                           <p className="text-[10px] text-slate-450 mt-3 leading-relaxed">
-                            💡 <strong>Informed Decision:</strong> In Nigeria, generator fuel is a continuous, burning liability. Solar is an asset that pays for itself in less than 3 years and provides quiet, pollution-free power for 20+ years.
+                            💡 <strong>Informed Decision:</strong> {region.context.fuelLiabilityNote}
                           </p>
                         </div>
                       </div>
@@ -821,7 +845,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                         },
                         {
                           q: "3. What is the efficiency rating of the solar panels?",
-                          a: "Monocrystalline panels (efficiency > 20%) perform much better in Nigerian weather, especially during the cloudier rainy season, compared to older Polycrystalline panels."
+                          a: `Monocrystalline panels (efficiency > 20%) perform much better in ${region.solar.weatherNote}, especially during the cloudier rainy season, compared to older Polycrystalline panels.`
                         },
                         {
                           q: "4. What post-installation warranties do you offer?",
@@ -907,7 +931,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                   <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200">Single Report Token</h4>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Pay only for this specific estimation. No recurring billing.</p>
                 </div>
-                <span className="text-xs font-black text-teal-650 dark:text-teal-400">₦1,500</span>
+                <span className="text-xs font-black text-teal-650 dark:text-teal-400">{region.subscription.singleTokenPrice}</span>
               </div>
               <Button 
                 onClick={() => homeownerSub.purchaseTokens(1)}
@@ -930,7 +954,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Perfect if you are sizing multiple properties or comparing configurations.</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-black text-teal-650 dark:text-teal-400 block">₦3,000</span>
+                  <span className="text-xs font-black text-teal-650 dark:text-teal-400 block">{region.subscription.monthlyPrice}</span>
                   <span className="text-[9px] text-slate-450 block mt-0.5">per month</span>
                 </div>
               </div>
