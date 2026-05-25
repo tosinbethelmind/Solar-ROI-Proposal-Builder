@@ -9,6 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useHomeownerSubscriptionStore } from '@/store/homeownerSubscriptionStore';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog';
 import {
   Lightbulb,
   Zap,
@@ -54,6 +63,13 @@ const APPLIANCE_PRESETS: AppliancePreset[] = [
 export default function HomeownerEstimatorPage() {
   const router = useRouter();
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
+  const homeownerSub = useHomeownerSubscriptionStore();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   /* ── State variables ── */
   const [quantities, setQuantities] = React.useState<Record<string, number>>(() => {
@@ -232,6 +248,39 @@ Could we connect to discuss a formal quote and installation assessment?`;
           </Link>
 
           <div className="flex items-center gap-3">
+            {mounted && homeownerSub.tier === 'free' && (
+              <Badge 
+                onClick={homeownerSub.openUpgradeModal} 
+                className="cursor-pointer bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold py-1"
+              >
+                ⚡ {homeownerSub.estimationsUsedThisMonth >= 1 ? '0 Free Left (Upgrade)' : '1 Free Estimation Left'}
+              </Badge>
+            )}
+
+            {mounted && homeownerSub.tier === 'pay_per_use' && (
+              <Badge 
+                onClick={homeownerSub.openUpgradeModal} 
+                className="cursor-pointer bg-teal-500/10 hover:bg-teal-500/20 text-teal-650 dark:text-teal-400 border border-teal-500/20 text-[10px] font-bold py-1"
+              >
+                💎 {homeownerSub.tokens} Token(s) Left
+              </Badge>
+            )}
+
+            {mounted && homeownerSub.tier === 'monthly' && (
+              <Badge className="bg-emerald-500/10 text-emerald-650 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold py-1">
+                🏡 Unlimited Sizing Active
+              </Badge>
+            )}
+
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs font-bold border-teal-500/20 text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/30 rounded-xl"
+              onClick={homeownerSub.openUpgradeModal}
+            >
+              Plans
+            </Button>
+
             <Link href="/">
               <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
                 Go to Installer Workspace
@@ -517,7 +566,15 @@ Could we connect to discuss a formal quote and installation assessment?`;
 
               <Button
                 className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-bold flex items-center gap-1 text-xs px-5 h-9"
-                onClick={() => setStep(3)}
+                onClick={() => {
+                  const access = homeownerSub.checkAccess();
+                  if (access.allowed) {
+                    homeownerSub.consumeEstimation();
+                    setStep(3);
+                  } else {
+                    homeownerSub.openUpgradeModal();
+                  }
+                }}
               >
                 Calculate Recommendations <ArrowRight className="w-3.5 h-3.5" />
               </Button>
@@ -829,6 +886,85 @@ Could we connect to discuss a formal quote and installation assessment?`;
           </Link>
         </div>
       </footer>
+
+      {/* ═══ Homeowner Upgrade Modal ═══ */}
+      <Dialog open={homeownerSub.upgradeModalOpen} onOpenChange={(open) => !open && homeownerSub.closeUpgradeModal()}>
+        <DialogContent className="sm:max-w-md border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-black tracking-tight text-slate-850 dark:text-white flex items-center gap-2">
+              💎 Unlock Solar ROI Calculator
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              You have used your free estimation for this month. Upgrade to get instant access to system recommendations, generator fuel payback projections, and installer-ready reports.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-3">
+            {/* Pay Per Use Option */}
+            <div className="border border-slate-200 dark:border-slate-800 hover:border-teal-500/30 dark:hover:border-teal-500/30 rounded-2xl p-4 bg-slate-50/50 dark:bg-slate-950/20 transition-all flex flex-col justify-between gap-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200">Single Report Token</h4>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Pay only for this specific estimation. No recurring billing.</p>
+                </div>
+                <span className="text-xs font-black text-teal-650 dark:text-teal-400">₦1,500</span>
+              </div>
+              <Button 
+                onClick={() => homeownerSub.purchaseTokens(1)}
+                className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-850 dark:hover:bg-slate-750 text-[11px] font-bold py-1.5 rounded-xl h-8"
+              >
+                Purchase 1 Token
+              </Button>
+            </div>
+
+            {/* Monthly Option */}
+            <div className="border-2 border-teal-500/30 rounded-2xl p-4 bg-teal-500/[0.02] dark:bg-teal-500/[0.01] transition-all flex flex-col justify-between gap-3 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-teal-600 text-white text-[8px] font-bold uppercase tracking-wider py-0.5 px-2.5 rounded-bl-xl">
+                Best Value
+              </div>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                    Monthly Unlimited 🌟
+                  </h4>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Perfect if you are sizing multiple properties or comparing configurations.</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-black text-teal-650 dark:text-teal-400 block">₦3,000</span>
+                  <span className="text-[9px] text-slate-450 block mt-0.5">per month</span>
+                </div>
+              </div>
+              <Button 
+                onClick={() => homeownerSub.subscribeMonthly()}
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold py-1.5 rounded-xl h-8 shadow-sm shadow-teal-650/10"
+              >
+                Subscribe Monthly
+              </Button>
+            </div>
+          </div>
+
+          <DialogFooter className="flex sm:justify-between items-center mt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[10px] font-bold text-slate-500 hover:text-slate-800"
+              onClick={homeownerSub.closeUpgradeModal}
+            >
+              Cancel
+            </Button>
+            {homeownerSub.tier !== 'free' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[10px] font-bold text-rose-500 hover:text-rose-650 hover:bg-rose-50/50"
+                onClick={() => homeownerSub.cancelSubscription()}
+              >
+                Reset Account to Free
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
