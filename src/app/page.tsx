@@ -11,7 +11,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Settings, FileText, Plus, Zap, Shield, Sparkles, TrendingUp, DollarSign } from 'lucide-react';
+import { Settings, FileText, Plus, Zap, Sparkles, TrendingUp, DollarSign, ArrowRight } from 'lucide-react';
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
@@ -114,7 +114,7 @@ function DraftRow({ item, onLoad, onDelete }: { item: SavedProposal; onLoad: () 
 export default function DashboardPage() {
   const router = useRouter();
   const { savedProposals, deleteProposal } = useHistoryStore();
-  const { updateProposal, setCalculations, setStep, reset } = useWizardStore();
+  const { reset } = useWizardStore();
   const { appMode, setAppMode } = useUiStore();
   const { checkAccess, openUpgradeModal, tier: currentTier, isTrial } = useSubscriptionStore();
   const [mounted, setMounted] = React.useState(false);
@@ -238,8 +238,12 @@ export default function DashboardPage() {
             <Button variant="ghost" size="sm" className="text-xs font-bold hidden sm:inline-flex text-slate-700 hover:bg-slate-100 dark:text-slate-350 dark:hover:bg-slate-800" onClick={() => router.push('/history')}>
               CRM & History
             </Button>
+
+            <Button variant="ghost" size="sm" className="text-xs font-bold text-teal-650 hover:text-teal-700 dark:text-teal-400 dark:hover:bg-slate-800 flex items-center gap-1" onClick={() => router.push('/estimator')}>
+              🏡 Client Estimator
+            </Button>
             
-            <Button variant="ghost" size="sm" className="text-xs font-extrabold text-teal-650 hover:text-teal-700 dark:text-teal-400 dark:hover:bg-slate-800 flex items-center gap-1" onClick={() => router.push('/pricing')}>
+            <Button variant="ghost" size="sm" className="text-xs font-extrabold text-slate-750 hover:bg-slate-100 dark:text-slate-350 dark:hover:bg-slate-800 flex items-center gap-1" onClick={() => router.push('/pricing')}>
               💎 Pricing
             </Button>
             <ThemeToggle />
@@ -361,6 +365,28 @@ export default function DashboardPage() {
             />
           </section>
         )}
+
+        {/* ═══ Homeowner Public Sizer Banner ═══ */}
+        <section className="relative overflow-hidden rounded-3xl border border-teal-500/10 bg-white dark:bg-slate-900 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all hover:border-teal-500/20">
+          <div className="space-y-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-teal-100 text-teal-800 dark:bg-teal-950/40 dark:text-teal-400">
+              New: For Homeowners & Clients 🏡
+            </span>
+            <h3 className="font-extrabold text-sm text-slate-850 dark:text-slate-100">
+              Not a Solar Installer? Estimate Your Own Solar System Size
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal max-w-xl">
+              Use our quick client sizer to calculate running wattage, battery backup size, panel count, and annual Naira generator fuel savings instantly.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs px-5 h-9 shrink-0 flex items-center gap-1.5"
+            onClick={() => router.push('/estimator')}
+          >
+            Start Sizing <ArrowRight className="w-3.5 h-3.5" />
+          </Button>
+        </section>
 
         {/* ═══ Recent Proposals List ═══ */}
         <section className="space-y-4">
