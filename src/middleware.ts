@@ -8,29 +8,51 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
+  // Defensive check for unconfigured production environments
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Retrieve user session dynamically (safe call)
-  const { data: { user } } = await supabase.auth.getUser()
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Middleware Warning: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing. Access gating bypassed.');
+    return response;
+  }
+
+  let user = null;
+  let supabase;
+
+  try {
+    supabase = createServerClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            response = NextResponse.next({
+              request,
+            })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
+    // Retrieve user session dynamically (safe call)
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    user = authUser;
+  } catch (err) {
+    console.error('Middleware: Supabase instantiation failed', err);
+    return response;
+  }
+
+  if (!supabase) {
+    return response;
+  }
 
   const path = request.nextUrl.pathname
   const isAdminRoute = path.startsWith('/admin') || path.startsWith('/api/admin')
