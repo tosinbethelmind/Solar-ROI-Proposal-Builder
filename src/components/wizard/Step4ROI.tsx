@@ -31,12 +31,11 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
   const { checkAccess, openUpgradeModal } = useSubscriptionStore();
 
   // 1. Interactive App States
-  const [pricingMode, setPricingMode] = React.useState<'simple' | 'advanced'>('simple');
-  const [isOnline, setIsOnline] = React.useState<boolean>(true);
+  const [pricingMode, setPricingMode] = React.useState<'simple' | 'advanced'>(proposal.pricing_mode || 'simple');
+  const [isOnline, setIsOnline] = React.useState<boolean>(() => typeof window !== 'undefined' ? navigator.onLine : true);
   const [rateStatus, setRateStatus] = React.useState<'loading' | 'synced' | 'stale'>('stale');
   const [draftSaved, setDraftSaved] = React.useState<boolean>(true);
   const [pendingSync, setPendingSync] = React.useState<boolean>(false);
-  const [validationErrors, setValidationErrors] = React.useState<string[]>([]);
   const [rateLoading, setRateLoading] = React.useState<boolean>(false);
 
   // Grouped collapsible accordion sections for Advanced Mode
@@ -54,39 +53,8 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
     setAccordions(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Sync state values on mount
-  React.useEffect(() => {
-    // Sync pricing mode from global store if available
-    if (proposal.pricing_mode) {
-      setPricingMode(proposal.pricing_mode);
-    }
-    
-    // Check network online status
-    setIsOnline(navigator.onLine);
-    const goOnline = () => {
-      setIsOnline(true);
-      fetchExchangeRate();
-    };
-    const goOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', goOnline);
-    window.addEventListener('offline', goOffline);
-
-    // Initial exchange rate fetch if online
-    if (navigator.onLine) {
-      fetchExchangeRate();
-    } else {
-      setRateStatus('stale');
-    }
-
-    return () => {
-      window.removeEventListener('online', goOnline);
-      window.removeEventListener('offline', goOffline);
-    };
-  }, []);
-
   // Fetch exchange rate from ExchangeRate-API
-  const fetchExchangeRate = async () => {
+  const fetchExchangeRate = React.useCallback(async () => {
     setRateLoading(true);
     setRateStatus('loading');
     try {
@@ -110,7 +78,32 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
     } finally {
       setRateLoading(false);
     }
-  };
+  }, [updateProposal]);
+
+  // Sync state values on mount
+  React.useEffect(() => {
+    // Check network online status
+    const goOnline = () => {
+      setIsOnline(true);
+      fetchExchangeRate();
+    };
+    const goOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+
+    // Initial exchange rate fetch if online
+    if (navigator.onLine) {
+      fetchExchangeRate();
+    } else {
+      setRateStatus('stale');
+    }
+
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, [fetchExchangeRate]);
 
   // Handle value changes with validation and state preservation
   const handleFieldChange = (fields: Partial<typeof proposal>) => {
@@ -166,7 +159,7 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
   const finalSellingPrice = Math.max(0, Math.round(sellingPriceBeforeVatAndDiscount + vatNgn - discountNgn));
 
   // Validation Warnings
-  React.useEffect(() => {
+  const validationErrors = React.useMemo(() => {
     const errors: string[] = [];
     if (markupPercent < minMarginThreshold) {
       errors.push(`Warning: Selling margin (${markupPercent}%) is below your minimum threshold of ${minMarginThreshold}%!`);
@@ -183,7 +176,7 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
     if (finalSellingPrice <= 0) {
       errors.push(`Critical Error: Final selling price is calculated as ₦0. Check cost and markup inputs.`);
     }
-    setValidationErrors(errors);
+    return errors;
   }, [markupPercent, minMarginThreshold, discountNgn, sellingPriceBeforeVatAndDiscount, labour, transport, finalSellingPrice]);
 
   // ROI / Savings Calculations

@@ -31,18 +31,145 @@ function tierColor(tier: string) {
   return 'bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400';
 }
 
+const PLACEHOLDER_PROPOSALS: SavedProposal[] = [
+  {
+    id: 'placeholder-1',
+    createdAt: 1716382800000,
+    updatedAt: 1716382800000,
+    proposal: {
+      customer_name: 'Aliko Dangote Villa System',
+      selected_tier: 'premium',
+      final_quoted_price_ngn: 18500000,
+      appliances: []
+    } as any,
+    calculations: {
+      inverterKva: 15,
+      batteryBankCapacityKwh: 30,
+      panelCount: 36,
+      panelTotalWp: 19800,
+      batteryTotalUnits: 6,
+      batteryUnitAh: 200,
+      batteryUnitVoltage: 48,
+      inverterBrand: 'Victron Energy',
+      batteryBrand: 'BYD Premium',
+      panelBrand: 'Jinko Solar'
+    } as any,
+    pipelineStatus: 'new'
+  },
+  {
+    id: 'placeholder-2',
+    createdAt: 1716296400000,
+    updatedAt: 1716296400000,
+    proposal: {
+      customer_name: 'Lekki Phase 1 Residential',
+      selected_tier: 'standard',
+      final_quoted_price_ngn: 5200000,
+      appliances: []
+    } as any,
+    calculations: {
+      inverterKva: 5,
+      batteryBankCapacityKwh: 10,
+      panelCount: 12,
+      panelTotalWp: 6600,
+      batteryTotalUnits: 2,
+      batteryUnitAh: 200,
+      batteryUnitVoltage: 48,
+      inverterBrand: 'Growatt',
+      batteryBrand: 'Felicity Lithium',
+      panelBrand: 'JA Solar'
+    } as any,
+    pipelineStatus: 'sent'
+  },
+  {
+    id: 'placeholder-3',
+    createdAt: 1716210000000,
+    updatedAt: 1716210000000,
+    proposal: {
+      customer_name: 'Ikeja Office Back-up Grid',
+      selected_tier: 'premium',
+      final_quoted_price_ngn: 9800000,
+      appliances: []
+    } as any,
+    calculations: {
+      inverterKva: 10,
+      batteryBankCapacityKwh: 20,
+      panelCount: 24,
+      panelTotalWp: 13200,
+      batteryTotalUnits: 4,
+      batteryUnitAh: 200,
+      batteryUnitVoltage: 48,
+      inverterBrand: 'Victron Energy',
+      batteryBrand: 'Felicity Lithium',
+      panelBrand: 'Trina Solar'
+    } as any,
+    pipelineStatus: 'negotiating'
+  },
+  {
+    id: 'placeholder-4',
+    createdAt: 1716123600000,
+    updatedAt: 1716123600000,
+    proposal: {
+      customer_name: 'Eko Atlantic Penthouse',
+      selected_tier: 'premium',
+      final_quoted_price_ngn: 24500000,
+      appliances: []
+    } as any,
+    calculations: {
+      inverterKva: 20,
+      batteryBankCapacityKwh: 40,
+      panelCount: 48,
+      panelTotalWp: 26400,
+      batteryTotalUnits: 8,
+      batteryUnitAh: 200,
+      batteryUnitVoltage: 48,
+      inverterBrand: 'Victron Energy',
+      batteryBrand: 'BYD Premium',
+      panelBrand: 'Longi Solar'
+    } as any,
+    pipelineStatus: 'closed'
+  }
+];
+
+const COLUMNS = [
+  { id: 'new', title: '🆕 New Lead', color: 'bg-blue-500/10 text-blue-500 dark:text-blue-400' },
+  { id: 'sent', title: '📄 Proposal Sent', color: 'bg-amber-500/10 text-amber-500 dark:text-amber-400' },
+  { id: 'negotiating', title: '💬 Negotiating', color: 'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400' },
+  { id: 'closed', title: '✅ Closed / Won', color: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400' },
+  { id: 'lost', title: '❌ Lost / Cancelled', color: 'bg-rose-500/10 text-rose-500 dark:text-rose-400' },
+] as const;
+
 export default function HistoryPage() {
   const router = useRouter();
+  const columns = COLUMNS;
   const { savedProposals, deleteProposal, updatePipelineStatus } = useHistoryStore();
-  const { updateProposal, setCalculations, setStep, reset } = useWizardStore();
+  const { reset } = useWizardStore();
   const { checkAccess, openUpgradeModal } = useSubscriptionStore();
   const [mounted, setMounted] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<'list' | 'pipeline'>('list');
+  const [shareTarget, setShareTarget] = React.useState<SavedProposal | null>(null);
+  const [copiedLink, setCopiedLink] = React.useState(false);
+  const [localProposals, setLocalProposals] = React.useState<SavedProposal[]>([]);
 
   React.useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
   }, []);
+
+  React.useEffect(() => {
+    if (mounted) {
+      const timer = setTimeout(() => {
+        setLocalProposals(savedProposals);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [mounted, savedProposals]);
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this proposal? This action cannot be undone.')) {
+      deleteProposal(id);
+      setLocalProposals((prev) => prev.filter((p) => p.id !== id));
+    }
+  };
 
   const handleLoad = (item: SavedProposal) => {
     router.push(`/proposals/new?load=${item.id}`);
@@ -55,116 +182,9 @@ export default function HistoryPage() {
   const crmAccess = checkAccess('crmPipeline');
   const isCrmLocked = !crmAccess.unlocked;
 
-  const columns = [
-    { id: 'new', title: '🆕 New Lead', color: 'bg-blue-500/10 text-blue-500 dark:text-blue-400' },
-    { id: 'sent', title: '📄 Proposal Sent', color: 'bg-amber-500/10 text-amber-500 dark:text-amber-400' },
-    { id: 'negotiating', title: '💬 Negotiating', color: 'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400' },
-    { id: 'closed', title: '✅ Closed / Won', color: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400' },
-    { id: 'lost', title: '❌ Lost / Cancelled', color: 'bg-rose-500/10 text-rose-500 dark:text-rose-400' },
-  ] as const;
+  const activeProposals = isCrmLocked ? PLACEHOLDER_PROPOSALS : localProposals;
 
-  const placeholderProposals: SavedProposal[] = [
-    {
-      id: 'placeholder-1',
-      createdAt: Date.now() - 86400000,
-      updatedAt: Date.now() - 86400000,
-      proposal: {
-        customer_name: 'Aliko Dangote Villa System',
-        selected_tier: 'premium',
-        final_quoted_price_ngn: 18500000,
-        appliances: []
-      } as any,
-      calculations: {
-        inverterKva: 15,
-        batteryBankCapacityKwh: 30,
-        panelCount: 36,
-        panelTotalWp: 19800,
-        batteryTotalUnits: 6,
-        batteryUnitAh: 200,
-        batteryUnitVoltage: 48,
-        inverterBrand: 'Victron Energy',
-        batteryBrand: 'BYD Premium',
-        panelBrand: 'Jinko Solar'
-      } as any,
-      pipelineStatus: 'new'
-    },
-    {
-      id: 'placeholder-2',
-      createdAt: Date.now() - 172800000,
-      updatedAt: Date.now() - 172800000,
-      proposal: {
-        customer_name: 'Lekki Phase 1 Residential',
-        selected_tier: 'standard',
-        final_quoted_price_ngn: 5200000,
-        appliances: []
-      } as any,
-      calculations: {
-        inverterKva: 5,
-        batteryBankCapacityKwh: 10,
-        panelCount: 12,
-        panelTotalWp: 6600,
-        batteryTotalUnits: 2,
-        batteryUnitAh: 200,
-        batteryUnitVoltage: 48,
-        inverterBrand: 'Growatt',
-        batteryBrand: 'Felicity Lithium',
-        panelBrand: 'JA Solar'
-      } as any,
-      pipelineStatus: 'sent'
-    },
-    {
-      id: 'placeholder-3',
-      createdAt: Date.now() - 259200000,
-      updatedAt: Date.now() - 259200000,
-      proposal: {
-        customer_name: 'Ikeja Office Back-up Grid',
-        selected_tier: 'premium',
-        final_quoted_price_ngn: 9800000,
-        appliances: []
-      } as any,
-      calculations: {
-        inverterKva: 10,
-        batteryBankCapacityKwh: 20,
-        panelCount: 24,
-        panelTotalWp: 13200,
-        batteryTotalUnits: 4,
-        batteryUnitAh: 200,
-        batteryUnitVoltage: 48,
-        inverterBrand: 'Victron Energy',
-        batteryBrand: 'Felicity Lithium',
-        panelBrand: 'Trina Solar'
-      } as any,
-      pipelineStatus: 'negotiating'
-    },
-    {
-      id: 'placeholder-4',
-      createdAt: Date.now() - 345600000,
-      updatedAt: Date.now() - 345600000,
-      proposal: {
-        customer_name: 'Eko Atlantic Penthouse',
-        selected_tier: 'premium',
-        final_quoted_price_ngn: 24500000,
-        appliances: []
-      } as any,
-      calculations: {
-        inverterKva: 20,
-        batteryBankCapacityKwh: 40,
-        panelCount: 48,
-        panelTotalWp: 26400,
-        batteryTotalUnits: 8,
-        batteryUnitAh: 200,
-        batteryUnitVoltage: 48,
-        inverterBrand: 'Victron Energy',
-        batteryBrand: 'BYD Premium',
-        panelBrand: 'Longi Solar'
-      } as any,
-      pipelineStatus: 'closed'
-    }
-  ];
-
-  const activeProposals = isCrmLocked ? placeholderProposals : savedProposals;
-
-  const handleStatusChange = (id: string, newStatus: typeof columns[number]['id']) => {
+  const handleStatusChange = (id: string, newStatus: typeof COLUMNS[number]['id']) => {
     if (isCrmLocked) {
       openUpgradeModal('crmPipeline');
       return;
@@ -192,7 +212,7 @@ export default function HistoryPage() {
             <span className="font-bold text-base tracking-tight">SolarPro</span>
           </Link>
           <div className="flex items-center gap-2">
-            <Link href="/" className="text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-muted transition-colors">
+            <Link href="/workspace" className="text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-muted transition-colors">
               Dashboard
             </Link>
             <ThemeToggle />
@@ -239,7 +259,7 @@ export default function HistoryPage() {
         </div>
 
         {viewMode === 'list' ? (
-          savedProposals.length === 0 ? (
+          localProposals.length === 0 ? (
             /* Empty State */
             <Card className="border-dashed bg-card/50">
               <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -277,7 +297,7 @@ export default function HistoryPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {savedProposals.map((item) => {
+                    {localProposals.map((item) => {
                       const customerName = item.proposal.customer_name || 'Unnamed Client';
                       const proposalTitle = `${tierLabel(item.proposal.selected_tier)} Sized System`;
                       const sizeKva = item.calculations?.inverterKva;
@@ -332,6 +352,14 @@ export default function HistoryPage() {
                               </Button>
                               <Button 
                                 size="sm" 
+                                variant="outline"
+                                className="text-xs bg-green-50 text-green-750 border-green-200 hover:bg-green-100 hover:text-green-800 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800/40 font-bold"
+                                onClick={() => setShareTarget(item)}
+                              >
+                                🔗 Share
+                              </Button>
+                              <Button 
+                                size="sm" 
                                 variant="outline" 
                                 className="text-xs"
                                 onClick={() => handlePrint(item.id)}
@@ -342,7 +370,7 @@ export default function HistoryPage() {
                                 size="sm" 
                                 variant="destructive" 
                                 className="text-xs"
-                                onClick={() => deleteProposal(item.id)}
+                                onClick={() => handleDelete(item.id)}
                               >
                                 Delete
                               </Button>
@@ -446,14 +474,24 @@ export default function HistoryPage() {
                               
                               {/* Interactive Status Changer / Action Row */}
                               <div className="flex items-center justify-between gap-1 pt-2.5 border-t border-slate-100 dark:border-slate-800">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-6 px-1.5 text-[9px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-700/80 font-bold"
-                                  onClick={() => handleLoad(item)}
-                                >
-                                  Open
-                                </Button>
+                                <div className="flex items-center gap-1.5">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-1.5 text-[9px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-700/80 font-bold"
+                                    onClick={() => handleLoad(item)}
+                                  >
+                                    Open
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-1.5 text-[9px] bg-green-50 hover:bg-green-100 dark:bg-green-950/20 dark:text-green-400 text-green-755 font-bold"
+                                    onClick={() => setShareTarget(item)}
+                                  >
+                                    Share
+                                  </Button>
+                                </div>
                                 
                                 {/* Move stage buttons */}
                                 <div className="flex items-center gap-0.5">
@@ -508,6 +546,90 @@ export default function HistoryPage() {
           </p>
         </div>
       </footer>
+
+      {/* Re-open Share Flow Modal */}
+      {shareTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setShareTarget(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 transition-colors text-sm font-bold"
+            >
+              ✕
+            </button>
+
+            <h3 className="text-xl font-bold tracking-tight mb-2 flex items-center gap-2">
+              <span>🔗</span> Share Proposal Link
+            </h3>
+            <p className="text-sm text-slate-500 mb-6">
+              Copy the interactive proposal link or share it directly with your client on WhatsApp.
+            </p>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-1">
+                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Client Name</p>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{shareTarget.proposal.customer_name || 'Unnamed Client'}</p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="proposal-link-input" className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Proposal Link</label>
+                <div className="flex gap-2">
+                  <input
+                    id="proposal-link-input"
+                    type="text"
+                    readOnly
+                    aria-label="Interactive Proposal Link"
+                    value={typeof window !== 'undefined' ? `${window.location.origin}/proposal/${shareTarget.client_token || shareTarget.id}` : ''}
+                    className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl px-3 py-2 text-xs font-mono select-all focus:outline-none"
+                  />
+                  <Button
+                    size="sm"
+                    className="bg-teal-600 hover:bg-teal-700 text-white font-bold"
+                    onClick={async () => {
+                      const clientToken = shareTarget.client_token || shareTarget.id;
+                      const shareUrl = `${window.location.origin}/proposal/${clientToken}`;
+                      await navigator.clipboard.writeText(shareUrl);
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 2000);
+                    }}
+                  >
+                    {copiedLink ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="pt-4 flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={() => {
+                    const clientToken = shareTarget.client_token || shareTarget.id;
+                    const shareUrl = `${window.location.origin}/proposal/${clientToken}`;
+                    const costStr = (shareTarget.proposal.final_quoted_price_ngn || 0).toLocaleString();
+                    const sizeKva = shareTarget.calculations?.inverterKva || 0;
+                    const batUnits = shareTarget.calculations?.batteryTotalUnits || 0;
+                    const batBrand = shareTarget.proposal.selectedBatteryBrand || 'Lithium';
+                    const text = `Hi ${shareTarget.proposal.customer_name},\n\nHere is your Solar ROI Proposal:\n\n- System Size: ${sizeKva} kVA\n- Battery Bank: ${batUnits}x ${batBrand}\n- Total Investment: ₦${costStr}\n\n🔗 View details and interactive proposal: ${shareUrl}`;
+                    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                    window.open(url, '_blank');
+                  }}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-5 rounded-xl shadow-lg shadow-emerald-600/10 flex items-center justify-center gap-1.5"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-whatsapp" viewBox="0 0 16 16">
+                    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.949h.004c4.368 0 7.926-3.559 7.93-7.93a7.9 7.9 0 0 0-2.327-5.602zM8.004 14.537H8a7.1 7.1 0 0 1-3.66-1.015l-.262-.156-2.52.661.672-2.457-.17-.272a7.1 7.1 0 0 1-1.085-3.832c0-3.921 3.2-7.121 7.127-7.121a7.1 7.1 0 0 1 5.034 2.083 7.1 7.1 0 0 1 2.086 5.038c-.004 3.923-3.208 7.123-7.123 7.123z"/>
+                  </svg>
+                  Share on WhatsApp
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShareTarget(null)}
+                  className="sm:w-28 font-bold border-slate-200 dark:border-slate-800"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

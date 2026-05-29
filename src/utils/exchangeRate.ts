@@ -5,6 +5,24 @@ export async function fetchUSDNGNRate(): Promise<number> {
   const FALLBACK_RATE = 1600;
 
   try {
+    // 1. Try to fetch from administrative custom override API endpoint
+    try {
+      const response = await fetch('/api/admin/fx-rates', { next: { revalidate: 60 } });
+      if (response.ok) {
+        const result = await response.json();
+        if (result && result.data && result.data.customRate) {
+          const rate = result.data.customRate;
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(CACHE_KEY, rate.toString());
+            localStorage.setItem(TIME_KEY, Date.now().toString());
+          }
+          return rate;
+        }
+      }
+    } catch (e) {
+      console.log('Admin FX override not reachable, checking public APIs or local cache.', e);
+    }
+
     if (typeof window !== 'undefined') {
       const lastFetch = localStorage.getItem(TIME_KEY);
       const cachedRate = localStorage.getItem(CACHE_KEY);

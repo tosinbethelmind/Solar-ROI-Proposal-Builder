@@ -160,7 +160,18 @@ export default function PricingPage() {
       setMounted(true);
       setCycle(billingCycle);
     });
-  }, [billingCycle]);
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('payment') === 'success') {
+        const mockTier = params.get('tier') || 'pro';
+        const mockCycle = params.get('cycle') || 'monthly';
+        setSubscription(mockTier as SubscriptionTier, mockCycle as BillingCycle, false);
+        alert(`🎉 Congratulations! You have successfully upgraded to the SolarPro ${mockTier.toUpperCase()} Plan (${mockCycle === 'monthly' ? 'Monthly' : 'Annual'}). Locked features are now fully accessible!`);
+        router.push('/');
+      }
+    }
+  }, [billingCycle, router, setSubscription]);
 
   if (!mounted) {
     return (
@@ -175,20 +186,39 @@ export default function PricingPage() {
     setCycle(newCycle);
   };
 
-  const handleSubscribe = (tierId: SubscriptionTier, customPrice: boolean = false) => {
+  const handleSubscribe = async (tierId: SubscriptionTier, customPrice: boolean = false) => {
     if (customPrice) {
       // Simulate enterprise email trigger
       window.location.href = `mailto:sales@solarpro.ng?subject=SolarPro Enterprise Upgrade Inquiry&body=Hello SolarPro Sales, We are an EPC solar firm interested in the Enterprise custom plan. We have around 15 estimators. Please reach out to us.`;
       return;
     }
     
-    // In a real app, this would route to a Paystack / NOWPayments checkout page.
-    // For our fully offline-functional Next.js app, we let them upgrade instantly!
-    setSubscription(tierId, cycle, false);
-    
-    // Add custom toast / modal alert
-    alert(`🎉 Congratulations! You have successfully upgraded to the SolarPro ${tierId.toUpperCase()} Plan (${cycle === 'monthly' ? 'Monthly' : 'Annual'}). Locked features are now fully accessible!`);
-    router.push('/');
+    try {
+      const res = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planId: tierId,
+          cycle: cycle,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.authorization_url) {
+        throw new Error(data.error || 'Failed to initialize checkout session.');
+      }
+
+      // Redirect the installer to the Paystack checkout screen
+      window.location.href = data.authorization_url;
+    } catch (err) {
+      console.error('[Pricing Upgrade] Checkout redirect error:', err);
+      // Clean fallback so offline installer can continue testing
+      setSubscription(tierId, cycle, false);
+      alert(`🎉 [Demo Override] Upgraded locally to ${tierId.toUpperCase()} (${cycle === 'monthly' ? 'Monthly' : 'Annual'})!`);
+      router.push('/');
+    }
   };
 
   const formatNaira = (amount: number) => {

@@ -197,9 +197,7 @@ export function getGeneratorFuelRate(capacityKva: number, fuelType: 'petrol' | '
   const rate = FUEL_CONSUMPTION_TABLE[closestKva]?.[fuelType];
   
   if (rate === undefined) {
-    const DEFAULT_FUEL_RATE = 4.0;
-    console.warn(`No fuel rate found for ${capacityKva}kVA ${fuelType} generator. Using default of ${DEFAULT_FUEL_RATE} L/hr.`);
-    return DEFAULT_FUEL_RATE;
+    throw new Error(`Unsupported configuration: No fuel rate found for ${capacityKva}kVA ${fuelType} generator.`);
   }
   
   return rate;

@@ -497,9 +497,11 @@ function NewProposalPageInner() {
 
               <form onSubmit={handleQuickSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Customer Name</label>
+                  <label htmlFor="customer_name" className="text-xs font-bold text-slate-700 dark:text-slate-300">Customer Name</label>
                   <Input
                     type="text"
+                    id="customer_name"
+                    name="customer_name"
                     required
                     value={quickName}
                     onChange={e => setQuickName(e.target.value)}
@@ -509,9 +511,11 @@ function NewProposalPageInner() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">WhatsApp / Phone Number</label>
+                  <label htmlFor="phone" className="text-xs font-bold text-slate-700 dark:text-slate-300">WhatsApp / Phone Number</label>
                   <Input
                     type="tel"
+                    id="phone"
+                    name="phone"
                     value={quickPhone}
                     onChange={e => setQuickPhone(e.target.value)}
                     placeholder="e.g. +234 803 123 4567"
@@ -540,9 +544,11 @@ function NewProposalPageInner() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Price (₦)</label>
+                    <label htmlFor="price" className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Price (₦)</label>
                     <Input
                       type="number"
+                      id="price"
+                      name="price"
                       required
                       min={0}
                       value={quickPrice}

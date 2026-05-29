@@ -6,6 +6,7 @@ import { ProposalState, SizingResult } from './wizardStore';
 
 export interface SavedProposal {
   id: string;
+  client_token?: string;
   createdAt: number;
   updatedAt: number;
   proposal: ProposalState;
@@ -22,12 +23,14 @@ interface HistoryStore {
     proposal: ProposalState, 
     calculations?: SizingResult, 
     flowType?: 'quick' | 'wizard', 
-    step?: number
+    step?: number,
+    existingId?: string
   ) => string;
   duplicateProposal: (id: string) => string | undefined;
   deleteProposal: (id: string) => void;
   markSynced: (id: string) => void;
   updatePipelineStatus: (id: string, status: 'new' | 'sent' | 'negotiating' | 'closed' | 'lost') => void;
+  overwriteProposal: (proposal: SavedProposal) => void;
 }
 
 export const useHistoryStore = create<HistoryStore>()(
@@ -35,23 +38,51 @@ export const useHistoryStore = create<HistoryStore>()(
     (set, get) => ({
       savedProposals: [],
       
-      saveProposal: (proposal, calculations, flowType = 'wizard', step = 5) => {
-        const id = crypto.randomUUID();
+      saveProposal: (proposal, calculations, flowType = 'wizard', step = 5, existingId) => {
+        const state = get();
+        const existing = existingId ? state.savedProposals.find((p) => p.id === existingId) : undefined;
+        
+        let id: string;
+        let client_token: string;
+        let createdAt: number;
+        let pipelineStatus: 'new' | 'sent' | 'negotiating' | 'closed' | 'lost';
+        
+        if (existing) {
+          id = existing.id;
+          client_token = existing.client_token || crypto.randomUUID();
+          createdAt = existing.createdAt;
+          pipelineStatus = existing.pipelineStatus || 'new';
+        } else {
+          id = crypto.randomUUID();
+          client_token = crypto.randomUUID();
+          createdAt = Date.now();
+          pipelineStatus = 'new';
+        }
+        
         const newProposal: SavedProposal = {
           id,
-          createdAt: Date.now(),
+          client_token,
+          createdAt,
           updatedAt: Date.now(),
           proposal,
           calculations,
           synced: false,
           flowType,
           step,
-          pipelineStatus: 'new',
+          pipelineStatus,
         };
         
-        set((state) => ({
-          savedProposals: [newProposal, ...state.savedProposals],
-        }));
+        set((state) => {
+          let updatedList;
+          if (existing) {
+            updatedList = state.savedProposals.map((p) => p.id === id ? newProposal : p);
+          } else {
+            updatedList = [newProposal, ...state.savedProposals];
+          }
+          return {
+            savedProposals: updatedList,
+          };
+        });
         
         if (typeof window !== 'undefined') {
           try {
@@ -117,6 +148,21 @@ export const useHistoryStore = create<HistoryStore>()(
             p.id === id ? { ...p, synced: true } : p
           ),
         }));
+      },
+
+      overwriteProposal: (proposal) => {
+        set((state) => ({
+          savedProposals: state.savedProposals.map((p) =>
+            p.id === proposal.id ? proposal : p
+          ),
+        }));
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(`solarpro_proposal_${proposal.id}`, JSON.stringify(proposal));
+          } catch (e) {
+            console.error('Failed to write overwritten proposal to localStorage:', e);
+          }
+        }
       },
 
       updatePipelineStatus: (id, status) => {

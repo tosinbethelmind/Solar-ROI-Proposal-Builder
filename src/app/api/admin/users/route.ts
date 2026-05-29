@@ -1,0 +1,142 @@
+import { NextResponse } from 'next/server';
+import { createAdminClient } from '@/utils/supabaseAdmin';
+
+export async function GET(request: Request) {
+  const adminClient = createAdminClient();
+  const { searchParams } = new URL(request.url);
+
+  const search = searchParams.get('search') || '';
+  const companyFilter = searchParams.get('companyId') || '';
+  const statusFilter = searchParams.get('status') || ''; // 'active' | 'deactivated'
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = 20;
+  const offset = (page - 1) * limit;
+
+  try {
+    // 1. Fetch company members
+    let query = adminClient.from('company_members').select('*');
+
+    if (companyFilter) {
+      query = query.eq('company_id', companyFilter);
+    }
+    if (statusFilter === 'active') {
+      query = query.eq('active', true);
+    } else if (statusFilter === 'deactivated') {
+      query = query.eq('active', false);
+    }
+
+    const { data: members, error: membersError } = await query
+      .order('created_at', { ascending: false });
+
+    if (membersError) {
+      console.error('[Admin Users GET] Members lookup failed:', membersError.message);
+      return NextResponse.json({ error: 'Failed to retrieve company members.' }, { status: 500 });
+    }
+
+    // 2. Fetch companies to resolve company names
+    const { data: companies, error: companiesError } = await adminClient
+      .from('companies')
+      .select('id, name');
+
+    if (companiesError) {
+      console.error('[Admin Users GET] Companies lookup failed:', companiesError.message);
+    }
+
+    const companyMap: Record<string, string> = {};
+    companies?.forEach(c => {
+      companyMap[c.id] = c.name;
+    });
+
+    // 3. Fetch auth users to resolve emails
+    const { data: { users }, error: usersError } = await adminClient.auth.admin.listUsers();
+    const userEmailMap: Record<string, string> = {};
+    if (!usersError && users) {
+      users.forEach(u => {
+        userEmailMap[u.id] = u.email || 'N/A';
+      });
+    }
+
+    // 4. Map resolved records
+    const resolvedMembers = members?.map(m => {
+      const email = userEmailMap[m.user_id] || m.invited_email || 'N/A';
+      const companyName = companyMap[m.company_id] || 'Unknown Company';
+      
+      return {
+        ...m,
+        email,
+        company_name: companyName,
+        status: m.active !== false ? 'active' : 'deactivated'
+      };
+    }) || [];
+
+    // Filter by search query (email or company name) in memory
+    let finalMembers = resolvedMembers;
+    if (search) {
+      const lowerSearch = search.toLowerCase();
+      finalMembers = resolvedMembers.filter(m => 
+        m.email.toLowerCase().includes(lowerSearch) || 
+        m.company_name.toLowerCase().includes(lowerSearch) ||
+        (m.role || '').toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    // Paginate in memory after resolution
+    const paginatedMembers = finalMembers.slice(offset, offset + limit);
+
+    return NextResponse.json({
+      data: paginatedMembers,
+      meta: {
+        total: finalMembers.length,
+        page,
+        limit
+      }
+    });
+
+  } catch (error: any) {
+    console.error('[Admin Users GET] Unexpected Exception:', error);
+    return NextResponse.json({ error: error.message || 'An unexpected error occurred.' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  const adminClient = createAdminClient();
+
+  try {
+    const body = await request.json();
+    const { memberId, action } = body;
+
+    if (!memberId) {
+      return NextResponse.json({ error: 'Member ID is required.' }, { status: 400 });
+    }
+
+    if (action === 'deactivate') {
+      const { data, error } = await adminClient
+        .from('company_members')
+        .update({ active: false })
+        .eq('id', memberId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return NextResponse.json({ message: 'User deactivated successfully.', data });
+
+    } else if (action === 'activate') {
+      const { data, error } = await adminClient
+        .from('company_members')
+        .update({ active: true })
+        .eq('id', memberId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return NextResponse.json({ message: 'User activated successfully.', data });
+
+    } else {
+      return NextResponse.json({ error: 'Invalid user administrative action.' }, { status: 400 });
+    }
+
+  } catch (error: any) {
+    console.error('[Admin Users PUT] Exception caught:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update user parameters.' }, { status: 500 });
+  }
+}

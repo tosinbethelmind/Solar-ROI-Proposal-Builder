@@ -1,0 +1,157 @@
+{
+  "total": 30,
+  "passed": 30,
+  "failed": 0,
+  "results": [
+    {
+      "test": "Homepage loads",
+      "status": "PASS",
+      "detail": "Title: SolarPro \u2014 Proposal Builder for Nigerian Installers"
+    },
+    {
+      "test": "Homepage has hero H1",
+      "status": "PASS",
+      "detail": "H1: Build Branded Solar Proposals & Sizing Estimations Instantly"
+    },
+    {
+      "test": "Homepage nav links present",
+      "status": "PASS",
+      "detail": "Found 7 nav links"
+    },
+    {
+      "test": "/workspace loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "/workspace/crm does not 404",
+      "status": "PASS",
+      "detail": "Status: 200, contains404text: False"
+    },
+    {
+      "test": "/workspace/crm resolves to history content",
+      "status": "PASS",
+      "detail": "URL: http://localhost:3000/history, historyContent: False"
+    },
+    {
+      "test": "Workspace CRM nav link works",
+      "status": "PASS",
+      "detail": "Navigated to: http://localhost:3000/history"
+    },
+    {
+      "test": "/proposals/new loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "Navigated to Step 3 Hardware Selection (Tiers Page)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Tier selector elements present",
+      "status": "PASS",
+      "detail": "Found 2 tier elements. BudgetPkg: True, StandardPkg: True, PremiumPkg: True"
+    },
+    {
+      "test": "Tier buttons are interactive",
+      "status": "PASS",
+      "detail": "3 tier buttons found and clickable"
+    },
+    {
+      "test": "Navigated to Step 4 Pricing & ROI",
+      "status": "PASS",
+      "detail": "Landed on ROI step: True"
+    },
+    {
+      "test": "Test proposals seeded in localStorage",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "Seeded proposals visible on /history",
+      "status": "PASS",
+      "detail": "DeleteClient: True, KeepClient: True"
+    },
+    {
+      "test": "Delete buttons present",
+      "status": "PASS",
+      "detail": "Found 2 delete buttons"
+    },
+    {
+      "test": "Delete removes proposal from list",
+      "status": "PASS",
+      "detail": "DeletedGone: True, KeptRemains: True"
+    },
+    {
+      "test": "localStorage updated after delete",
+      "status": "PASS",
+      "detail": "Remaining IDs: ['test-keep-002']"
+    },
+    {
+      "test": "Homepage (/) loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "Workspace Dashboard (/workspace) loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "History Page (/history) loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "Client Estimator (/estimator) loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "Blog Page (/blog) loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "Pricing Page (/pricing) loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "Start Simple (/start-simple) loads",
+      "status": "PASS",
+      "detail": "Status: 200"
+    },
+    {
+      "test": "Homepage no horizontal overflow (mobile)",
+      "status": "PASS",
+      "detail": "scrollWidth: 375, viewportWidth: 375"
+    },
+    {
+      "test": "History page renders on mobile",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "test": "No critical console errors on /",
+      "status": "PASS",
+      "detail": "0 errors"
+    },
+    {
+      "test": "No critical console errors on /workspace",
+      "status": "PASS",
+      "detail": "0 errors"
+    },
+    {
+      "test": "No critical console errors on /history",
+      "status": "PASS",
+      "detail": "0 errors"
+    },
+    {
+      "test": "No critical console errors on /proposals/new",
+      "status": "PASS",
+      "detail": "0 errors"
+    }
+  ]
+}

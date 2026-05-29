@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useWizardStore } from '@/store/wizardStore';
 import { useHistoryStore } from '@/store/historyStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
@@ -16,6 +16,8 @@ import { useTracking } from '@/hooks/useTracking';
 
 export default function Step5Finalize({ onBack }: { onBack: () => void }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const loadedId = searchParams.get('load') || undefined;
   const { proposal, updateProposal, calculations } = useWizardStore();
   const { trackEvent } = useTracking();
   const { checkAccess, openUpgradeModal } = useSubscriptionStore();
@@ -283,7 +285,19 @@ ${footerStr}`;
     const currentCalculations = useWizardStore.getState().calculations;
     
     // Save to local history store (which returns a unique id)
-    const id = useHistoryStore.getState().saveProposal(currentProposalLatest, currentCalculations || undefined);
+    const id = useHistoryStore.getState().saveProposal(
+      currentProposalLatest, 
+      currentCalculations || undefined, 
+      'wizard', 
+      5, 
+      loadedId
+    );
+
+    // If it's a new save and was not already loaded, update URL so future clicks update rather than duplicate
+    if (id && !loadedId) {
+      router.replace(`/proposals/new?load=${id}`);
+    }
+
     return id;
   };
 
@@ -296,7 +310,9 @@ ${footerStr}`;
     if (!id) return;
     
     const currentProposal = useWizardStore.getState().proposal;
-    const shareUrl = `${window.location.origin}/proposals/print?id=${id}`;
+    const saved = useHistoryStore.getState().savedProposals.find(p => p.id === id);
+    const clientToken = saved?.client_token || id;
+    const shareUrl = `${window.location.origin}/proposal/${clientToken}`;
     const text = buildWhatsAppMessage(shareUrl);
     
     trackEvent('proposal_shared_whatsapp', { customer: currentProposal.customer_name, proposalId: id });
@@ -308,7 +324,9 @@ ${footerStr}`;
     if (!id) return;
     
     const currentProposal = useWizardStore.getState().proposal;
-    const shareUrl = `${window.location.origin}/proposals/print?id=${id}`;
+    const saved = useHistoryStore.getState().savedProposals.find(p => p.id === id);
+    const clientToken = saved?.client_token || id;
+    const shareUrl = `${window.location.origin}/proposal/${clientToken}`;
     await navigator.clipboard.writeText(shareUrl);
     setCopiedLink(true);
     trackEvent('proposal_link_copied', { customer: currentProposal.customer_name, proposalId: id });
@@ -332,7 +350,9 @@ ${footerStr}`;
       setIsGenerating(false);
       return;
     }
-    const shareUrl = `${window.location.origin}/proposals/print?id=${id}`;
+    const saved = useHistoryStore.getState().savedProposals.find(p => p.id === id);
+    const clientToken = saved?.client_token || id;
+    const shareUrl = `${window.location.origin}/proposal/${clientToken}`;
     const msg = buildWhatsAppMessage(shareUrl);
     await navigator.clipboard.writeText(msg);
     setCopied(true);

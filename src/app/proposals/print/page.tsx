@@ -10,6 +10,7 @@ import { fetchUSDNGNRate } from '@/utils/exchangeRate';
 
 export interface PrintProposalData extends Partial<ProposalState> {
   id?: string;
+  client_token?: string;
   lockedFXRate?: number;
   fxRateLockedAt?: string;
   installer_primary_color?: string;
@@ -52,7 +53,7 @@ export default function PrintProposalPage() {
     const localProp = savedProposals.find(p => p.id === id);
     if (localProp) {
       return {
-        initialProposal: { ...localProp.proposal, id: localProp.id },
+        initialProposal: { ...localProp.proposal, id: localProp.id, client_token: localProp.client_token },
         initialCalculations: localProp.calculations,
         initialLoading: false
       };
@@ -106,7 +107,8 @@ export default function PrintProposalPage() {
     if (localProp) {
       setProposal({
         ...localProp.proposal,
-        id: localProp.id
+        id: localProp.id,
+        client_token: localProp.client_token
       });
       setCalculations(localProp.calculations || null);
       setLoading(false);
@@ -128,6 +130,7 @@ export default function PrintProposalPage() {
           // Reconstruct the proposal & calculations structures perfectly
           const reconstructedProposal: PrintProposalData = {
             id: data.id,
+            client_token: data.client_token,
             customer_name: data.customer_name,
             customer_email: data.customer_email || undefined,
             customer_phone: data.customer_phone || undefined,
@@ -274,7 +277,8 @@ export default function PrintProposalPage() {
 
   const handleWhatsAppShare = () => {
     if (!proposal || !calculations) return;
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const clientToken = proposal.client_token || proposal.id;
+    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/proposal/${clientToken}` : '';
     const text = `Hi ${proposal.customer_name},\n\nHere is a summary of your Solar ROI Proposal from ${proposal.installer_tagline || 'us'}:\n\n- System: ${calculations.inverterKva}kVA Inverter with ${calculations.batteryConfigString} Battery Bank\n- Solar Array: ${(calculations.panelCount * calculations.panelUnitWp).toLocaleString()}Wp\n- Estimated Turnkey Price: ₦${(proposal.final_quoted_price_ngn || 0).toLocaleString()}\n\n🔗 View full dynamic proposal: ${shareUrl}`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
