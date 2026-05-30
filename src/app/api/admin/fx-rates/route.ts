@@ -95,16 +95,31 @@ export async function POST(request: Request) {
 
     // 1. Fetch live official CBN rates for boundary verification
     let officialRate = 1530; // fallback standard rate
+    let apiSuccess = false;
     try {
       const response = await fetch('https://open.er-api.com/v6/latest/USD', { next: { revalidate: 60 } });
       if (response.ok) {
         const data = await response.json();
         if (data && data.rates && data.rates.NGN) {
           officialRate = data.rates.NGN;
+          apiSuccess = true;
         }
       }
     } catch (e) {
       console.warn('Could not query official USD/NGN exchange API for boundary verification:', e);
+    }
+
+    // Try dynamic database recovery from previous override settings if API failed
+    if (!apiSuccess) {
+      try {
+        const fallbackSettings = readFXSettings();
+        if (fallbackSettings && fallbackSettings.customRate) {
+          officialRate = fallbackSettings.customRate;
+          console.log('Dynamic Boundary Recovery: Recovered last overridden rate for validation:', officialRate);
+        }
+      } catch (err) {
+        console.error('Failed to read dynamic boundary recovery settings:', err);
+      }
     }
 
     // Set safety boundaries at 60% and 150% of the official live rate

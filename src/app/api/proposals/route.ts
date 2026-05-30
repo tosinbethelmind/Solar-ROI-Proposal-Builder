@@ -105,6 +105,9 @@ export async function POST(request: Request) {
     }
 
     // 2. Insert proposal mapped to company
+    const currentFXRate = calculations?.fxRate || 1600;
+    const currentDieselPrice = calculations?.dieselPrice || 1400;
+
     const payload = {
       id: id || undefined,
       company_id: member.company_id,
@@ -116,8 +119,19 @@ export async function POST(request: Request) {
       peak_sun_hours: proposal.peak_sun_hours || 4.2,
       selected_tier: proposal.selected_tier || 'standard',
       final_quoted_price_ngn: proposal.final_quoted_price_ngn || 0,
-      calculations_snapshot: calculations || null,
-      status: 'draft'
+      status: 'draft',
+      
+      // Hardened Snapshots: Lock parameters to guarantee calculation reproducibility
+      calculations_snapshot: calculations ? {
+        ...calculations,
+        locked_at: new Date().toISOString(),
+        financial_parameters: {
+          fx_rate_usd_ngn: currentFXRate,
+          diesel_cost_per_liter: currentDieselPrice,
+          grid_tariff_kwh: proposal.nepa_tariff_per_kwh || 209.5,
+          battery_replacement_reserve: calculations.batteryReplacementReserve || 0.15
+        }
+      } : null
     }
 
     const { data: newProposal, error: insertError } = await supabase
@@ -125,6 +139,7 @@ export async function POST(request: Request) {
       .insert(payload)
       .select('*')
       .single()
+
 
     if (insertError) {
       console.error('[API proposals POST] Insert query failed:', insertError.message)
