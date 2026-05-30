@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
+import { createAdminClient } from '@/utils/supabaseAdmin';
+import { createClient } from '@/lib/supabase/server';
 
 // Local configuration path for persisting global FX rate variables in the workspace
 const settingsFilePath = path.join(process.cwd(), 'src', 'utils', 'fxSettings.json');
@@ -44,6 +46,16 @@ function writeFXSettings(settings: any) {
   }
 }
 
+// Helper to verify if user is platform administrator
+async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
+  const { data, error } = await adminClient
+    .from('platform_admins')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return !error && !!data;
+}
+
 export async function GET() {
   const settings = readFXSettings();
 
@@ -83,9 +95,23 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const adminClient = createAdminClient();
+  const userClient = await createClient();
+
   try {
+    // 1. Enforce Authentication & Admin Authorization
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+    }
+
+    const isAdmin = await checkPlatformAdmin(user.id, adminClient);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
+    }
+
     const body = await request.json();
-    const { rate, isOverrideActive, updatedBy, note } = body;
+    const { rate, isOverrideActive, note } = body;
 
     if (!rate || rate <= 0) {
       return NextResponse.json({ error: 'Valid custom exchange rate is required.' }, { status: 400 });
@@ -93,7 +119,7 @@ export async function POST(request: Request) {
 
     const inputRate = parseFloat(rate);
 
-    // 1. Fetch live official CBN rates for boundary verification
+    // 2. Fetch live official CBN rates for boundary verification
     let officialRate = 1530; // fallback standard rate
     let apiSuccess = false;
     try {
@@ -137,14 +163,14 @@ export async function POST(request: Request) {
     // Create new history entry
     const newHistoryEntry = {
       rate: inputRate,
-      updatedBy: updatedBy || 'admin@solarpro.com',
+      updatedBy: user.email || 'admin@solarpro.com',
       updatedAt: new Date().toISOString(),
       note: note || 'Manual administrative override'
     };
 
     settings.customRate = inputRate;
     settings.isOverrideActive = isOverrideActive !== undefined ? isOverrideActive : true;
-    settings.lastUpdatedBy = updatedBy || 'admin@solarpro.com';
+    settings.lastUpdatedBy = user.email || 'admin@solarpro.com';
     settings.lastUpdatedAt = new Date().toISOString();
     
     if (!settings.history) settings.history = [];

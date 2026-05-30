@@ -2,9 +2,31 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabaseAdmin';
 import { createClient } from '@/lib/supabase/server';
 
+// Helper to verify if user is platform administrator
+async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
+  const { data, error } = await adminClient
+    .from('platform_admins')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return !error && !!data;
+}
+
 export async function GET(request: Request) {
   const adminClient = createAdminClient();
+  const userClient = await createClient();
   const { searchParams } = new URL(request.url);
+
+  // 1. Enforce Authentication & Admin Authorization
+  const { data: { user }, error: authError } = await userClient.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  }
+
+  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
+  }
 
   const search = searchParams.get('search') || '';
   const companyFilter = searchParams.get('companyId') || '';
@@ -14,7 +36,7 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
-    // 1. Fetch company members
+    // 2. Fetch company members
     let query = adminClient.from('company_members').select('*');
 
     if (companyFilter) {
@@ -34,7 +56,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to retrieve company members.' }, { status: 500 });
     }
 
-    // 2. Fetch companies to resolve company names
+    // 3. Fetch companies to resolve company names
     const { data: companies, error: companiesError } = await adminClient
       .from('companies')
       .select('id, name');
@@ -48,7 +70,7 @@ export async function GET(request: Request) {
       companyMap[c.id] = c.name;
     });
 
-    // 3. Fetch auth users to resolve emails
+    // 4. Fetch auth users to resolve emails
     const { data: { users }, error: usersError } = await adminClient.auth.admin.listUsers();
     const userEmailMap: Record<string, string> = {};
     if (!usersError && users) {
@@ -57,7 +79,7 @@ export async function GET(request: Request) {
       });
     }
 
-    // 4. Map resolved records
+    // 5. Map resolved records
     const resolvedMembers = members?.map(m => {
       const email = userEmailMap[m.user_id] || m.invited_email || 'N/A';
       const companyName = companyMap[m.company_id] || 'Unknown Company';
@@ -104,10 +126,15 @@ export async function PUT(request: Request) {
   const userClient = await createClient();
 
   try {
-    // Check currently authenticated session user
+    // 1. Enforce Authentication & Admin Authorization
     const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+    }
+
+    const isAdmin = await checkPlatformAdmin(user.id, adminClient);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -121,7 +148,7 @@ export async function PUT(request: Request) {
       // Lookup the target user_id to prevent self-deactivation
       const { data: targetMember, error: lookupError } = await adminClient
         .from('company_members')
-        .select('user_id, email')
+        .select('user_id, email, role')
         .eq('id', memberId)
         .single();
 
@@ -129,10 +156,36 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: 'Failed to verify member identity.' }, { status: 404 });
       }
 
+      // Check Self-Deactivation Block
       if (targetMember.user_id === user.id) {
         return NextResponse.json({ 
           error: 'Safety Block: You are currently logged in as this user. To prevent accidental platform lockout, deactivating your active administrative session is strictly prohibited.' 
         }, { status: 400 });
+      }
+
+      // Check if target is a Platform Admin to enforce Last-Admin Guard
+      const isTargetAdmin = await checkPlatformAdmin(targetMember.user_id, adminClient);
+      if (isTargetAdmin) {
+        // Fetch all platform admins to count active ones
+        const { data: allAdmins, error: adminFetchError } = await adminClient
+          .from('platform_admins')
+          .select('user_id');
+
+        if (!adminFetchError && allAdmins) {
+          // Resolve which of these are currently active members
+          const adminUserIds = allAdmins.map((a: any) => a.user_id);
+          const { data: activeAdminMembers, error: activeAdminError } = await adminClient
+            .from('company_members')
+            .select('user_id')
+            .in('user_id', adminUserIds)
+            .eq('active', true);
+
+          if (!activeAdminError && activeAdminMembers && activeAdminMembers.length <= 1) {
+            return NextResponse.json({
+              error: 'Safety Block: This administrator is the final active platform administrator. Accidental deactivation would orphan platform governance.'
+            }, { status: 400 });
+          }
+        }
       }
 
       const { data, error } = await adminClient
@@ -165,4 +218,3 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: error.message || 'Failed to update user parameters.' }, { status: 500 });
   }
 }
-
