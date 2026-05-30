@@ -46,10 +46,9 @@ export default function SolarProHomepage() {
             </div>
             <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarPro</span>
           </Link>
-
           <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600 dark:text-slate-400">
             <Link href="#why-solarpro" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Why SolarPro</Link>
-            <Link href="#comparison" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Start Simple vs Pro</Link>
+            <Link href="#pricing-tiers" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors text-teal-650 dark:text-teal-400 font-extrabold">Pricing Plans</Link>
             <Link href="#storm-safety" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Safety Standard</Link>
             <Link href="/blog" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Energy Insights</Link>
           </nav>
@@ -264,266 +263,6 @@ export default function SolarProHomepage() {
         </div>
       </section>
 
-      {/* ═══ Progressive Disclosure: Free Estimator vs Start Simple vs Workspace Pro ═══ */}
-      <section id="comparison" className="bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-850 py-16 sm:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
-          
-          <div className="text-center space-y-3">
-            <Badge className="bg-teal-500/10 text-teal-655 border border-teal-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">Progressive offer tiers</Badge>
-            <h2 className="text-2xl sm:text-4xl font-black text-slate-850 dark:text-slate-50">Select Your Sizing Pathway</h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto font-medium">
-              We offer targeted modules designed precisely for your technical requirements and local project constraints.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* 1. Homeowner Free Estimator */}
-            <Card className="rounded-3xl border border-emerald-500/20 bg-emerald-50/10 dark:bg-emerald-950/5 p-6 sm:p-8 flex flex-col justify-between gap-6 hover:shadow-md hover:border-emerald-500/30 transition-all duration-300 relative overflow-hidden">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-655 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-wider">
-                  🏡 100% Free Forever
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black">Homeowner Sizer</h3>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                  Ideal for homeowners looking to escape high Band A grid electricity tariffs or volatile diesel generator fuel bills.
-                </p>
-                <div className="py-2 border-y border-slate-100 dark:border-slate-800">
-                  <span className="text-2xl font-extrabold text-slate-900 dark:text-white">₦0</span>
-                  <span className="text-xs text-slate-400 font-bold ml-1.5">No login required</span>
-                </div>
-                <div className="space-y-2.5 pt-2">
-                  {[
-                    "Interactive household load selector",
-                    "Real-time Naira monthly fuel offset modeler",
-                    "Battery specifications modeler (Gel vs Lithium)",
-                    "Download simple PDF report to share with installers"
-                  ].map((feat, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs font-bold text-slate-655 dark:text-slate-350">
-                      <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Link href="/estimator">
-                <Button size="lg" className="w-full bg-gradient-to-r from-emerald-600 to-teal-650 hover:from-emerald-750 hover:to-teal-750 text-white rounded-2xl text-xs font-black h-11 flex items-center justify-center gap-2 shadow-sm border-none">
-                  Calculate Savings Free <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
-            </Card>
-
-            {/* 2. Start Simple Package */}
-            <Card className="rounded-3xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/20 p-6 sm:p-8 flex flex-col justify-between gap-6 hover:shadow-md hover:border-teal-500/20 transition-all duration-300">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-500/10 text-teal-655 dark:text-teal-400 rounded-full text-[10px] font-black uppercase tracking-wider">
-                  ⚡ Fast Field Shortcut
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black">Start Simple</h3>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                  Ideal for installers running active property walkthroughs who need to outline a budget range in under 60 seconds.
-                </p>
-                <div className="py-2 border-y border-slate-100 dark:border-slate-800">
-                  <span className="text-2xl font-extrabold text-slate-900 dark:text-white">Free</span>
-                  <span className="text-xs text-slate-400 font-bold ml-1.5">For active site surveys</span>
-                </div>
-                <div className="space-y-2.5 pt-2">
-                  {[
-                    "Standard load presets (1.2kVA / 3kVA / 5kVA)",
-                    "Quick-tap common appliance bundles & sizer",
-                    "Instant local system cost estimates (₦900k - ₦5.5M)",
-                    "1-click transfer to full workspace proposal wizard"
-                  ].map((feat, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs font-bold text-slate-655 dark:text-slate-350">
-                      <CheckCircle className="w-4 h-4 text-teal-500 shrink-0" />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Link href="/start-simple">
-                <Button size="lg" variant="outline" className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-250 font-extrabold text-xs rounded-2xl h-11 flex items-center justify-center gap-2">
-                  Launch Quick Sizer <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
-            </Card>
-
-            {/* 3. Pro Workspace */}
-            <Card className="rounded-3xl border border-teal-500/30 bg-slate-900 text-white p-6 sm:p-8 flex flex-col justify-between gap-6 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-500/20 text-teal-300 rounded-full text-[10px] font-black uppercase tracking-wider">
-                  🛠️ Professional Suite
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black">Pro Workspace</h3>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-                  Ideal for established solar businesses requiring multi-tier option pricing comparisons and professional branded PDF quote generators.
-                </p>
-                <div className="py-2 border-y border-white/10">
-                  <span className="text-2xl font-extrabold text-white">₦15,000</span>
-                  <span className="text-xs text-slate-400 font-bold ml-1.5">per month</span>
-                </div>
-                <div className="space-y-2.5 pt-2">
-                  {[
-                    "Granular appliance load lists and surge indicators",
-                    "Battery specifications customized by client option",
-                    "Branded PDF builder with customizable markup, VAT, & labor",
-                    "CRM pipeline tracking with multi-user permissions"
-                  ].map((feat, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                      <CheckCircle className="w-4 h-4 text-teal-400 shrink-0" />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Link href="/workspace">
-                <Button size="lg" className="w-full bg-teal-650 hover:bg-teal-750 text-white rounded-2xl text-xs font-black h-11 flex items-center justify-center gap-2 shadow-md border-none">
-                  Open Workspace Pro <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ Featured Insights Bento Grid (Blog Section) ═══ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-          <div className="space-y-3">
-            <Badge className="bg-teal-500/10 text-teal-650 border border-teal-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">Data &amp; math</Badge>
-            <h2 className="text-2xl sm:text-4xl font-black text-slate-850 dark:text-slate-50">From the SolarPro Blog</h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md font-medium">
-              Read transparent financial breakdowns and regulatory checklists prepared by our engineering insights team.
-            </p>
-          </div>
-          <Link href="/blog">
-            <Button variant="ghost" className="text-xs font-black text-teal-650 hover:bg-teal-500/10 rounded-xl flex items-center gap-1 shrink-0">
-              View All Insights <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {BLOG_ARTICLES.slice(0, 3).map((article) => (
-            <Card 
-              key={article.slug} 
-              className="group rounded-3xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md hover:border-teal-500/20 transition-all duration-300 flex flex-col justify-between"
-            >
-              <div className="p-5 sm:p-6 space-y-4">
-                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-450">
-                  <span className="text-teal-655 dark:text-teal-400 font-extrabold">{article.pillar}</span>
-                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {article.readTime}</span>
-                </div>
-
-                <Link href={`/blog/${article.slug}`}>
-                  <h3 className="font-extrabold text-sm sm:text-base leading-snug text-slate-850 dark:text-slate-550 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-2">
-                    {article.title}
-                  </h3>
-                </Link>
-
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium line-clamp-3">
-                  {article.description}
-                </p>
-              </div>
-
-              <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-3 border-t border-slate-100 dark:border-slate-850 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-500">{article.date}</span>
-                <Link href={`/blog/${article.slug}`}>
-                  <Button variant="ghost" size="sm" className="text-xs font-black text-teal-650 group-hover:bg-teal-500/10 rounded-xl flex items-center gap-1">
-                    Read <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* Not ready to read? Homeowner instant CTA strip */}
-        <div className="bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-teal-500/10 rounded-3xl border border-teal-500/20 p-6 text-center space-y-4 max-w-4xl mx-auto mt-8">
-          <p className="text-slate-800 dark:text-slate-200 text-sm font-bold leading-normal">
-            ⚡ Not ready to read full insights? Estimate your solar capacity and generator fuel savings in 2 minutes.
-          </p>
-          <Link href="/estimator">
-            <Button className="bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs px-6 rounded-xl shadow-md h-10 border-none">
-              🏡 Launch Free Homeowner Estimator ➔
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* ═══ Lagos storm Compliance & Regulatory Safety Spotlight ═══ */}
-      <section id="storm-safety" className="bg-slate-900 text-white py-16 sm:py-24 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-550/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-emerald-450/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-6">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-teal-500/20 text-teal-350 border border-teal-500/30">
-              🛠️ Lagos Safety Compliant
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-snug">
-              Lagos Structural Safety &amp; Wind Permitting Standard
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
-              Lekki, Victoria Island, and coastal Lagos experience severe wind shear during thunderstorms. To safeguard properties and void warranties, SolarPro enforces structural roof guidelines.
-            </p>
-
-            <div className="space-y-4">
-              {[
-                { title: "Aluminum Roof Weight Limit", desc: "Dead load must remain below 15kg/sqm to prevent beam sag and metal truss warping." },
-                { title: "epdm Purling Mounting", desc: "Mounting screws must attach directly to wood/steel purlins, locked with watertight Sika polyurethane sealants." },
-                { title: "Tenant Ownership Rights", desc: "Our templates include signed Landlord Addendums identifying removable solar assets." }
-              ].map((step, idx) => (
-                <div key={idx} className="flex gap-3">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-teal-500/20 text-teal-400 font-bold text-xs uppercase">
-                    {idx + 1}
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-xs text-white">{step.title}</h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Card className="border-teal-500/20 bg-white/5 border-white/5 backdrop-blur-lg text-white shadow-xl rounded-3xl p-6 sm:p-8 space-y-6">
-            <h3 className="font-extrabold text-sm sm:text-base text-teal-300 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-teal-400" /> Installer Compliance checklist
-            </h3>
-            <p className="text-[11px] text-slate-300 leading-relaxed">
-              Every proposal generated through SolarPro includes a dedicated safety permit annex highlighting these regulatory compliance requirements for Lagos State grid integrations.
-            </p>
-            <div className="h-px bg-white/10" />
-            <div className="space-y-3">
-              {[
-                "LSEB certification verified for grid-tie hybrid inverters",
-                "EPDM waterproofing washers deployed on aluminum fasteners",
-                "Wind shear deflection angle configured under 15 degrees",
-                "Polyurethane polyurethane sealant SikaFlex applied to penetrations"
-              ].map((text, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-250 leading-relaxed">
-                  <Check className="w-4 h-4 text-emerald-450 shrink-0 mt-0.5" />
-                  <span>{text}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-col gap-2">
-              <Link href="/blog/lagos-solar-permitting-compliance-checklist" className="block w-full">
-                <Button className="w-full bg-teal-600 hover:bg-teal-750 text-white rounded-xl font-bold text-xs py-2 h-10 border-none">
-                  Read Compliance Guide
-                </Button>
-              </Link>
-              <Link href="/estimator" className="block w-full">
-                <Button variant="outline" className="w-full border-teal-500/30 text-teal-350 hover:bg-teal-950/40 hover:text-white rounded-xl font-bold text-xs py-2 h-10">
-                  🏡 Check Solar Savings Before Booking Installer
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        </div>
-      </section>
-
       {/* ═══ SaaS Subscription Pricing Tiers Section ═══ */}
       <section id="pricing-tiers" className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-12">
         <div className="text-center space-y-3">
@@ -682,7 +421,7 @@ export default function SolarProHomepage() {
 
                   <ul className="space-y-2">
                     {plan.features.map((feat, fIdx) => (
-                      <li key={fIdx} className="flex items-start gap-2 text-[10px] font-bold text-slate-650 dark:text-slate-350">
+                      <li key={fIdx} className="flex items-start gap-2 text-[10px] font-bold text-slate-655 dark:text-slate-350">
                         <Check className="w-3 h-3 text-teal-500 shrink-0 mt-0.5" />
                         <span>{feat}</span>
                       </li>
@@ -709,6 +448,146 @@ export default function SolarProHomepage() {
           })}
         </div>
       </section>
+
+      {/* ═══ Featured Insights Bento Grid (Blog Section) ═══ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+          <div className="space-y-3">
+            <Badge className="bg-teal-500/10 text-teal-650 border border-teal-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">Data &amp; math</Badge>
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-850 dark:text-slate-50">From the SolarPro Blog</h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md font-medium">
+              Read transparent financial breakdowns and regulatory checklists prepared by our engineering insights team.
+            </p>
+          </div>
+          <Link href="/blog">
+            <Button variant="ghost" className="text-xs font-black text-teal-650 hover:bg-teal-500/10 rounded-xl flex items-center gap-1 shrink-0">
+              View All Insights <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {BLOG_ARTICLES.slice(0, 3).map((article) => (
+            <Card 
+              key={article.slug} 
+              className="group rounded-3xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md hover:border-teal-500/20 transition-all duration-300 flex flex-col justify-between"
+            >
+              <div className="p-5 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-450">
+                  <span className="text-teal-655 dark:text-teal-400 font-extrabold">{article.pillar}</span>
+                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {article.readTime}</span>
+                </div>
+
+                <Link href={`/blog/${article.slug}`}>
+                  <h3 className="font-extrabold text-sm sm:text-base leading-snug text-slate-850 dark:text-slate-550 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-2">
+                    {article.title}
+                  </h3>
+                </Link>
+
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium line-clamp-3">
+                  {article.description}
+                </p>
+              </div>
+
+              <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-3 border-t border-slate-100 dark:border-slate-850 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-500">{article.date}</span>
+                <Link href={`/blog/${article.slug}`}>
+                  <Button variant="ghost" size="sm" className="text-xs font-black text-teal-650 group-hover:bg-teal-500/10 rounded-xl flex items-center gap-1">
+                    Read <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Not ready to read? Homeowner instant CTA strip */}
+        <div className="bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-teal-500/10 rounded-3xl border border-teal-500/20 p-6 text-center space-y-4 max-w-4xl mx-auto mt-8">
+          <p className="text-slate-800 dark:text-slate-200 text-sm font-bold leading-normal">
+            ⚡ Not ready to read full insights? Estimate your solar capacity and generator fuel savings in 2 minutes.
+          </p>
+          <Link href="/estimator">
+            <Button className="bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs px-6 rounded-xl shadow-md h-10 border-none">
+              🏡 Launch Free Homeowner Estimator ➔
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* ═══ Lagos storm Compliance & Regulatory Safety Spotlight ═══ */}
+      <section id="storm-safety" className="bg-slate-900 text-white py-16 sm:py-24 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-550/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-emerald-450/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          <div className="space-y-6">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-teal-500/20 text-teal-350 border border-teal-500/30">
+              🛠️ Lagos Safety Compliant
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-snug">
+              Lagos Structural Safety &amp; Wind Permitting Standard
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+              Lekki, Victoria Island, and coastal Lagos experience severe wind shear during thunderstorms. To safeguard properties and void warranties, SolarPro enforces structural roof guidelines.
+            </p>
+
+            <div className="space-y-4">
+              {[
+                { title: "Aluminum Roof Weight Limit", desc: "Dead load must remain below 15kg/sqm to prevent beam sag and metal truss warping." },
+                { title: "epdm Purling Mounting", desc: "Mounting screws must attach directly to wood/steel purlins, locked with watertight Sika polyurethane sealants." },
+                { title: "Tenant Ownership Rights", desc: "Our templates include signed Landlord Addendums identifying removable solar assets." }
+              ].map((step, idx) => (
+                <div key={idx} className="flex gap-3">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-teal-500/20 text-teal-400 font-bold text-xs uppercase">
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-xs text-white">{step.title}</h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Card className="border-teal-500/20 bg-white/5 border-white/5 backdrop-blur-lg text-white shadow-xl rounded-3xl p-6 sm:p-8 space-y-6">
+            <h3 className="font-extrabold text-sm sm:text-base text-teal-300 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-teal-400" /> Installer Compliance checklist
+            </h3>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Every proposal generated through SolarPro includes a dedicated safety permit annex highlighting these regulatory compliance requirements for Lagos State grid integrations.
+            </p>
+            <div className="h-px bg-white/10" />
+            <div className="space-y-3">
+              {[
+                "LSEB certification verified for grid-tie hybrid inverters",
+                "EPDM waterproofing washers deployed on aluminum fasteners",
+                "Wind shear deflection angle configured under 15 degrees",
+                "Polyurethane polyurethane sealant SikaFlex applied to penetrations"
+              ].map((text, idx) => (
+                <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-250 leading-relaxed">
+                  <Check className="w-4 h-4 text-emerald-450 shrink-0 mt-0.5" />
+                  <span>{text}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-2">
+              <Link href="/blog/lagos-solar-permitting-compliance-checklist" className="block w-full">
+                <Button className="w-full bg-teal-600 hover:bg-teal-750 text-white rounded-xl font-bold text-xs py-2 h-10 border-none">
+                  Read Compliance Guide
+                </Button>
+              </Link>
+              <Link href="/estimator" className="block w-full">
+                <Button variant="outline" className="w-full border-teal-500/30 text-teal-350 hover:bg-teal-950/40 hover:text-white rounded-xl font-bold text-xs py-2 h-10">
+                  🏡 Check Solar Savings Before Booking Installer
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+
 
       {/* ═══ Pricing teaser & Operational Suite ═══ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-12">
