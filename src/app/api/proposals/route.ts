@@ -130,6 +130,16 @@ export async function POST(request: Request) {
           diesel_cost_per_liter: currentDieselPrice,
           grid_tariff_kwh: proposal.nepa_tariff_per_kwh || 209.5,
           battery_replacement_reserve: calculations.batteryReplacementReserve || 0.15
+        },
+        regulatory: {
+          nerc_tariff_class: proposal.nerc_tariff_class || 'R2A',
+          disco_region: proposal.disco_region || 'Eko_DISCO',
+          grid_availability_assumption: proposal.grid_availability_assumption !== undefined ? proposal.grid_availability_assumption : 0.35
+        },
+        equipment_sourcing: {
+          import_duty_rate: proposal.import_duty_rate !== undefined ? proposal.import_duty_rate : 0.05,
+          vat_rate: proposal.vat_rate !== undefined ? proposal.vat_rate : 0.075,
+          customs_clearing_assumptions: proposal.customs_clearing_assumptions || 'Lagos_Apapa_Port'
         }
       } : null
     }
