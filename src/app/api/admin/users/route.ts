@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabaseAdmin';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
   const adminClient = createAdminClient();
@@ -100,8 +101,15 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   const adminClient = createAdminClient();
+  const userClient = await createClient();
 
   try {
+    // Check currently authenticated session user
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { memberId, action } = body;
 
@@ -110,6 +118,23 @@ export async function PUT(request: Request) {
     }
 
     if (action === 'deactivate') {
+      // Lookup the target user_id to prevent self-deactivation
+      const { data: targetMember, error: lookupError } = await adminClient
+        .from('company_members')
+        .select('user_id, email')
+        .eq('id', memberId)
+        .single();
+
+      if (lookupError || !targetMember) {
+        return NextResponse.json({ error: 'Failed to verify member identity.' }, { status: 404 });
+      }
+
+      if (targetMember.user_id === user.id) {
+        return NextResponse.json({ 
+          error: 'Safety Block: You are currently logged in as this user. To prevent accidental platform lockout, deactivating your active administrative session is strictly prohibited.' 
+        }, { status: 400 });
+      }
+
       const { data, error } = await adminClient
         .from('company_members')
         .update({ active: false })
@@ -140,3 +165,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: error.message || 'Failed to update user parameters.' }, { status: 500 });
   }
 }
+

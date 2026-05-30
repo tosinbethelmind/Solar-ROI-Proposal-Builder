@@ -91,17 +91,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Valid custom exchange rate is required.' }, { status: 400 });
     }
 
+    const inputRate = parseFloat(rate);
+
+    // 1. Fetch live official CBN rates for boundary verification
+    let officialRate = 1530; // fallback standard rate
+    try {
+      const response = await fetch('https://open.er-api.com/v6/latest/USD', { next: { revalidate: 60 } });
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.rates && data.rates.NGN) {
+          officialRate = data.rates.NGN;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not query official USD/NGN exchange API for boundary verification:', e);
+    }
+
+    // Set safety boundaries at 60% and 150% of the official live rate
+    const lowerBound = Math.round(officialRate * 0.6);
+    const upperBound = Math.round(officialRate * 1.5);
+
+    if (inputRate < lowerBound || inputRate > upperBound) {
+      return NextResponse.json({
+        error: `Safety Block: The custom exchange rate ₦${inputRate.toLocaleString()} is outside the permitted boundary (₦${lowerBound.toLocaleString()} - ₦${upperBound.toLocaleString()}) relative to live CBN official rate (₦${Math.round(officialRate).toLocaleString()}). Please verify you didn't miss or add an extra zero.`
+      }, { status: 400 });
+    }
+
     const settings = readFXSettings();
     
     // Create new history entry
     const newHistoryEntry = {
-      rate: parseFloat(rate),
+      rate: inputRate,
       updatedBy: updatedBy || 'admin@solarpro.com',
       updatedAt: new Date().toISOString(),
       note: note || 'Manual administrative override'
     };
 
-    settings.customRate = parseFloat(rate);
+    settings.customRate = inputRate;
     settings.isOverrideActive = isOverrideActive !== undefined ? isOverrideActive : true;
     settings.lastUpdatedBy = updatedBy || 'admin@solarpro.com';
     settings.lastUpdatedAt = new Date().toISOString();
