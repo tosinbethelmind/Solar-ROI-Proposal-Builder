@@ -137,16 +137,50 @@ export default function WorkspaceDashboardPage() {
   }, []);
 
   const handleCreateQuickProposal = () => {
-    // Quota check for Starter plan: max 3 proposals per month
-    if (currentTier === 'starter' && !isTrial && savedProposals.length >= 3) {
-      openUpgradeModal('wizardFlow');
+    // Exact subscription-based proposal quota check
+    const currentCount = savedProposals.length;
+    
+    if (isTrial && currentCount >= 2) {
+      openUpgradeModal(null);
       return;
     }
+    if (currentTier === 'free' && currentCount >= 1) {
+      openUpgradeModal(null);
+      return;
+    }
+    if (currentTier === 'starter' && currentCount >= 10) {
+      openUpgradeModal(null);
+      return;
+    }
+    if ((currentTier === 'pro' || currentTier === 'business') && currentCount >= 40) {
+      openUpgradeModal(null);
+      return;
+    }
+
     reset();
     router.push('/proposals/new?type=quick');
   };
 
   const handleCreateFullWizard = () => {
+    // Quota check
+    const currentCount = savedProposals.length;
+    if (isTrial && currentCount >= 2) {
+      openUpgradeModal(null);
+      return;
+    }
+    if (currentTier === 'free' && currentCount >= 1) {
+      openUpgradeModal(null);
+      return;
+    }
+    if (currentTier === 'starter' && currentCount >= 10) {
+      openUpgradeModal(null);
+      return;
+    }
+    if ((currentTier === 'pro' || currentTier === 'business') && currentCount >= 40) {
+      openUpgradeModal(null);
+      return;
+    }
+
     if (!checkAccess('wizardFlow').unlocked) {
       openUpgradeModal('wizardFlow');
       return;
@@ -275,6 +309,67 @@ export default function WorkspaceDashboardPage() {
             </div>
             <Button size="sm" className="bg-amber-600 hover:bg-amber-750 text-white shrink-0 font-bold rounded-xl text-xs py-1" onClick={() => router.push('/settings')}>
               Setup Profile
+            </Button>
+          </div>
+        )}
+
+        {/* ═══ Subscription Quota Alerts ═══ */}
+        {isTrial && savedProposals.length === 1 && (
+          <div className="p-4 bg-teal-500/10 border border-teal-500/35 text-teal-900 dark:text-teal-300 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-base">💡</span>
+              <span><strong>Trial Active:</strong> You have used <strong>1 of 2</strong> free proposals on your Pro Trial. Upgrade to Starter or Pro to save unlimited draft proposals.</span>
+            </div>
+            <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
+              Upgrade Now
+            </Button>
+          </div>
+        )}
+
+        {isTrial && savedProposals.length >= 2 && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/35 text-rose-900 dark:text-rose-300 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-base">🔒</span>
+              <span><strong>Trial Completed:</strong> You have created your <strong>2 of 2</strong> allowed free proposals. Upgrade to a paid plan now to save and share new proposals.</span>
+            </div>
+            <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
+              Unlock Unlimited
+            </Button>
+          </div>
+        )}
+
+        {currentTier === 'free' && savedProposals.length >= 1 && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/35 text-rose-900 dark:text-rose-300 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-base">🔒</span>
+              <span><strong>Proposal Limit Reached:</strong> Your Free plan is limited to <strong>1 proposal</strong>. Upgrade to Starter or Pro to continue drafting quotes.</span>
+            </div>
+            <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
+              Upgrade Plan
+            </Button>
+          </div>
+        )}
+
+        {currentTier === 'starter' && !isTrial && savedProposals.length >= 8 && savedProposals.length < 10 && (
+          <div className="p-4 bg-amber-500/10 border border-amber-500/35 text-amber-900 dark:text-amber-300 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-base">⚠️</span>
+              <span><strong>Approaching Plan Limit:</strong> You have created <strong>{savedProposals.length} of 10</strong> monthly Starter proposals. Upgrade to Pro for high-velocity sales.</span>
+            </div>
+            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
+              Upgrade to Pro
+            </Button>
+          </div>
+        )}
+
+        {currentTier === 'starter' && !isTrial && savedProposals.length >= 10 && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/35 text-rose-900 dark:text-rose-300 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-base">🔒</span>
+              <span><strong>Starter Limit Reached:</strong> You have used all <strong>10 of 10</strong> Starter proposals for this month. Upgrade to Pro to continue selling.</span>
+            </div>
+            <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
+              Upgrade to Pro
             </Button>
           </div>
         )}

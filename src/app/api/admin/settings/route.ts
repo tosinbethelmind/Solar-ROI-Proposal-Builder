@@ -1,8 +1,20 @@
 import { NextResponse } from 'next/server';
+import { createAdminClient } from '@/utils/supabaseAdmin';
+import { createClient } from '@/lib/supabase/server';
 import * as fs from 'fs';
 import * as path from 'path';
 
 const settingsFilePath = path.join(process.cwd(), 'src', 'utils', 'platformSettings.json');
+
+// Helper to verify if user is platform administrator
+async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
+  const { data, error } = await adminClient
+    .from('platform_admins')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return !error && !!data;
+}
 
 function readPlatformSettings() {
   try {
@@ -39,22 +51,87 @@ function writePlatformSettings(settings: any) {
 }
 
 export async function GET() {
+  const adminClient = createAdminClient();
+  const userClient = await createClient();
+
+  // Enforce Authentication & Admin Authorization
+  const { data: { user }, error: authError } = await userClient.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  }
+
+  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
+  }
+
   const settings = readPlatformSettings();
   return NextResponse.json({ data: settings });
 }
 
 export async function POST(request: Request) {
+  const adminClient = createAdminClient();
+  const userClient = await createClient();
+
+  // Enforce Authentication & Admin Authorization
+  const { data: { user }, error: authError } = await userClient.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  }
+
+  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
     const { dieselPrice, petrolPrice, gridTariff, vatTaxRate, updatedBy } = body;
 
     const settings = readPlatformSettings();
 
-    settings.dieselPrice = dieselPrice !== undefined ? parseFloat(dieselPrice) : settings.dieselPrice;
-    settings.petrolPrice = petrolPrice !== undefined ? parseFloat(petrolPrice) : settings.petrolPrice;
-    settings.gridTariff = gridTariff !== undefined ? parseFloat(gridTariff) : settings.gridTariff;
-    settings.vatTaxRate = vatTaxRate !== undefined ? parseFloat(vatTaxRate) : settings.vatTaxRate;
-    settings.lastUpdatedBy = updatedBy || 'admin@solarpro.com';
+    // Enforce safety boundary checks to block extreme/erroneous values
+    if (dieselPrice !== undefined) {
+      const parsedDiesel = parseFloat(dieselPrice);
+      if (isNaN(parsedDiesel) || parsedDiesel < 100 || parsedDiesel > 10000) {
+        return NextResponse.json({
+          error: 'Validation failed: Diesel price must be a valid number between ₦100 and ₦10,000.'
+        }, { status: 400 });
+      }
+      settings.dieselPrice = parsedDiesel;
+    }
+
+    if (petrolPrice !== undefined) {
+      const parsedPetrol = parseFloat(petrolPrice);
+      if (isNaN(parsedPetrol) || parsedPetrol < 100 || parsedPetrol > 10000) {
+        return NextResponse.json({
+          error: 'Validation failed: Petrol price must be a valid number between ₦100 and ₦10,000.'
+        }, { status: 400 });
+      }
+      settings.petrolPrice = parsedPetrol;
+    }
+
+    if (gridTariff !== undefined) {
+      const parsedTariff = parseFloat(gridTariff);
+      if (isNaN(parsedTariff) || parsedTariff < 10 || parsedTariff > 1000) {
+        return NextResponse.json({
+          error: 'Validation failed: Grid utility tariff must be a valid number between ₦10 and ₦1,000 per kWh.'
+        }, { status: 400 });
+      }
+      settings.gridTariff = parsedTariff;
+    }
+
+    if (vatTaxRate !== undefined) {
+      const parsedVat = parseFloat(vatTaxRate);
+      if (isNaN(parsedVat) || parsedVat < 0 || parsedVat > 50) {
+        return NextResponse.json({
+          error: 'Validation failed: VAT tax rate must be a valid percentage between 0% and 50%.'
+        }, { status: 400 });
+      }
+      settings.vatTaxRate = parsedVat;
+    }
+
+    settings.lastUpdatedBy = updatedBy || user.email || 'admin@solarpro.com';
     settings.lastUpdatedAt = new Date().toISOString();
 
     const success = writePlatformSettings(settings);

@@ -63,9 +63,13 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to verify subscription details.' }, { status: 500 })
   }
 
-  if (company.subscription_status === 'past_due' || company.subscription_status === 'cancelled') {
+  if (
+    company.subscription_status === 'past_due' ||
+    company.subscription_status === 'cancelled' ||
+    company.subscription_status === 'expired'
+  ) {
     return NextResponse.json({
-      error: 'Your workspace subscription is past due or cancelled. Please update your payment to modify proposals.'
+      error: 'Your workspace subscription is inactive, past due, or expired. Please update your billing plan to modify proposals.'
     }, { status: 403 })
   }
 
@@ -90,6 +94,7 @@ export async function PATCH(
       .from('proposals')
       .update(updatePayload)
       .eq('id', id)
+      .eq('company_id', member.company_id)
       .select('*')
       .single()
 
@@ -140,9 +145,13 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to verify subscription details.' }, { status: 500 })
   }
 
-  if (company.subscription_status === 'past_due' || company.subscription_status === 'cancelled') {
+  if (
+    company.subscription_status === 'past_due' ||
+    company.subscription_status === 'cancelled' ||
+    company.subscription_status === 'expired'
+  ) {
     return NextResponse.json({
-      error: 'Your workspace subscription is past due or cancelled. Please update your payment to delete proposals.'
+      error: 'Your workspace subscription is inactive, past due, or expired. Please update your billing plan to delete proposals.'
     }, { status: 403 })
   }
 
@@ -150,6 +159,7 @@ export async function DELETE(
     .from('proposals')
     .delete()
     .eq('id', id)
+    .eq('company_id', member.company_id)
 
   if (deleteError) {
     console.error('[API proposal DELETE] Query failed:', deleteError.message)

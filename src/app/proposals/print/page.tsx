@@ -477,7 +477,7 @@ export default function PrintProposalPage() {
 
             {/* Localized NERC Grid Sizing & DISCO Mapping */}
             {(() => {
-              const regulatory = calculations.regulatory || { nerc_tariff_class: 'R2A', disco_region: 'Eko_DISCO', grid_availability_assumption: 0.35 };
+              const regulatory = (calculations as any).regulatory || { nerc_tariff_class: 'R2A', disco_region: 'Eko_DISCO', grid_availability_assumption: 0.35 };
               const availabilityHrs = (regulatory.grid_availability_assumption * 24).toFixed(1);
               
               return (
@@ -581,6 +581,7 @@ export default function PrintProposalPage() {
                         {(labourCost > 0 || accessoriesCost > 0) ? `₦${(labourCost + accessoriesCost).toLocaleString()}` : '-'}
                       </td>
                     </tr>
+                  </tbody>
                 </table>
 
                 {/* Multi-Currency USD Hedging Index */}
@@ -592,7 +593,7 @@ export default function PrintProposalPage() {
                     To shield you from parallel market exchange rate spikes, raw solar PV and lithium component inventories are synchronized in real-time with USD supplier catalogs and cleared under NERC standard import frameworks:
                   </p>
                   {(() => {
-                    const sourcing = calculations.equipment_sourcing || { import_duty_rate: 0.05, vat_rate: 0.075, customs_clearing_assumptions: 'Lagos_Apapa_Port' };
+                    const sourcing = (calculations as any).equipment_sourcing || { import_duty_rate: 0.05, vat_rate: 0.075, customs_clearing_assumptions: 'Lagos_Apapa_Port' };
                     
                     return (
                       <div className="grid grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border text-[11px] text-slate-700">

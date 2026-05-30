@@ -209,15 +209,25 @@ export default function AdminOverview() {
       
       {/* ═══ Header Title / Overview Segment ═══ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 dark:border-slate-800 pb-6">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-teal-650 dark:text-teal-400 uppercase tracking-widest">
-            <ShieldAlert className="h-4 w-4 shrink-0" />
-            <span>Operational Command Overview</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between flex-1">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-teal-650 dark:text-teal-400 uppercase tracking-widest">
+              <ShieldAlert className="h-4 w-4 shrink-0" />
+              <span>Operational Command Overview</span>
+            </div>
+            <h1 className="text-3xl font-black text-slate-850 dark:text-slate-50 tracking-tight mt-1">SolarPro Dashboard</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1">
+              Real-time telemetry, currency index rates, and multi-tenant standing analysis.
+            </p>
           </div>
-          <h1 className="text-3xl font-black text-slate-850 dark:text-slate-50 tracking-tight mt-1">SolarPro Dashboard</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1">
-            Real-time telemetry, currency index rates, and multi-tenant standing analysis.
-          </p>
+
+          <div className="mt-3 sm:mt-0 flex gap-2">
+            <Link href="/admin/marketplace">
+              <Button size="sm" className="bg-gradient-to-r from-indigo-600 to-teal-650 hover:from-indigo-750 hover:to-teal-750 text-white font-extrabold text-[11px] rounded-xl h-9 border-none">
+                🇳🇬 Marketplace Moderation Board
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* MRR Snapshot Box */}

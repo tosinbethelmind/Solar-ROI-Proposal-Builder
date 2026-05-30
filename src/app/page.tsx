@@ -19,11 +19,24 @@ import { BLOG_ARTICLES } from '@/lib/blog';
 import { AuthButton } from '@/components/auth/AuthButton';
 
 export default function SolarProHomepage() {
+  const [dieselSpend, setDieselSpend] = React.useState<number>(150000);
+  const [gridSpend, setGridSpend] = React.useState<number>(80000);
+  const [pricingCycle, setPricingCycle] = React.useState<'monthly' | 'annual'>('monthly');
 
+  const estimatedSavings = Math.round((dieselSpend * 0.85) + (gridSpend * 0.72));
+  const paybackMonths = dieselSpend > 300000 || gridSpend > 150000 ? 18 : 24;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       
+      {/* ═══ Top Urgent Banner ═══ */}
+      <div className="bg-gradient-to-r from-red-650 via-amber-600 to-red-650 text-white py-2 px-4 text-center font-black text-[9px] sm:text-xs tracking-wider flex flex-wrap items-center justify-center gap-2 shadow-inner z-50 relative">
+        <span className="flex items-center gap-1">⚠️ BAND A GRID TARIFFS EXCEED ₦225/kWh | Petrol & diesel costs highly volatile!</span>
+        <Link href="/estimator" className="underline hover:text-amber-100 font-extrabold flex items-center gap-0.5 whitespace-nowrap">
+          Estimate Monthly Fuel Offsets Free ➔
+        </Link>
+      </div>
+
       {/* ═══ Header ═══ */}
       <header className="sticky top-0 z-50 border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
@@ -76,7 +89,7 @@ export default function SolarProHomepage() {
             Tackle generator diesel expenses, NERC Band A utility tariff hikes, and FX volatility. Whether you are a NERC-certified solar installer on a field visit or a homeowner calculating potential fuel savings, we have a progressive tool built precisely for you.
           </p>
 
-          <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-3.5 max-w-md mx-auto">
+          <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-3.5 max-w-lg mx-auto">
             {/* Quick Estimator CTA */}
             <Link href="/estimator" className="w-full">
               <Button size="lg" className="w-full bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-sm rounded-2xl shadow-md h-12 flex items-center justify-center gap-2">
@@ -90,12 +103,122 @@ export default function SolarProHomepage() {
                 ⚡ Start Simple Sizer
               </Button>
             </Link>
+
+            {/* Marketplace Directory CTA */}
+            <Link href="/installers" className="w-full">
+              <Button size="lg" className="w-full bg-gradient-to-r from-indigo-600 to-teal-650 hover:from-indigo-700 hover:to-teal-700 text-white font-black text-sm rounded-2xl shadow-md h-12 flex items-center justify-center gap-2 border-none">
+                🇳🇬 Find Local Installers
+              </Button>
+            </Link>
           </div>
 
-          <div className="pt-2">
-            <Link href="/workspace" className="text-xs font-black text-teal-650 dark:text-teal-400 hover:underline flex items-center justify-center gap-1">
-              Are you a professional installer? Enter workspace dashboard <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+          <div className="pt-3 flex flex-col items-center gap-2">
+            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+              🏡 Homeowners: Start free, estimate your offsets, and instantly connect with verified local solar installers.
+            </p>
+            <div className="flex gap-4">
+              <Link href="/workspace" className="text-xs font-black text-teal-650 dark:text-teal-400 hover:underline flex items-center justify-center gap-1">
+                Professional Installer Workspace <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <span className="text-slate-300 dark:text-slate-800">|</span>
+              <Link href="/workspace/listing" className="text-xs font-black text-indigo-650 dark:text-indigo-400 hover:underline flex items-center justify-center gap-1">
+                Manage Directory Partner Listing <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Interactive Fuel Savings Slider Widget ═══ */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="text-center space-y-2">
+            <Badge className="bg-emerald-500/10 text-emerald-650 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">
+              Instant Naira Savings Calculator
+            </Badge>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-850 dark:text-slate-50">
+              How much do you spend on petrol/diesel &amp; grid power monthly?
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Drag the sliders below to see your potential offset savings and average solar payback period.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+            <div className="space-y-6">
+              {/* Slider 1: Petrol/Diesel Spend */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-xs font-bold">
+                  <span className="text-slate-700 dark:text-slate-300">🛢️ Monthly Generator Fuel (Petrol/Diesel):</span>
+                  <span className="text-teal-650 dark:text-teal-400 font-extrabold text-sm">
+                    ₦{dieselSpend.toLocaleString('en-NG')}
+                  </span>
+                </div>
+                <input 
+                  type="range" 
+                  min="10000" 
+                  max="1000000" 
+                  step="10000"
+                  value={dieselSpend}
+                  onChange={(e) => setDieselSpend(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-250 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                />
+                <div className="flex justify-between text-[9px] font-bold text-slate-400">
+                  <span>₦10,000</span>
+                  <span>₦1,000,000</span>
+                </div>
+              </div>
+
+              {/* Slider 2: NEPA/PHCN Grid Spend */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-xs font-bold">
+                  <span className="text-slate-700 dark:text-slate-300">⚡ Monthly Grid Bill (Band A/B Tariff):</span>
+                  <span className="text-teal-650 dark:text-teal-400 font-extrabold text-sm">
+                    ₦{gridSpend.toLocaleString('en-NG')}
+                  </span>
+                </div>
+                <input 
+                  type="range" 
+                  min="5000" 
+                  max="500000" 
+                  step="5000"
+                  value={gridSpend}
+                  onChange={(e) => setGridSpend(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-250 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                />
+                <div className="flex justify-between text-[9px] font-bold text-slate-400">
+                  <span>₦5,000</span>
+                  <span>₦500,000</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Calculations Card */}
+            <div className="bg-gradient-to-br from-teal-500/10 to-emerald-500/10 border border-teal-500/20 rounded-2xl p-6 flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="text-[10px] font-black uppercase text-teal-650 dark:text-teal-400 tracking-wider">Potential Monthly Offsets</div>
+                <div className="text-3xl font-black text-slate-850 dark:text-slate-50 tracking-tight leading-none">
+                  ₦{estimatedSavings.toLocaleString('en-NG')}
+                  <span className="text-xs font-bold text-slate-500 block mt-1">/ month estimated savings</span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                  By swapping to a custom-configured hybrid solar panel battery system, you offset generator noise and minimize grid dependency.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-teal-500/20 pt-4 text-xs font-bold">
+                <span className="text-slate-655 dark:text-slate-350">Avg Payback Period:</span>
+                <span className="text-emerald-650 dark:text-emerald-400 font-black text-sm">{paybackMonths} Months</span>
+              </div>
+
+              <Link href="/estimator" className="block w-full pt-2">
+                <Button className="w-full bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs h-10 rounded-xl border-none">
+                  🏡 Launch Full Household Sizer &amp; ROI Tool ➔
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -141,35 +264,39 @@ export default function SolarProHomepage() {
         </div>
       </section>
 
-      {/* ═══ Progressive Disclosure: Start Simple vs Workspace Pro ═══ */}
+      {/* ═══ Progressive Disclosure: Free Estimator vs Start Simple vs Workspace Pro ═══ */}
       <section id="comparison" className="bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-850 py-16 sm:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-12">
           
           <div className="text-center space-y-3">
-            <Badge className="bg-teal-500/10 text-teal-655 border border-teal-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">Progressive layers</Badge>
-            <h2 className="text-2xl sm:text-4xl font-black text-slate-850 dark:text-slate-50">Choose Your Sizing Flow</h2>
+            <Badge className="bg-teal-500/10 text-teal-655 border border-teal-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">Progressive offer tiers</Badge>
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-850 dark:text-slate-50">Select Your Sizing Pathway</h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto font-medium">
-              We offer different modules depending on the urgency and technical details required for your quotation.
+              We offer targeted modules designed precisely for your technical requirements and local project constraints.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Start Simple Package */}
-            <Card className="rounded-3xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/20 p-6 sm:p-8 flex flex-col justify-between gap-6 hover:shadow-md hover:border-teal-500/20 transition-all duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* 1. Homeowner Free Estimator */}
+            <Card className="rounded-3xl border border-emerald-500/20 bg-emerald-50/10 dark:bg-emerald-950/5 p-6 sm:p-8 flex flex-col justify-between gap-6 hover:shadow-md hover:border-emerald-500/30 transition-all duration-300 relative overflow-hidden">
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-650 rounded-full text-[10px] font-black uppercase tracking-wider">
-                  ⚡ Fast Field Shortcut
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-655 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  🏡 100% Free Forever
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black">Start Simple</h3>
+                <h3 className="text-xl sm:text-2xl font-black">Homeowner Sizer</h3>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                  Ideal for installers running active property walkthroughs who need to outline a budget in under 60 seconds without keying in granular appliance wattages.
+                  Ideal for homeowners looking to escape high Band A grid electricity tariffs or volatile diesel generator fuel bills.
                 </p>
+                <div className="py-2 border-y border-slate-100 dark:border-slate-800">
+                  <span className="text-2xl font-extrabold text-slate-900 dark:text-white">₦0</span>
+                  <span className="text-xs text-slate-400 font-bold ml-1.5">No login required</span>
+                </div>
                 <div className="space-y-2.5 pt-2">
                   {[
-                    "Standard load presets (1.2kVA / 3kVA / 5kVA)",
-                    "Tap essential appliances (LED Lights, Standing Fans, AC)",
-                    "Instant budget approximation range (₦900k - ₦5.5M)",
-                    "One-tap conversion into full CRM proposal wizard"
+                    "Interactive household load selector",
+                    "Real-time Naira monthly fuel offset modeler",
+                    "Battery specifications modeler (Gel vs Lithium)",
+                    "Download simple PDF report to share with installers"
                   ].map((feat, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-xs font-bold text-slate-655 dark:text-slate-350">
                       <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -178,14 +305,49 @@ export default function SolarProHomepage() {
                   ))}
                 </div>
               </div>
-              <Link href="/start-simple">
-                <Button size="lg" className="w-full bg-slate-850 hover:bg-slate-900 text-white dark:bg-slate-800 dark:hover:bg-slate-750 rounded-2xl text-xs font-black h-11 flex items-center justify-center gap-2">
-                  Launch Quick Shortcut <ArrowRight className="w-4 h-4" />
+              <Link href="/estimator">
+                <Button size="lg" className="w-full bg-gradient-to-r from-emerald-600 to-teal-650 hover:from-emerald-750 hover:to-teal-750 text-white rounded-2xl text-xs font-black h-11 flex items-center justify-center gap-2 shadow-sm border-none">
+                  Calculate Savings Free <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </Card>
 
-            {/* Pro Workspace */}
+            {/* 2. Start Simple Package */}
+            <Card className="rounded-3xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/20 p-6 sm:p-8 flex flex-col justify-between gap-6 hover:shadow-md hover:border-teal-500/20 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-500/10 text-teal-655 dark:text-teal-400 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  ⚡ Fast Field Shortcut
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black">Start Simple</h3>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                  Ideal for installers running active property walkthroughs who need to outline a budget range in under 60 seconds.
+                </p>
+                <div className="py-2 border-y border-slate-100 dark:border-slate-800">
+                  <span className="text-2xl font-extrabold text-slate-900 dark:text-white">Free</span>
+                  <span className="text-xs text-slate-400 font-bold ml-1.5">For active site surveys</span>
+                </div>
+                <div className="space-y-2.5 pt-2">
+                  {[
+                    "Standard load presets (1.2kVA / 3kVA / 5kVA)",
+                    "Quick-tap common appliance bundles & sizer",
+                    "Instant local system cost estimates (₦900k - ₦5.5M)",
+                    "1-click transfer to full workspace proposal wizard"
+                  ].map((feat, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs font-bold text-slate-655 dark:text-slate-350">
+                      <CheckCircle className="w-4 h-4 text-teal-500 shrink-0" />
+                      <span>{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Link href="/start-simple">
+                <Button size="lg" variant="outline" className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-250 font-extrabold text-xs rounded-2xl h-11 flex items-center justify-center gap-2">
+                  Launch Quick Sizer <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </Card>
+
+            {/* 3. Pro Workspace */}
             <Card className="rounded-3xl border border-teal-500/30 bg-slate-900 text-white p-6 sm:p-8 flex flex-col justify-between gap-6 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
               <div className="space-y-4">
@@ -194,14 +356,18 @@ export default function SolarProHomepage() {
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black">Pro Workspace</h3>
                 <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-                  Ideal for established solar businesses requiring multi-tier option pricing (Budget vs Standard vs Premium) and customizable branded PDF generators.
+                  Ideal for established solar businesses requiring multi-tier option pricing comparisons and professional branded PDF quote generators.
                 </p>
+                <div className="py-2 border-y border-white/10">
+                  <span className="text-2xl font-extrabold text-white">₦15,000</span>
+                  <span className="text-xs text-slate-400 font-bold ml-1.5">per month</span>
+                </div>
                 <div className="space-y-2.5 pt-2">
                   {[
                     "Granular appliance load lists and surge indicators",
-                    "Battery specs customizations (Gel vs LiFePO4 chemistry)",
+                    "Battery specifications customized by client option",
                     "Branded PDF builder with customizable markup, VAT, & labor",
-                    "CRM pipeline tracking (Approve, Revise, site-survey statuses)"
+                    "CRM pipeline tracking with multi-user permissions"
                   ].map((feat, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-xs font-bold text-slate-300">
                       <CheckCircle className="w-4 h-4 text-teal-400 shrink-0" />
@@ -211,13 +377,12 @@ export default function SolarProHomepage() {
                 </div>
               </div>
               <Link href="/workspace">
-                <Button size="lg" className="w-full bg-teal-600 hover:bg-teal-750 text-white rounded-2xl text-xs font-black h-11 flex items-center justify-center gap-2 shadow-md">
+                <Button size="lg" className="w-full bg-teal-650 hover:bg-teal-750 text-white rounded-2xl text-xs font-black h-11 flex items-center justify-center gap-2 shadow-md border-none">
                   Open Workspace Pro <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </Card>
           </div>
-
         </div>
       </section>
 
@@ -271,6 +436,18 @@ export default function SolarProHomepage() {
               </div>
             </Card>
           ))}
+        </div>
+
+        {/* Not ready to read? Homeowner instant CTA strip */}
+        <div className="bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-teal-500/10 rounded-3xl border border-teal-500/20 p-6 text-center space-y-4 max-w-4xl mx-auto mt-8">
+          <p className="text-slate-800 dark:text-slate-200 text-sm font-bold leading-normal">
+            ⚡ Not ready to read full insights? Estimate your solar capacity and generator fuel savings in 2 minutes.
+          </p>
+          <Link href="/estimator">
+            <Button className="bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs px-6 rounded-xl shadow-md h-10 border-none">
+              🏡 Launch Free Homeowner Estimator ➔
+            </Button>
+          </Link>
         </div>
       </section>
 
@@ -331,12 +508,205 @@ export default function SolarProHomepage() {
                 </div>
               ))}
             </div>
-            <Link href="/blog/lagos-solar-permitting-compliance-checklist" className="block w-full">
-              <Button className="w-full bg-teal-600 hover:bg-teal-750 text-white rounded-xl font-bold text-xs py-2 h-10">
-                Read Compliance Guide
-              </Button>
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link href="/blog/lagos-solar-permitting-compliance-checklist" className="block w-full">
+                <Button className="w-full bg-teal-600 hover:bg-teal-750 text-white rounded-xl font-bold text-xs py-2 h-10 border-none">
+                  Read Compliance Guide
+                </Button>
+              </Link>
+              <Link href="/estimator" className="block w-full">
+                <Button variant="outline" className="w-full border-teal-500/30 text-teal-350 hover:bg-teal-950/40 hover:text-white rounded-xl font-bold text-xs py-2 h-10">
+                  🏡 Check Solar Savings Before Booking Installer
+                </Button>
+              </Link>
+            </div>
           </Card>
+        </div>
+      </section>
+
+      {/* ═══ SaaS Subscription Pricing Tiers Section ═══ */}
+      <section id="pricing-tiers" className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-12">
+        <div className="text-center space-y-3">
+          <Badge className="bg-teal-500/10 text-teal-655 dark:bg-teal-950/40 dark:text-teal-400 border border-teal-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">
+            ₦ Naira-Optimized Packages
+          </Badge>
+          <h2 className="text-2xl sm:text-4xl font-black text-slate-850 dark:text-slate-50">
+            Sized to Scale Your Solar Sales
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto font-medium">
+            Lock in predictable pricing for your solar rep team with transparent multi-month savings.
+          </p>
+
+          {/* Pricing Toggle */}
+          <div className="pt-4 flex items-center justify-center gap-2 max-w-[280px] mx-auto bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <button
+              onClick={() => setPricingCycle('monthly')}
+              className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all ${
+                pricingCycle === 'monthly'
+                  ? 'bg-teal-650 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setPricingCycle('annual')}
+              className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 ${
+                pricingCycle === 'annual'
+                  ? 'bg-teal-650 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+              }`}
+            >
+              Annual
+              <Badge className="bg-emerald-500 text-white font-extrabold text-[8px] uppercase px-1 py-0 border-none shadow-none">Save 20%</Badge>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch">
+          {[
+            {
+              id: 'free',
+              name: 'Free Plan',
+              badge: 'Homeowners',
+              monthlyPrice: 0,
+              annualPrice: 0,
+              bestFor: 'Homeowners checking local solar ROI economics.',
+              features: [
+                'Quick Proposal Mode only',
+                'Max 1 proposal per month',
+                'Basic PDF Proposal Export',
+                'SolarPro Watermark included',
+                'Single user only'
+              ],
+              btnText: 'Start Sizing Free',
+              btnLink: '/estimator',
+              popular: false,
+              color: 'border-slate-200 dark:border-slate-800'
+            },
+            {
+              id: 'starter',
+              name: 'Starter Plan',
+              badge: 'Solo Installers',
+              monthlyPrice: 18000,
+              annualPrice: 14400,
+              bestFor: 'Independent technicians & active field installers.',
+              features: [
+                'Everything in Free',
+                'Up to 10 proposals per month',
+                'Watermark-free PDF Export',
+                'Live parallel FX interbank sync',
+                'Single user only'
+              ],
+              btnText: 'Upgrade Starter',
+              btnLink: '/pricing',
+              popular: false,
+              color: 'border-slate-200 dark:border-slate-800'
+            },
+            {
+              id: 'pro',
+              name: 'Professional',
+              badge: 'Most Popular',
+              monthlyPrice: 45000,
+              annualPrice: 36000,
+              bestFor: 'Growing teams scaling high-volume sales pipelines.',
+              features: [
+                'Everything in Starter',
+                'Up to 40 proposals per month',
+                'Full Load Calculator sizing sizer',
+                'Generator ROI comparison charts',
+                'Up to 3 users included'
+              ],
+              btnText: 'Go Pro (7-Day Trial)',
+              btnLink: '/pricing',
+              popular: true,
+              color: 'border-teal-500 dark:border-teal-500/40 shadow-lg ring-1 ring-teal-500/10'
+            },
+            {
+              id: 'enterprise',
+              name: 'Enterprise Plan',
+              badge: 'EPCs & Distributors',
+              monthlyPrice: 120000,
+              annualPrice: 96000,
+              bestFor: 'Corporate EPC firms & distributors requiring custom tools.',
+              features: [
+                'Everything in Professional',
+                'Custom or unlimited proposals',
+                'Complete White-Label templates',
+                'Unlimited company users & roles',
+                'Dedicated account manager'
+              ],
+              btnText: 'Go Enterprise',
+              btnLink: '/pricing',
+              popular: false,
+              color: 'border-slate-200 dark:border-slate-800'
+            }
+          ].map((plan, idx) => {
+            const currentPrice = pricingCycle === 'monthly' ? plan.monthlyPrice : plan.annualPrice;
+            return (
+              <Card
+                key={idx}
+                className={`relative flex flex-col justify-between overflow-hidden bg-white dark:bg-slate-900 border transition-all duration-300 p-6 ${plan.color}`}
+              >
+                {plan.popular && (
+                  <div className="absolute top-0 right-0 bg-teal-650 text-white font-extrabold text-[8px] uppercase tracking-widest px-3 py-1 rounded-bl-lg shadow-sm z-20">
+                    POPULAR Choice
+                  </div>
+                )}
+                
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black uppercase text-slate-400">{plan.badge}</span>
+                    <h3 className="text-base font-black text-slate-850 dark:text-slate-100">{plan.name}</h3>
+                  </div>
+
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-black text-slate-850 dark:text-white">
+                        {currentPrice === 0 ? '₦0' : `₦${currentPrice.toLocaleString('en-NG')}`}
+                      </span>
+                      {currentPrice > 0 && <span className="text-[10px] font-bold text-slate-455">/ month</span>}
+                    </div>
+                    {pricingCycle === 'annual' && plan.monthlyPrice > 0 && (
+                      <p className="text-[9px] font-bold text-emerald-650 dark:text-emerald-400 mt-0.5">
+                        Billed annually (₦{(plan.annualPrice * 12).toLocaleString('en-NG')}/yr)
+                      </p>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal font-medium">
+                    {plan.bestFor}
+                  </p>
+
+                  <div className="h-px bg-slate-100 dark:bg-slate-800" />
+
+                  <ul className="space-y-2">
+                    {plan.features.map((feat, fIdx) => (
+                      <li key={fIdx} className="flex items-start gap-2 text-[10px] font-bold text-slate-650 dark:text-slate-350">
+                        <Check className="w-3 h-3 text-teal-500 shrink-0 mt-0.5" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-6">
+                  <Link href={plan.btnLink} className="block w-full">
+                    <Button
+                      variant={plan.popular ? 'default' : 'outline'}
+                      className={`w-full text-[11px] font-black rounded-xl h-10 ${
+                        plan.popular
+                          ? 'bg-teal-650 hover:bg-teal-700 text-white border-none'
+                          : 'border-slate-300 dark:border-slate-700'
+                      }`}
+                    >
+                      {plan.btnText}
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       </section>
 
@@ -393,10 +763,19 @@ export default function SolarProHomepage() {
 
           <div className="space-y-3">
             <h4 className="font-extrabold text-slate-850 dark:text-slate-200 text-xs">Sizing Lanes</h4>
-            <div className="flex flex-col gap-2">
-              <Link href="/estimator" className="hover:underline">Homeowner Sizer Estimator</Link>
-              <Link href="/start-simple" className="hover:underline">Start Simple Field Lane</Link>
-              <Link href="/workspace" className="hover:underline">Installer Pro Workspace</Link>
+            <div className="flex flex-col gap-3">
+              <div>
+                <Link href="/estimator" className="hover:underline font-bold text-teal-650 dark:text-teal-400">🏡 Homeowner Estimator</Link>
+                <p className="text-[10px] text-slate-400 mt-0.5">Calculate your panel capacity & Naira fuel offsets free.</p>
+              </div>
+              <div>
+                <Link href="/start-simple" className="hover:underline font-bold text-slate-750 dark:text-slate-350">⚡ Start Simple</Link>
+                <p className="text-[10px] text-slate-400 mt-0.5">Quick site survey presets for active field installers.</p>
+              </div>
+              <div>
+                <Link href="/workspace" className="hover:underline font-bold text-slate-750 dark:text-slate-350">🛠️ Installer Pro Workspace</Link>
+                <p className="text-[10px] text-slate-400 mt-0.5">Multi-tier option proposals and branded PDFs.</p>
+              </div>
             </div>
           </div>
 

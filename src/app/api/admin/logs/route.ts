@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabaseAdmin';
+import { createClient } from '@/lib/supabase/server';
+
+// Helper to verify if user is platform administrator
+async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
+  const { data, error } = await adminClient
+    .from('platform_admins')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return !error && !!data;
+}
+
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -8,6 +20,18 @@ const settingsFilePath = path.join(process.cwd(), 'src', 'utils', 'fxSettings.js
 
 export async function GET() {
   const adminClient = createAdminClient();
+  const userClient = await createClient();
+
+  // 1. Enforce Authentication & Admin Authorization
+  const { data: { user }, error: authError } = await userClient.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  }
+
+  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
+  }
 
   try {
     const logsList: Array<{

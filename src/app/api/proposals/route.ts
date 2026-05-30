@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   // Query company subscription tier and status for server-side gating
   const { data: company, error: companyError } = await supabase
     .from('companies')
-    .select('subscription_tier, subscription_status')
+    .select('subscription_tier, subscription_status, trial_ends_at, proposal_usage_count, proposals_reset_date, custom_proposal_limit')
     .eq('id', member.company_id)
     .single()
 
@@ -55,30 +55,77 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to verify subscription details.' }, { status: 500 })
   }
 
-  // Enforce billing status blocks (past due or cancelled cannot create proposals)
-  if (company.subscription_status === 'past_due' || company.subscription_status === 'cancelled') {
+  // 1. Self-healing monthly proposal usage reset logic
+  let currentUsage = company.proposal_usage_count || 0
+  const now = new Date()
+  if (company.proposals_reset_date && new Date(company.proposals_reset_date) <= now) {
+    currentUsage = 0
+    const nextReset = new Date()
+    nextReset.setMonth(nextReset.getMonth() + 1)
+    
+    await supabase
+      .from('companies')
+      .update({
+        proposal_usage_count: 0,
+        proposals_reset_date: nextReset.toISOString()
+      })
+      .eq('id', member.company_id)
+  }
+
+  const tier = (company.subscription_tier || 'trial').toLowerCase()
+  const status = (company.subscription_status || 'trial').toLowerCase()
+
+  // 2. Enforce billing status blocks (expired, past due, or cancelled cannot create proposals)
+  if (status === 'past_due' || status === 'cancelled' || status === 'expired') {
     return NextResponse.json({
-      error: 'Your workspace subscription is past due or cancelled. Please update your payment to resume creating proposals.'
+      error: `Your workspace subscription status is ${status.toUpperCase()}. Please update your payment details or contact support to continue creating proposals.`,
+      code: 'SUBSCRIPTION_BLOCKED'
     }, { status: 403 })
   }
 
-  // Enforce Starter tier quota restriction (maximum 3 proposals)
-  if (company.subscription_tier === 'starter') {
+  // 3. Enforce Trial expiry (7 days limit check)
+  if (tier === 'trial' || status === 'trial') {
+    if (company.trial_ends_at && new Date(company.trial_ends_at) < now) {
+      return NextResponse.json({
+        error: 'Your 7-day free trial has expired. Please upgrade to a paid plan to keep creating proposals.',
+        code: 'TRIAL_EXPIRED'
+      }, { status: 403 })
+    }
+  }
+
+  // 4. Resolve limits
+  // Free: 1 proposal per month
+  // Trial: 2 total lifetime proposals
+  // Starter: 10 proposals per month
+  // Pro / Business: 40 proposals per month
+  // Enterprise: custom or unlimited (999999)
+  const tierLimit = company.custom_proposal_limit || (
+    tier === 'free' ? 1 :
+    tier === 'trial' ? 2 :
+    tier === 'starter' ? 10 :
+    tier === 'pro' || tier === 'business' ? 40 : 999999
+  )
+
+  // If trial tier, check total proposals in DB for lifetime count
+  let currentCount = currentUsage
+  if (tier === 'trial') {
     const { count, error: countError } = await supabase
       .from('proposals')
       .select('*', { count: 'exact', head: true })
       .eq('company_id', member.company_id)
+    
+    currentCount = count || 0
+  }
 
-    if (countError) {
-      console.error('[API proposals POST] Quota count lookup failed:', countError.message)
-      return NextResponse.json({ error: 'Failed to verify workspace quota.' }, { status: 500 })
-    }
-
-    if (count !== null && count >= 3) {
-      return NextResponse.json({
-        error: 'Proposal quota reached. Starter tier is limited to 3 proposals. Please upgrade to Pro for unlimited generation.'
-      }, { status: 403 })
-    }
+  if (currentCount >= tierLimit) {
+    const nextPlan = tier === 'free' ? 'Starter' : tier === 'trial' ? 'Professional' : tier === 'starter' ? 'Professional' : 'Enterprise'
+    return NextResponse.json({
+      error: `Proposal limit reached for your ${tier.toUpperCase()} tier (${currentCount}/${tierLimit}). Please upgrade to the ${nextPlan} plan to continue.`,
+      code: 'LIMIT_EXCEEDED',
+      limit: tierLimit,
+      usage: currentCount,
+      nextPlan
+    }, { status: 403 })
   }
 
   try {
@@ -155,6 +202,12 @@ export async function POST(request: Request) {
       console.error('[API proposals POST] Insert query failed:', insertError.message)
       return NextResponse.json({ error: 'Failed to create proposal.' }, { status: 500 })
     }
+
+    // Increment company proposal usage count
+    await supabase
+      .from('companies')
+      .update({ proposal_usage_count: currentUsage + 1 })
+      .eq('id', member.company_id)
 
     return NextResponse.json({ data: newProposal })
   } catch (err) {

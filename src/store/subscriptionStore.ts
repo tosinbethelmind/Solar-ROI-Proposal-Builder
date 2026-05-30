@@ -3,8 +3,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type SubscriptionTier = 'starter' | 'pro' | 'business' | 'enterprise';
-export type BillingCycle = 'monthly' | 'annual';
+export type SubscriptionTier = 'free' | 'starter' | 'pro' | 'business' | 'enterprise';
+export type BillingCycle = 'monthly' | 'annual' | 'quarterly';
 
 export const FEATURE_GATES = {
   wizardFlow: {
@@ -107,6 +107,7 @@ interface SubscriptionState {
 }
 
 const TIER_ORDER: Record<SubscriptionTier, number> = {
+  free: 0,
   starter: 1,
   pro: 2,
   business: 3,
@@ -116,12 +117,12 @@ const TIER_ORDER: Record<SubscriptionTier, number> = {
 export const useSubscriptionStore = create<SubscriptionState>()(
   persist(
     (set, get) => ({
-      // Defaults to 7-day Pro Trial for excellent user onboarding experience
+      // Defaults to 7-day Pro Trial (limit 2 total proposals) for excellent user onboarding experience
       tier: 'pro',
       billingCycle: 'monthly',
       isTrial: true,
       trialStartDate: typeof Date !== 'undefined' ? Date.now() : 0,
-      trialProposalsRemaining: 10,
+      trialProposalsRemaining: 2,
 
       // Modal State
       upgradeModalOpen: false,
@@ -154,7 +155,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           }
           return false;
         }
-        return true; // Starter proposal count limit is checked via history count rather than decrementing
+        return true; // Other plans are checked server-side
       },
 
       resetToTrial: () => {
@@ -163,7 +164,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           billingCycle: 'monthly',
           isTrial: true,
           trialStartDate: Date.now(),
-          trialProposalsRemaining: 10
+          trialProposalsRemaining: 2
         });
       },
 

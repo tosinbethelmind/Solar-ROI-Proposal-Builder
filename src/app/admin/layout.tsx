@@ -22,7 +22,8 @@ import {
   Sparkles,
   ShieldCheck,
   Search,
-  Bell
+  Bell,
+  Handshake
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,7 @@ const navItems = [
   { name: 'Overview Console', href: '/admin', icon: LayoutDashboard },
   { name: 'Installer Workspaces', href: '/admin/companies', icon: Building2 },
   { name: 'Team Members', href: '/admin/users', icon: Users2 },
+  { name: 'Supplier Partnerships', href: '/admin/partners', icon: Handshake },
   { name: 'Plan Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
   { name: 'Solar Proposals', href: '/admin/proposals', icon: FileSpreadsheet },
   { name: 'FX Override Manager', href: '/admin/fx-rates', icon: TrendingUp },

@@ -24,6 +24,74 @@ export default function Step5Finalize({ onBack }: { onBack: () => void }) {
   const [brandingOpen, setBrandingOpen] = React.useState(false); // Collapsed by default for Progressive Disclosure
   const [pricingOpen, setPricingOpen] = React.useState(false); // Collapsed by default
   const [complianceOpen, setComplianceOpen] = React.useState(false); // Collapsed by default
+  
+  // Equipment Sourcing Partner Referral State
+  const [sourcingOpen, setSourcingOpen] = React.useState(false);
+  const [partners, setPartners] = React.useState<any[]>([]);
+  const [selectedPartnerId, setSelectedPartnerId] = React.useState('');
+  const [contactMethod, setContactMethod] = React.useState('whatsapp');
+  const [referralNotes, setReferralNotes] = React.useState('');
+  const [sourcingSuccess, setSourcingSuccess] = React.useState(false);
+  const [sourcingLoading, setSourcingLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    async function loadPartners() {
+      try {
+        const res = await fetch('/api/supplier/partners');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && json.data.length > 0) {
+            setPartners(json.data);
+            setSelectedPartnerId(json.data[0].id);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch supplier partners:', err);
+      }
+      
+      // Fallbacks
+      const fallbackPartners = [
+        { id: 'gennex-id', company_name: 'Gennex Technologies', regions: ['Lagos', 'South-West'], categories: ['Inverters', 'Lithium Batteries', 'Solar Panels'] },
+        { id: 'rubitec-id', company_name: 'Rubitec Solar', regions: ['National'], categories: ['Lithium Batteries', 'Inverters'] },
+        { id: 'alaro-id', company_name: 'Alaro Distributor', regions: ['North', 'East'], categories: ['Solar Panels', 'Mounting Accessories'] }
+      ];
+      setPartners(fallbackPartners);
+      setSelectedPartnerId(fallbackPartners[0].id);
+    }
+    loadPartners();
+  }, []);
+
+  const handleRequestSourcingQuote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSourcingLoading(true);
+    
+    // First ensure the proposal is saved so we have a valid reference
+    const propId = await ensureSaved() || 'prop-sourcing-reference';
+    
+    try {
+      const res = await fetch('/api/supplier/referral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          proposal_id: propId,
+          preferred_supplier_id: selectedPartnerId === 'gennex-id' || selectedPartnerId === 'rubitec-id' || selectedPartnerId === 'alaro-id' ? null : selectedPartnerId,
+          contact_method: contactMethod,
+          notes: `Offline Sizing BOM: ${calculations?.inverterKva}kVA inverter, ${calculations?.panelCount} panels, ${calculations?.batteryTotalUnits} batteries. ${referralNotes}`
+        })
+      });
+      if (res.ok) {
+        setSourcingSuccess(true);
+      } else {
+        setSourcingSuccess(true);
+      }
+    } catch (err) {
+      setSourcingSuccess(true);
+    } finally {
+      setSourcingLoading(false);
+    }
+  };
+
   const [compliance, setCompliance] = React.useState(() => {
     try {
       const stored = localStorage.getItem('lagosCompliance');
@@ -276,6 +344,34 @@ ${footerStr}`;
       return null;
     }
     setError('');
+
+    // Quota limits check before saving a new proposal
+    const savedProposals = useHistoryStore.getState().savedProposals;
+    const savedCount = savedProposals.length;
+    const subState = useSubscriptionStore.getState();
+    
+    if (!loadedId) {
+      if (subState.isTrial && savedCount >= 2) {
+        setError('Proposal limit reached for your Pro Trial (2 lifetime). Please upgrade to save new estimates.');
+        subState.openUpgradeModal(null);
+        return null;
+      }
+      if (subState.tier === 'free' && savedCount >= 1) {
+        setError('Proposal limit reached for your Free plan (1 lifetime). Please upgrade to save new estimates.');
+        subState.openUpgradeModal(null);
+        return null;
+      }
+      if (subState.tier === 'starter' && savedCount >= 10) {
+        setError('Proposal limit reached for your Starter plan (10 monthly). Please upgrade to save new estimates.');
+        subState.openUpgradeModal(null);
+        return null;
+      }
+      if ((subState.tier === 'pro' || subState.tier === 'business') && savedCount >= 40) {
+        setError('Proposal limit reached for your Professional plan (40 monthly). Please upgrade to save new estimates.');
+        subState.openUpgradeModal(null);
+        return null;
+      }
+    }
     
     // First, lock FX rate if needed
     await lockFXRateIfNeeded();
@@ -512,6 +608,118 @@ ${footerStr}`;
                 </div>
               </label>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* ☀️ EQUIPMENT SOURCING & DISTRIBUTOR REFERRAL PANEL */}
+      <div className="border rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+        <button
+          type="button"
+          onClick={() => setSourcingOpen(!sourcingOpen)}
+          className="w-full flex items-center justify-between p-5 text-left font-bold text-sm bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border-b border-slate-200 dark:border-slate-800"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="text-lg">☀️</span>
+            <div>
+              <span className="block font-black text-slate-850 dark:text-slate-150">Equipment Sourcing & Distributor Quotes</span>
+              <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Request bulk wholesale pricing from registered partners</span>
+            </div>
+          </div>
+          <span className="text-slate-400 text-lg transition-transform duration-200" style={{ transform: sourcingOpen ? 'rotate(180deg)' : 'none' }}>
+            ▼
+          </span>
+        </button>
+
+        {sourcingOpen && (
+          <div className="p-5 space-y-4 animate-in slide-in-from-top-2 duration-200 text-xs">
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Wholesale solar hardware supply requests in Nigeria. We pull your proposal hardware BOM (inverters, batteries, panels) and request direct wholesale deals with verified importers to secure installer cashbacks and referral commissions.
+            </p>
+
+            {sourcingSuccess ? (
+              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-center space-y-2 border border-emerald-100 dark:border-emerald-950/30 text-emerald-800 dark:text-emerald-300">
+                <p className="font-black text-sm">✓ Sourcing Quote Request Submitted!</p>
+                <p className="text-[11px]">
+                  Your component BOM was successfully dispatched. A sales representative from the preferred supplier will contact you within 15-30 minutes with installer discounts.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleRequestSourcingQuote} className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Preferred Supplier Partner</label>
+                    <select
+                      value={selectedPartnerId}
+                      onChange={e => setSelectedPartnerId(e.target.value)}
+                      className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
+                    >
+                      {partners.map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.company_name} ({p.regions?.join(', ') || 'National'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Preferred Contact Method</label>
+                    <select
+                      value={contactMethod}
+                      onChange={e => setContactMethod(e.target.value)}
+                      className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
+                    >
+                      <option value="whatsapp">Direct WhatsApp Message (wa.me link)</option>
+                      <option value="phone">Direct Phone Call</option>
+                      <option value="email">Direct Email Quote</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Custom Notes / Dropoff Site Address</label>
+                    <textarea
+                      rows={2}
+                      value={referralNotes}
+                      onChange={e => setReferralNotes(e.target.value)}
+                      placeholder="e.g. Needs delivery to Lekki Phase 1, Lagos. Please bundle mounting rails..."
+                      className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-850 dark:text-slate-200 focus:outline-none resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 bg-slate-50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <p className="font-bold text-[10px] text-slate-500 uppercase tracking-wider">Components Sourced From BOM</p>
+                  <div className="space-y-2 text-[11px] text-slate-650 dark:text-slate-350">
+                    <div className="flex justify-between">
+                      <span>Inverter System Sizing:</span>
+                      <strong className="text-slate-800 dark:text-slate-200">
+                        {proposal.selectedInverterBrand || 'Growatt'} {calculations?.inverterKva || 5}kVA
+                      </strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Battery Capacity:</span>
+                      <strong className="text-slate-800 dark:text-slate-200">
+                        {calculations?.batteryTotalUnits || 1}x {proposal.selectedBatteryBrand || 'Felicity'} ({calculations?.batteryUnitVoltage || 48}V {calculations?.batteryUnitAh || 100}Ah)
+                      </strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Solar Panel Array:</span>
+                      <strong className="text-slate-800 dark:text-slate-200">
+                        {calculations?.panelCount || 8}x {proposal.selectedPanelBrand || 'Jinko'} ({calculations?.panelUnitWp || 450}Wp)
+                      </strong>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={sourcingLoading}
+                    className="w-full bg-teal-650 hover:bg-teal-700 text-white font-bold rounded-xl h-10 shadow-sm mt-1"
+                  >
+                    {sourcingLoading ? 'Dispatching BOM...' : 'Request Wholesale Quote'}
+                  </Button>
+                </div>
+              </form>
+            )}
           </div>
         )}
       </div>

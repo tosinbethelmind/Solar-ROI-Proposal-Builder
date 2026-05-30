@@ -15,131 +15,104 @@ import {
   Zap, 
   Users, 
   Sparkles,
-  Building
+  Building,
+  Upload,
+  BookOpen,
+  Calendar,
+  PhoneCall
 } from 'lucide-react';
 
-/* ─── Plan Data Definition ─── */
+/* ─── Upgraded Plan Data Definition ─── */
 const PLANS = [
   {
-    id: 'starter' as SubscriptionTier,
-    name: 'Starter',
-    badge: 'Solo Installers',
-    priceMonthly: 9900,
-    priceAnnual: 99000,
-    bestFor: 'Solo installers & new technicians generating basic field quotes.',
+    id: 'free' as SubscriptionTier,
+    name: 'Free Plan',
+    badge: 'Homeowners & Testing',
+    priceMonthly: 0,
+    priceQuarterly: 0,
+    priceAnnual: 0,
+    bestFor: 'Homeowners & new technicians checking system ROI economics.',
     features: [
       'Quick Proposal Mode only',
-      'Max 3 proposals per month',
+      'Max 1 proposal per month',
       'Basic PDF Proposal Export',
-      'Standard SolarPro Watermark',
-      'Basic client contact capture',
-      'Simple Pricing Mode (markup & discounts)',
-      'Live USD/NGN exchange rate display',
-      'Single User only',
-      'Local offline drafts history (limited to 3)'
+      'SolarPro Watermark included',
+      'Standard online email support',
+      'Single user only'
     ],
-    ctaText: 'Start Quoting',
+    ctaText: 'Get Started Free',
     icon: Zap,
-    color: 'from-slate-400 to-slate-550',
+    color: 'from-slate-400 to-slate-500',
+    btnVariant: 'outline' as const
+  },
+  {
+    id: 'starter' as SubscriptionTier,
+    name: 'Starter Plan',
+    badge: 'Solo Installers',
+    priceMonthly: 18000,
+    priceQuarterly: 48600, // 10% discount off monthly: 16,200/mo * 3
+    priceAnnual: 172800, // 20% discount off monthly: 14,400/mo * 12
+    bestFor: 'Independent technicians & installers generating active quotes.',
+    features: [
+      'Everything in Free',
+      'Up to 10 proposals per month',
+      'Standard PDF Export (no watermark)',
+      'Live parallel FX interbank exchange sync',
+      'Equipment referral request quote access',
+      'Basic supplier referral tracking',
+      'Single user only'
+    ],
+    ctaText: 'Get Starter Plan',
+    icon: Zap,
+    color: 'from-teal-500 to-emerald-600',
     btnVariant: 'outline' as const
   },
   {
     id: 'pro' as SubscriptionTier,
-    name: 'Pro',
-    badge: 'Recommended',
+    name: 'Professional',
+    badge: 'Most Popular',
     popular: true,
-    priceMonthly: 24900,
-    priceAnnual: 249000,
-    bestFor: 'Active installers and growing companies doing premium residential & commercial projects.',
+    priceMonthly: 45000,
+    priceQuarterly: 121500, // 10% off: 40,500/mo * 3
+    priceAnnual: 432000, // 20% off: 36,000/mo * 12
+    bestFor: 'Growing solar companies with active high-volume quote pipelines.',
     features: [
       'Everything in Starter',
-      'Unlimited Quick Proposals',
+      'Up to 40 proposals per month',
       'Full Wizard Sizing Flow (load calculator)',
-      'Advanced Pricing Mode (full safeguards & warranty)',
-      'NO SolarPro Watermark on exported PDFs',
-      'Branded PDF Proposals (company logo & colors)',
-      'Live margin health & discount validation alerts',
-      'Interactive Generator ROI Comparison Tables',
-      'Installment / Financing plans customization',
-      'Offline draft continuity (unlimited history)'
+      'Advanced commercial pricing mode',
+      'Generator ROI comparison charts',
+      'Structured installment & financing editor',
+      'Up to 3 users included',
+      'Priority supplier quote processing'
     ],
     ctaText: 'Upgrade to Pro',
     icon: Sparkles,
-    color: 'from-teal-500 to-emerald-600',
+    color: 'from-blue-600 to-indigo-650',
     btnVariant: 'default' as const
   },
   {
-    id: 'business' as SubscriptionTier,
-    name: 'Business',
-    badge: 'Installer Teams',
-    priceMonthly: 59900,
-    priceAnnual: 599000,
-    bestFor: 'Solar companies with multi-user teams, shared default rates, and quote reviews.',
-    features: [
-      'Everything in Pro',
-      'Team Seats (Invite estimators & sales reps)',
-      'Shared Company templates & default BOM prices',
-      'Low-Margin quote approval workflow for admins',
-      'Unified team proposal history CRM pipeline',
-      'Offline sync depth & automated conflicts resolution',
-      'Shared installer profile and company-level defaults',
-      'Full company activity logs & audit trail history',
-      'Premium customer success channels'
-    ],
-    ctaText: 'Scale Your Team',
-    icon: Users,
-    color: 'from-indigo-500 to-purple-600',
-    btnVariant: 'outline' as const
-  },
-  {
     id: 'enterprise' as SubscriptionTier,
-    name: 'Enterprise',
+    name: 'Enterprise Plan',
     badge: 'EPC & Distributors',
-    customPrice: true,
-    priceMonthly: 0,
-    priceAnnual: 1200000, // starting from 1.2M/yr
-    bestFor: 'Large solar EPC firms, solar equipment distributors, and custom corporate deployments.',
+    priceMonthly: 120000,
+    priceQuarterly: 324000, // 10% off: 108,000/mo * 3
+    priceAnnual: 1152000, // 20% off: 96,000/mo * 12
+    bestFor: 'Large solar EPC firms, solar equipment distributors, and custom corporate teams.',
     features: [
-      'Everything in Business',
-      'Custom branding templates & engineering specifications',
-      'Negotiated dedicated installer onboarding',
-      'Dedicated support engineer channels',
-      'Custom CRM, ERP, and local inventory api syncs',
-      'Full white-labeled domain options (optional)',
-      'Unlimited company users & advanced role controls'
+      'Everything in Professional',
+      'Custom or unlimited proposals',
+      'Complete White-Label templates',
+      'Company logo, color palettes, CAC & NERC certs',
+      'Unlimited company users & roles',
+      'Custom CRM, ERP, and distributor API sync',
+      'Dedicated account manager (24/7 Phone)'
     ],
-    ctaText: 'Contact Sales',
+    ctaText: 'Go Enterprise',
     icon: Building,
-    color: 'from-amber-500 to-orange-600',
+    color: 'from-amber-500 to-orange-650',
     btnVariant: 'outline' as const
   }
-];
-
-/* ─── Comparison Matrix Data ─── */
-const COMPARISON_FEATURES = [
-  { category: 'Quoting & Proposals', name: 'Quick Proposal', starter: '✓', pro: '✓', business: '✓', enterprise: '✓' },
-  { category: 'Quoting & Proposals', name: 'Full Wizard Flow (Load Profile)', starter: '—', pro: '✓', business: '✓', enterprise: '✓' },
-  { category: 'Quoting & Proposals', name: 'Proposal Quota', starter: '3 / month', pro: 'Unlimited', business: 'Unlimited', enterprise: 'Unlimited' },
-  { category: 'Quoting & Proposals', name: 'Live FX Interbank Sync', starter: '✓', pro: '✓', business: '✓', enterprise: '✓' },
-  
-  { category: 'Pricing & Margins', name: 'Simple Pricing Mode', starter: '✓', pro: '✓', business: '✓', enterprise: '✓' },
-  { category: 'Pricing & Margins', name: 'Advanced Pricing (Accessory, Transport, VAT, contingency)', starter: '—', pro: '✓', business: '✓', enterprise: '✓' },
-  { category: 'Pricing & Margins', name: 'Margin health alerts & discount safeguards', starter: '—', pro: '✓', business: '✓', enterprise: '✓' },
-  { category: 'Pricing & Margins', name: 'Interactive Down-payment & Installment editor', starter: '—', pro: '✓', business: '✓', enterprise: '✓' },
-  
-  { category: 'Branding & ROI', name: 'SolarPro Branding Watermark', starter: 'Always On', pro: 'Removed', business: 'Removed', enterprise: 'White-Label Available' },
-  { category: 'Branding & ROI', name: 'Custom Logo & Branding Colors', starter: '—', pro: '✓', business: '✓', enterprise: '✓' },
-  { category: 'Branding & ROI', name: 'Generator Cost vs. Solar ROI savings charts', starter: '—', pro: '✓', business: '✓', enterprise: '✓' },
-  
-  { category: 'Offline & Sync', name: 'Offline Draft Creation', starter: '✓', pro: '✓', business: '✓', enterprise: '✓' },
-  { category: 'Offline & Sync', name: 'Draft history count limit', starter: 'Up to 3 drafts', pro: 'Unlimited', business: 'Unlimited', enterprise: 'Unlimited' },
-  { category: 'Offline & Sync', name: 'Corporate Multi-device Sync', starter: '—', pro: '—', business: '✓', enterprise: '✓' },
-  
-  { category: 'Team & Security', name: 'Multi-seat seats count', starter: '1 User only', pro: '1 User only', business: 'Up to 10 included', enterprise: 'Custom / Unlimited' },
-  { category: 'Team & Security', name: 'Shared Team Templates & BOMs', starter: '—', pro: '—', business: '✓', enterprise: '✓' },
-  { category: 'Team & Security', name: 'Low-Margin Quoting Approvals', starter: '—', pro: '—', business: '✓', enterprise: '✓' },
-  { category: 'Team & Security', name: 'Manager Audit Logs', starter: '—', pro: '—', business: '✓', enterprise: '✓' },
-  { category: 'Team & Security', name: 'Dedicated Account Manager', starter: '—', pro: '—', starterDesc: 'Standard Email', enterprise: '✓ (24/7 Phone)' }
 ];
 
 export default function PricingPage() {
@@ -152,26 +125,41 @@ export default function PricingPage() {
     setSubscription,
     resetToTrial 
   } = useSubscriptionStore();
+  
   const [cycle, setCycle] = React.useState<BillingCycle>(billingCycle);
   const [mounted, setMounted] = React.useState(false);
+
+  // Manual Bank Transfer Receipt Form State
+  const [receiptFile, setReceiptFile] = React.useState<string>('');
+  const [manualPlan, setManualPlan] = React.useState<string>('starter');
+  const [manualCycle, setManualCycle] = React.useState<string>('monthly');
+  const [manualLoading, setManualLoading] = React.useState(false);
+
+  // Setup/Implementation Service Lead Form State
+  const [setupName, setSetupName] = React.useState('');
+  const [setupPerson, setSetupPerson] = React.useState('');
+  const [setupPhone, setSetupPhone] = React.useState('');
+  const [setupEmail, setSetupEmail] = React.useState('');
+  const [setupTeamSize, setSetupTeamSize] = React.useState('1');
+  const [setupWorkflow, setSetupWorkflow] = React.useState('');
+  const [setupPackage, setSetupPackage] = React.useState('basic');
+  const [setupSuccess, setSetupSuccess] = React.useState(false);
+
+  // Training Cohort Lead Form State
+  const [trainName, setTrainName] = React.useState('');
+  const [trainPhone, setTrainPhone] = React.useState('');
+  const [trainEmail, setTrainEmail] = React.useState('');
+  const [trainCompany, setTrainCompany] = React.useState('');
+  const [trainRole, setTrainRole] = React.useState('');
+  const [trainExp, setTrainExp] = React.useState('beginner');
+  const [trainSuccess, setTrainSuccess] = React.useState(false);
 
   React.useEffect(() => {
     Promise.resolve().then(() => {
       setMounted(true);
       setCycle(billingCycle);
     });
-
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('payment') === 'success') {
-        const mockTier = params.get('tier') || 'pro';
-        const mockCycle = params.get('cycle') || 'monthly';
-        setSubscription(mockTier as SubscriptionTier, mockCycle as BillingCycle, false);
-        alert(`🎉 Congratulations! You have successfully upgraded to the SolarPro ${mockTier.toUpperCase()} Plan (${mockCycle === 'monthly' ? 'Monthly' : 'Annual'}). Locked features are now fully accessible!`);
-        router.push('/');
-      }
-    }
-  }, [billingCycle, router, setSubscription]);
+  }, [billingCycle]);
 
   if (!mounted) {
     return (
@@ -181,15 +169,11 @@ export default function PricingPage() {
     );
   }
 
-  const handleToggleCycle = () => {
-    const newCycle = cycle === 'monthly' ? 'annual' : 'monthly';
-    setCycle(newCycle);
-  };
-
-  const handleSubscribe = async (tierId: SubscriptionTier, customPrice: boolean = false) => {
-    if (customPrice) {
-      // Simulate enterprise email trigger
-      window.location.href = `mailto:sales@solarpro.ng?subject=SolarPro Enterprise Upgrade Inquiry&body=Hello SolarPro Sales, We are an EPC solar firm interested in the Enterprise custom plan. We have around 15 estimators. Please reach out to us.`;
+  const handleSubscribe = async (tierId: SubscriptionTier) => {
+    if (tierId === 'free') {
+      setSubscription('free', 'monthly', false);
+      alert('🎉 Plan switched to Free Plan!');
+      router.push('/');
       return;
     }
     
@@ -210,19 +194,80 @@ export default function PricingPage() {
         throw new Error(data.error || 'Failed to initialize checkout session.');
       }
 
-      // Redirect the installer to the Paystack checkout screen
       window.location.href = data.authorization_url;
     } catch (err) {
-      console.error('[Pricing Upgrade] Checkout redirect error:', err);
-      // Clean fallback so offline installer can continue testing
+      console.error('[Pricing Upgrade] Checkout error:', err);
+      // Clean local fallback for manual transfer & sandbox bypass
       setSubscription(tierId, cycle, false);
-      alert(`🎉 [Demo Override] Upgraded locally to ${tierId.toUpperCase()} (${cycle === 'monthly' ? 'Monthly' : 'Annual'})!`);
+      alert(`🎉 [Demo Activation] Upgraded locally to ${tierId.toUpperCase()} (${cycle.toUpperCase()})! You can also submit receipt below for formal admin verification.`);
       router.push('/');
     }
   };
 
+  const handleManualPaymentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setManualLoading(true);
+    // Simulate API request to upload manual receipt
+    setTimeout(() => {
+      setManualLoading(false);
+      alert('📥 Bank transfer receipt submitted to SolarPro verification team! Your account will be upgraded within 1-2 hours after verification.');
+      setSubscription(manualPlan as SubscriptionTier, manualCycle as BillingCycle, false);
+      router.push('/');
+    }, 1500);
+  };
+
+  const handleSetupLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/leads/implementation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contact_name: setupPerson,
+          phone: setupPhone,
+          email: setupEmail,
+          team_size: setupTeamSize,
+          current_workflow: `Company: ${setupName}. Workflow: ${setupWorkflow}`,
+          desired_package: setupPackage
+        })
+      });
+      if (res.ok) {
+        setSetupSuccess(true);
+      } else {
+        alert('Failed to submit setup interest. Please try again.');
+      }
+    } catch (err) {
+      alert('Error connecting to setup lead capture.');
+    }
+  };
+
+  const handleTrainingLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/leads/training', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: trainName,
+          phone: trainPhone,
+          email: trainEmail,
+          company: trainCompany,
+          role: trainRole,
+          experience_level: trainExp
+        })
+      });
+      if (res.ok) {
+        setTrainSuccess(true);
+      } else {
+        alert('Failed to submit training interest. Please try again.');
+      }
+    } catch (err) {
+      alert('Error connecting to training lead capture.');
+    }
+  };
+
   const formatNaira = (amount: number) => {
-    return '₦' + amount.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    return '₦' + amount.toLocaleString('en-NG', { maximumFractionDigits: 0 });
   };
 
   return (
@@ -232,8 +277,8 @@ export default function PricingPage() {
       <header className="sticky top-0 z-40 border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 group">
-            <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:text-teal-600 transition-colors" />
-            <span className="font-bold text-sm text-slate-700 dark:text-slate-350">Dashboard</span>
+            <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:text-teal-650 transition-colors" />
+            <span className="font-bold text-sm text-slate-700 dark:text-slate-300">Dashboard</span>
           </Link>
           <div className="flex items-center gap-3">
             <span className="text-xs font-semibold px-2 py-0.5 bg-teal-100 text-teal-800 dark:bg-teal-950/45 dark:text-teal-400 rounded-full">
@@ -244,68 +289,23 @@ export default function PricingPage() {
         </div>
       </header>
 
-      {/* ═══ Dev Simulation Toolbelt ═══ */}
+      {/* ═══ QA Simulation Toolbelt ═══ */}
       <div className="bg-gradient-to-r from-teal-950 to-slate-900 border-b border-teal-500/20 text-white text-xs py-3 px-4 shadow-inner">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Badge className="bg-teal-500 text-white font-extrabold text-[9px] uppercase px-1.5 py-0.5 animate-pulse">
-              QA Simulator
+              Sandbox Control
             </Badge>
             <span className="font-semibold text-[11px] text-teal-200">
-              Change your active account tier instantly to verify the paywall locking gates:
+              Instantly toggle active plan state to verify upgrade triggers & locked features:
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button 
-              onClick={() => { setSubscription('starter', cycle, false); }}
-              className={`px-3 py-1 rounded-full text-[10px] font-black border transition-all ${
-                currentTier === 'starter' && !isTrial
-                  ? 'bg-white text-slate-900 border-white font-black' 
-                  : 'bg-teal-900/30 text-teal-300 border-teal-700/40 hover:bg-teal-900/60'
-              }`}
-            >
-              Starter
-            </button>
-            <button 
-              onClick={() => { setSubscription('pro', cycle, false); }}
-              className={`px-3 py-1 rounded-full text-[10px] font-black border transition-all ${
-                currentTier === 'pro' && !isTrial
-                  ? 'bg-white text-slate-900 border-white font-black' 
-                  : 'bg-teal-900/30 text-teal-300 border-teal-700/40 hover:bg-teal-900/60'
-              }`}
-            >
-              Pro (Standard)
-            </button>
-            <button 
-              onClick={() => { setSubscription('business', cycle, false); }}
-              className={`px-3 py-1 rounded-full text-[10px] font-black border transition-all ${
-                currentTier === 'business'
-                  ? 'bg-white text-slate-900 border-white font-black' 
-                  : 'bg-teal-900/30 text-teal-300 border-teal-700/40 hover:bg-teal-900/60'
-              }`}
-            >
-              Business (Teams)
-            </button>
-            <button 
-              onClick={() => { setSubscription('enterprise', cycle, false); }}
-              className={`px-3 py-1 rounded-full text-[10px] font-black border transition-all ${
-                currentTier === 'enterprise'
-                  ? 'bg-white text-slate-900 border-white font-black' 
-                  : 'bg-teal-900/30 text-teal-300 border-teal-700/40 hover:bg-teal-900/60'
-              }`}
-            >
-              Enterprise
-            </button>
-            <button 
-              onClick={resetToTrial}
-              className={`px-3 py-1 rounded-full text-[10px] font-black border border-dashed transition-all ${
-                isTrial
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-transparent' 
-                  : 'bg-teal-950 text-amber-400 border-amber-550/30 hover:bg-teal-900'
-              }`}
-            >
-              Reset 7-Day Pro Trial
-            </button>
+            <button onClick={() => setSubscription('free', cycle, false)} className={`px-2.5 py-0.5 rounded-full text-[10px] border transition-all ${currentTier === 'free' ? 'bg-white text-slate-900 font-bold border-white' : 'bg-teal-900/30 text-teal-300 border-teal-700/40 hover:bg-teal-900'}`}>Free</button>
+            <button onClick={() => setSubscription('starter', cycle, false)} className={`px-2.5 py-0.5 rounded-full text-[10px] border transition-all ${currentTier === 'starter' ? 'bg-white text-slate-900 font-bold border-white' : 'bg-teal-900/30 text-teal-300 border-teal-700/40 hover:bg-teal-900'}`}>Starter</button>
+            <button onClick={() => setSubscription('pro', cycle, false)} className={`px-2.5 py-0.5 rounded-full text-[10px] border transition-all ${currentTier === 'pro' && !isTrial ? 'bg-white text-slate-900 font-bold border-white' : 'bg-teal-900/30 text-teal-300 border-teal-700/40 hover:bg-teal-900'}`}>Professional</button>
+            <button onClick={() => setSubscription('enterprise', cycle, false)} className={`px-2.5 py-0.5 rounded-full text-[10px] border transition-all ${currentTier === 'enterprise' ? 'bg-white text-slate-900 font-bold border-white' : 'bg-teal-900/30 text-teal-300 border-teal-700/40 hover:bg-teal-900'}`}>Enterprise</button>
+            <button onClick={resetToTrial} className={`px-2.5 py-0.5 rounded-full text-[10px] border border-dashed transition-all ${isTrial ? 'bg-amber-500 text-white font-bold border-transparent' : 'bg-teal-950 text-amber-400 border-amber-550/30 hover:bg-teal-900'}`}>Reset 7-Day Trial</button>
           </div>
         </div>
       </div>
@@ -318,35 +318,34 @@ export default function PricingPage() {
             ₦ Naira-Optimized Packages
           </Badge>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-slate-50 leading-tight">
-            Close Solar Jobs 3x Faster With Branded Proposals
+            Naira Plans Sized For Nigerian Solar Installers
           </h1>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-            Stop losing client deals to sticker shock. Empower your estimators to design engineering load profiles, protect margins with local overhead tools, and generate immaculate branded PDFs.
+            Empower your solar sales reps to sizing loads, compare diesel generator ROI, and export stunning branded PDFs offline or on-site.
           </p>
 
-          {/* ═══ Monthly/Annual Billing Toggle ═══ */}
-          <div className="pt-6 flex items-center justify-center gap-4">
-            <span className={`text-xs font-bold ${cycle === 'monthly' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400'}`}>
-              Monthly billing
-            </span>
+          {/* ═══ Cycle Toggle: Monthly, Quarterly (10% off), Annual (20% off) ═══ */}
+          <div className="pt-6 flex flex-wrap items-center justify-center gap-3 bg-white dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-lg mx-auto shadow-sm">
             <button
-              onClick={handleToggleCycle}
-              className="relative inline-flex h-6.5 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-slate-200 dark:bg-slate-800 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              onClick={() => setCycle('monthly')}
+              className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition-all ${cycle === 'monthly' ? 'bg-teal-650 text-white shadow' : 'text-slate-500 dark:text-slate-450 hover:bg-slate-100 dark:hover:bg-slate-850'}`}
             >
-              <span
-                className={`pointer-events-none inline-block size-5.5 transform rounded-full bg-white dark:bg-slate-300 shadow ring-0 transition duration-200 ease-in-out ${
-                  cycle === 'annual' ? 'translate-x-5 bg-teal-650' : 'translate-x-0'
-                }`}
-              />
+              Monthly
             </button>
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-bold ${cycle === 'annual' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400'}`}>
-                Annual billing
-              </span>
-              <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-[9px] uppercase tracking-wider rounded-md py-0.5 px-1.5 shadow-sm">
-                Save 20%
-              </Badge>
-            </div>
+            <button
+              onClick={() => setCycle('quarterly')}
+              className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${cycle === 'quarterly' ? 'bg-teal-650 text-white shadow' : 'text-slate-500 dark:text-slate-450 hover:bg-slate-100 dark:hover:bg-slate-850'}`}
+            >
+              Quarterly
+              <Badge className="bg-emerald-500 text-white font-extrabold text-[8px] uppercase px-1 py-0 border-none shadow-none">Save 10%</Badge>
+            </button>
+            <button
+              onClick={() => setCycle('annual')}
+              className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${cycle === 'annual' ? 'bg-teal-650 text-white shadow' : 'text-slate-500 dark:text-slate-450 hover:bg-slate-100 dark:hover:bg-slate-850'}`}
+            >
+              Annual
+              <Badge className="bg-emerald-500 text-white font-extrabold text-[8px] uppercase px-1 py-0 border-none shadow-none">Save 20%</Badge>
+            </button>
           </div>
         </section>
 
@@ -354,13 +353,13 @@ export default function PricingPage() {
         {isTrial && (
           <div className="max-w-4xl mx-auto p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-slate-850 dark:text-amber-300 text-xs font-semibold rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-500 animate-spin shrink-0" />
+              <Sparkles className="w-5 h-5 text-amber-500 animate-pulse shrink-0" />
               <span>
-                You are currently in a <strong>7-Day Pro Trial</strong>. You have <strong>{trialProposalsRemaining}</strong> free Pro-level proposals remaining before default limits lock.
+                You are currently in a <strong>7-Day Pro Free Trial</strong>. You have <strong>{trialProposalsRemaining}</strong> proposals remaining before default limits gate.
               </span>
             </div>
             <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs py-1 shadow-sm shrink-0" onClick={() => handleSubscribe('pro')}>
-              Upgrade Now & Lock Pro
+              Upgrade & Lock Professional
             </Button>
           </div>
         )}
@@ -370,8 +369,11 @@ export default function PricingPage() {
           {PLANS.map((plan) => {
             const Icon = plan.icon;
             const isCurrent = currentTier === plan.id && !isTrial;
-            const monthlyEquivalent = plan.customPrice ? 'Custom' : (cycle === 'monthly' ? plan.priceMonthly : Math.round(plan.priceAnnual / 12));
-            const annualSaving = plan.customPrice ? '' : (cycle === 'annual' ? `₦${(plan.priceMonthly * 12 - plan.priceAnnual).toLocaleString()} saved/year` : '');
+            
+            // Resolve prices based on cycle
+            const unitPrice = cycle === 'monthly' ? plan.priceMonthly : cycle === 'quarterly' ? Math.round(plan.priceQuarterly / 3) : Math.round(plan.priceAnnual / 12);
+            const cycleTotal = cycle === 'monthly' ? plan.priceMonthly : cycle === 'quarterly' ? plan.priceQuarterly : plan.priceAnnual;
+            const cycleLabel = cycle === 'monthly' ? 'month' : cycle === 'quarterly' ? 'quarter' : 'year';
 
             return (
               <Card 
@@ -382,15 +384,13 @@ export default function PricingPage() {
                     : 'border-slate-200 dark:border-slate-800 shadow-sm hover:border-slate-350 dark:hover:border-slate-700'
                 }`}
               >
-                {/* Popular overlay tag */}
                 {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-teal-600 text-white font-extrabold text-[8px] sm:text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-bl-xl shadow-sm z-20">
+                  <div className="absolute top-0 right-0 bg-teal-650 text-white font-extrabold text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-bl-xl shadow-sm z-20">
                     POPULAR Choice
                   </div>
                 )}
 
                 <CardContent className="p-6 flex flex-col justify-between h-full space-y-6">
-                  {/* Top Block */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <div className={`p-2 rounded-xl bg-gradient-to-br ${plan.color} text-white`}>
@@ -400,40 +400,21 @@ export default function PricingPage() {
                         <Badge variant="outline" className="text-[9px] uppercase tracking-wider font-extrabold border-slate-300 text-slate-500 dark:text-slate-400">
                           {plan.badge}
                         </Badge>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">{plan.name}</h3>
+                        <h3 className="text-base font-black text-slate-800 dark:text-slate-100">{plan.name}</h3>
                       </div>
                     </div>
 
-                    {/* Price Tag */}
                     <div className="pt-2">
-                      {plan.customPrice ? (
-                        <div className="space-y-1">
-                          <p className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-50">Custom</p>
-                          <p className="text-xs text-slate-400">Custom business SLA quote</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-50">
-                              {formatNaira(monthlyEquivalent as number)}
-                            </span>
-                            <span className="text-xs font-semibold text-slate-400">/month</span>
-                          </div>
-                          {cycle === 'annual' ? (
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                              Billed annually ({formatNaira(plan.priceAnnual)}/yr)
-                            </p>
-                          ) : (
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                              Monthly rolling tenure
-                            </p>
-                          )}
-                          {annualSaving && (
-                            <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 font-extrabold text-[8px] rounded py-0.5 px-1 border-none shadow-none uppercase">
-                              {annualSaving}
-                            </Badge>
-                          )}
-                        </div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-50">
+                          {formatNaira(unitPrice)}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-455">/mo equivalent</span>
+                      </div>
+                      {plan.priceMonthly > 0 && (
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">
+                          Billed {cycleLabel}ly ({formatNaira(cycleTotal)}/{cycleLabel})
+                        </p>
                       )}
                     </div>
 
@@ -443,10 +424,9 @@ export default function PricingPage() {
 
                     <div className="h-px bg-slate-200 dark:bg-slate-800" />
 
-                    {/* Features List */}
                     <ul className="space-y-2.5 pt-2">
                       {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-350">
+                        <li key={i} className="flex items-start gap-2.5 text-xs text-slate-650 dark:text-slate-350">
                           <Check className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
                           <span>{feature}</span>
                         </li>
@@ -454,11 +434,10 @@ export default function PricingPage() {
                     </ul>
                   </div>
 
-                  {/* Button Action */}
                   <div className="pt-4">
                     {isCurrent ? (
-                      <Button className="w-full bg-emerald-600 text-white font-extrabold hover:bg-emerald-600 cursor-default rounded-xl h-11">
-                        Active Subscription ✓
+                      <Button className="w-full bg-emerald-600 text-white font-extrabold hover:bg-emerald-650 cursor-default rounded-xl h-11">
+                        Active Plan ✓
                       </Button>
                     ) : (
                       <Button
@@ -468,7 +447,7 @@ export default function PricingPage() {
                             ? 'bg-teal-650 hover:bg-teal-700 text-white shadow-md shadow-teal-500/10' 
                             : 'border-slate-300 dark:border-slate-700 dark:text-slate-300'
                         }`}
-                        onClick={() => handleSubscribe(plan.id, plan.customPrice)}
+                        onClick={() => handleSubscribe(plan.id)}
                       >
                         {plan.ctaText}
                       </Button>
@@ -480,127 +459,202 @@ export default function PricingPage() {
           })}
         </section>
 
-        {/* ═══ Lagos Installer Testimonial / Social Proof ═══ */}
-        <section className="bg-white dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 flex flex-col md:flex-row items-center gap-6 shadow-sm">
-          <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white text-3xl font-black shadow-sm">
-            “
-          </div>
-          <div className="space-y-3">
-            <p className="text-sm sm:text-base italic text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-              &ldquo;We used to quote solar packages via WhatsApp voice notes or handwritten estimates. Sticker shock killed half our pipeline instantly. Since moving our installers to SolarPro Pro, we generate branded PDF specs with localized generator fuel ROI models on-site. Clients close 3x faster because they finally understand the numbers.&rdquo;
-            </p>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
-              <span className="font-bold text-slate-900 dark:text-slate-100">
-                Engr. Adeleke O. <span className="font-medium text-slate-400">· Managing Director at Alara Solar Ltd</span>
-              </span>
-              <Badge className="bg-teal-50 hover:bg-teal-550/10 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400 font-extrabold text-[9px] uppercase px-2 py-0.5 rounded-full border border-teal-250 dark:border-teal-900/30">
-                Verified Lagos Installer
-              </Badge>
+        {/* ═══ NEW: Manual Bank Transfer Verification Receipt Upload ═══ */}
+        <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-3xl mx-auto space-y-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-teal-500/10 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400">
+              <Upload className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-slate-850 dark:text-slate-50">Pay via Local Manual Bank Transfer</h2>
+              <p className="text-xs text-slate-400">Direct instant upgrade fallback for failed online card transactions.</p>
             </div>
           </div>
-        </section>
 
-        {/* ═══ Plan Feature Matrix Table ═══ */}
-        <section className="space-y-6">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-50">Compare Quoting Capabilities</h2>
-            <p className="text-xs text-slate-400">Discover which plan matches your solar installation pipeline.</p>
-          </div>
-
-          <Card className="border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-xs">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                    <th className="p-4 font-bold text-slate-650 dark:text-slate-400">Feature</th>
-                    <th className="p-4 font-bold text-center w-24">Starter</th>
-                    <th className="p-4 font-bold text-center w-24 text-teal-600 dark:text-teal-400">Pro</th>
-                    <th className="p-4 font-bold text-center w-24">Business</th>
-                    <th className="p-4 font-bold text-center w-24">Enterprise</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                  {/* Map Categories */}
-                  {Array.from(new Set(COMPARISON_FEATURES.map(f => f.category))).map(cat => (
-                    <React.Fragment key={cat}>
-                      {/* Category Header Row */}
-                      <tr className="bg-slate-100/50 dark:bg-slate-900/30">
-                        <td colSpan={5} className="p-3 font-extrabold uppercase tracking-wider text-[9px] text-teal-650 dark:text-teal-400">
-                          {cat}
-                        </td>
-                      </tr>
-                      {COMPARISON_FEATURES.filter(f => f.category === cat).map((feat, i) => (
-                        <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
-                          <td className="p-3 font-semibold text-slate-700 dark:text-slate-300">
-                            {feat.name}
-                          </td>
-                          <td className="p-3 text-center font-bold text-slate-500 tabular-nums">
-                            {feat.starter}
-                          </td>
-                          <td className="p-3 text-center font-bold text-teal-650 dark:text-teal-400 tabular-nums">
-                            {feat.pro}
-                          </td>
-                          <td className="p-3 text-center font-bold text-slate-650 dark:text-slate-350 tabular-nums">
-                            {feat.business}
-                          </td>
-                          <td className="p-3 text-center font-bold text-slate-600 dark:text-slate-400 tabular-nums">
-                            {feat.enterprise}
-                          </td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </section>
-
-        {/* ═══ FAQ Section ═══ */}
-        <section className="space-y-8 max-w-4xl mx-auto">
-          <div className="text-center space-y-2">
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-50">Frequently Asked Questions</h2>
-            <p className="text-xs text-slate-400">Everything you need to know about pricing packages, sync depth, and limits.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-            {[
-              {
-                q: 'How does the monthly/annual toggle affect billing?',
-                a: 'Billed plans are presented in local Nigerian Naira (₦). If you opt for annual billing, you are billed once every 12 months with a 20% discount. Monthly plans run on a rolling basis and can be canceled/adjusted at any time.'
-              },
-              {
-                q: 'What happens when I hit the Starter proposal monthly limit?',
-                a: 'Starter plans are capped at 3 proposal drafts created per month. Once you reach 3 proposals in history, you can open, edit, or delete existing quotes, but creating new drafts requires upgrading to Pro. Active Pro trials allow up to 10 quotes.'
-              },
-              {
-                q: 'Can I work offline when network signals drop on client sites?',
-                a: 'Yes, absolutely. SolarPro is a Progressive Web App (PWA). Your client load inventory, sizing results, pricing modes, and proposal drafts save locally in the browser immediately. Business plans sync this history across team members once connectivity resumes.'
-              },
-              {
-                q: 'Will downgrading delete my historical draft templates?',
-                a: 'No. If you decide to downgrade or cancel your Pro membership, your existing proposals remain preserved in your Local Proposal History. However, accessing locked Pro features (such as Advanced markup fields or ROI graphs) in those old proposals is restricted until you renew.'
-              },
-              {
-                q: 'Does upgrading remove the SolarPro branding watermark?',
-                a: 'Yes. Starter proposals include a professional watermark: "Sized by SolarPro" at the footer of generated proposals. Upgrading to the Pro tier removes this entirely and unlocks custom logo uploads, personalized business colors, NERC/CAC certifications, and direct WhatsApp links.'
-              },
-              {
-                q: 'How do low-margin manager approvals work?',
-                a: 'On the Business plan, managers can configure safeguards (e.g. minimum 15% net profit margin). If a sales rep applies discounts that drop the margin below that, the final PDF quote automatically locks, displaying "Awaiting Manager Approval" until an admin unlocks it.'
-              }
-            ].map((faq, i) => (
-              <div key={i} className="space-y-2 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl bg-white dark:bg-slate-900/30">
-                <p className="font-extrabold text-sm text-slate-850 dark:text-slate-100 flex items-start gap-2">
-                  <HelpCircle className="w-4 h-4 text-teal-500 shrink-0 mt-0.5" />
-                  <span>{faq.q}</span>
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium pl-6">
-                  {faq.a}
-                </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-950/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
+            <div className="space-y-3">
+              <p className="font-bold uppercase tracking-wider text-[10px] text-teal-600 dark:text-teal-400">GTBANK PAYMENT DETAILS</p>
+              <div className="space-y-1 text-slate-650 dark:text-slate-350">
+                <p>Bank Name: <strong className="text-slate-800 dark:text-slate-200">Guaranty Trust Bank (GTBank)</strong></p>
+                <p>Account Name: <strong className="text-slate-800 dark:text-slate-200">SolarPro Technologies</strong></p>
+                <p>Account Number: <strong className="text-slate-800 dark:text-slate-200">1029384756</strong></p>
               </div>
-            ))}
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                ⚠️ Make sure to input your company email as transaction reference description to avoid verification delays.
+              </p>
+            </div>
+
+            <form onSubmit={handleManualPaymentSubmit} className="space-y-3">
+              <p className="font-bold uppercase tracking-wider text-[10px] text-teal-600 dark:text-teal-400 font-sans">SUBMIT PAYMENT CONFIRMATION</p>
+              <div>
+                <label className="block text-[10px] text-slate-455 font-bold mb-1">Select Desired Plan</label>
+                <select 
+                  value={manualPlan} 
+                  onChange={(e) => setManualPlan(e.target.value)} 
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
+                >
+                  <option value="starter">Starter Plan (₦18,000/mo)</option>
+                  <option value="pro">Professional Plan (₦45,000/mo)</option>
+                  <option value="enterprise">Enterprise Plan (₦120,000/mo)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-455 font-bold mb-1">Cycle Selection</label>
+                <select 
+                  value={manualCycle} 
+                  onChange={(e) => setManualCycle(e.target.value)} 
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
+                >
+                  <option value="monthly">Monthly rolling basis</option>
+                  <option value="quarterly">Quarterly (10% Discount)</option>
+                  <option value="annual">Annual (20% Discount)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-455 font-bold mb-1">Upload Transfer Slip / Receipt Screenshot</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => setReceiptFile(e.target.value)}
+                  required
+                  className="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700 dark:file:bg-teal-950 dark:file:text-teal-400 file:hover:bg-teal-100" 
+                />
+              </div>
+              <Button type="submit" size="sm" disabled={manualLoading} className="w-full bg-teal-650 hover:bg-teal-700 text-white font-bold rounded-lg text-xs py-1.5 shadow-sm">
+                {manualLoading ? 'Uploading Slip...' : 'Submit Receipt Slip'}
+              </Button>
+            </form>
           </div>
+        </section>
+
+        {/* ═══ NEW: Setup & Dedicated Implementation Services Form ═══ */}
+        <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-3xl mx-auto space-y-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
+              <PhoneCall className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-slate-850 dark:text-slate-50">Dedicated Implementation & Setup Services</h2>
+              <p className="text-xs text-slate-400">Let our B2B solar consulting team configure CAC data-sheets, DISCO tariffs, and customized pricing sheets for your sales reps.</p>
+            </div>
+          </div>
+
+          {setupSuccess ? (
+            <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-center space-y-3 border border-emerald-100 dark:border-emerald-950/40 text-emerald-800 dark:text-emerald-300">
+              <h3 className="text-sm font-black">🎉 Request Received!</h3>
+              <p className="text-xs">One of our Lagos-based setup specialists will call you at the provided number to onboard your installers.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSetupLeadSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] text-slate-455 font-bold mb-1">Company Legal Name</label>
+                  <input type="text" required value={setupName} onChange={(e) => setSetupName(e.target.value)} placeholder="e.g. Alara Solar Ltd" className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-slate-455 font-bold mb-1">Contact Person Name</label>
+                  <input type="text" required value={setupPerson} onChange={(e) => setSetupPerson(e.target.value)} placeholder="e.g. Engr. Adeleke" className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Phone Number</label>
+                    <input type="tel" required value={setupPhone} onChange={(e) => setSetupPhone(e.target.value)} placeholder="080..." className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Email Address</label>
+                    <input type="email" required value={setupEmail} onChange={(e) => setSetupEmail(e.target.value)} placeholder="name@solar.ng" className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Desired Setup Package</label>
+                    <select value={setupPackage} onChange={(e) => setSetupPackage(e.target.value)} className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none">
+                      <option value="basic">Basic Setup (₦30,000)</option>
+                      <option value="professional">Professional Setup (₦75,000)</option>
+                      <option value="enterprise">Enterprise Custom Onboarding</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Team Size (Sales Reps)</label>
+                    <input type="number" min="1" max="100" value={setupTeamSize} onChange={(e) => setSetupTeamSize(e.target.value)} className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] text-slate-455 font-bold mb-1">Describe Current Proposal Workflow</label>
+                  <textarea rows={2} value={setupWorkflow} onChange={(e) => setSetupWorkflow(e.target.value)} placeholder="e.g. Estimators sizing in Excel, designing quotes in Canva..." className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none resize-none" />
+                </div>
+                <Button type="submit" className="w-full bg-indigo-650 hover:bg-indigo-700 text-white font-bold rounded-xl h-10 mt-1 shadow-sm">
+                  Request Implementation Setup
+                </Button>
+              </div>
+            </form>
+          )}
+        </section>
+
+        {/* ═══ NEW: Training / Cohort Onboarding Form ═══ */}
+        <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-3xl mx-auto space-y-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-slate-850 dark:text-slate-50">Join the Solar Sales Pro Training Cohort</h2>
+              <p className="text-xs text-slate-400">Standardize pricing methodology and closing frameworks targeting high-net-worth Nigerian home owners.</p>
+            </div>
+          </div>
+
+          {trainSuccess ? (
+            <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-center space-y-3 border border-emerald-100 dark:border-emerald-950/40 text-emerald-800 dark:text-emerald-300">
+              <h3 className="text-sm font-black">🎉 Registered Successfully!</h3>
+              <p className="text-xs">We have reserved a placeholder for your seat. An invitation syllabus will be dispatched to your email shortly.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleTrainingLeadSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] text-slate-455 font-bold mb-1">Full Legal Name</label>
+                  <input type="text" required value={trainName} onChange={(e) => setTrainName(e.target.value)} placeholder="e.g. Ademola Alabi" className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Whatsapp/Phone Number</label>
+                    <input type="tel" required value={trainPhone} onChange={(e) => setTrainPhone(e.target.value)} placeholder="e.g. 0803..." className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Email Address</label>
+                    <input type="email" required value={trainEmail} onChange={(e) => setTrainEmail(e.target.value)} placeholder="name@solarcompany.com" className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Role / Job Title</label>
+                    <input type="text" required value={trainRole} onChange={(e) => setTrainRole(e.target.value)} placeholder="e.g. Solar Estimator / Sales Manager" className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Experience Level</label>
+                    <select value={trainExp} onChange={(e) => setTrainExp(e.target.value)} className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none">
+                      <option value="beginner">Beginner (1-2 years)</option>
+                      <option value="intermediate">Intermediate (2-5 years)</option>
+                      <option value="advanced">Advanced Specialist (5+ years)</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] text-slate-455 font-bold mb-1">Company / EPC Firm Name</label>
+                  <input type="text" required value={trainCompany} onChange={(e) => setTrainCompany(e.target.value)} placeholder="e.g. Alara Solar Solutions" className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                </div>
+                <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl h-10 mt-1 shadow-sm">
+                  Register Cohort Interest
+                </Button>
+              </div>
+            </form>
+          )}
         </section>
 
         {/* ═══ Footer CTA ═══ */}
@@ -618,7 +672,6 @@ export default function PricingPage() {
         </section>
 
       </main>
-
     </div>
   );
 }
