@@ -3,9 +3,6 @@
 import * as React from 'react';
 import { 
   Search, 
-  Filter, 
-  SlidersHorizontal, 
-  X, 
   Building2, 
   User, 
   Calendar, 
@@ -21,7 +18,8 @@ import {
   Ban,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -120,7 +118,6 @@ export default function AdminCompanies() {
     setDrawerProposals([]);
 
     try {
-      // Fetch latest 10 proposals for this company
       const res = await fetch(`/api/admin/proposals?companyId=${company.id}`);
       const data = await res.json();
       if (data.data) {
@@ -213,34 +210,41 @@ export default function AdminCompanies() {
 
   return (
     <div className="space-y-6">
-      {/* Title & Stats Summary */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      
+      {/* ═══ Header Title ═══ */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Companies Registry</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">Manage corporate workspaces, billing limits, and tenant accounts.</p>
+          <div className="flex items-center gap-2 text-xs font-bold text-teal-655 dark:text-teal-400 uppercase tracking-widest">
+            <Building2 className="h-4 w-4 shrink-0" />
+            <span>Multi-Tenant Registries</span>
+          </div>
+          <h1 className="text-3xl font-black text-slate-850 dark:text-slate-50 tracking-tight mt-1">Companies Registry</h1>
+          <p className="text-xs text-slate-550 dark:text-slate-400 font-bold mt-1">
+            Manage corporate workspaces, configure billing limits, view parameters, and monitor tenant accounts.
+          </p>
         </div>
       </div>
 
-      {/* Filters Bar */}
-      <Card className="border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm backdrop-blur-md rounded-2xl">
-        <CardContent className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-450" />
+      {/* ═══ Filters Bar ═══ */}
+      <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-2xl">
+        <CardContent className="p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full lg:w-96">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Search by company name or owner email..."
               value={search}
               onChange={handleSearchChange}
-              className="pl-10 h-10.5 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950"
+              className="pl-10 h-10.5 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 font-bold dark:text-slate-100 text-xs"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             {/* Plan filter */}
             <div className="relative flex-1 sm:flex-none">
               <select
                 value={planFilter}
                 onChange={handlePlanFilterChange}
-                className="w-full sm:w-44 h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm font-semibold text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full sm:w-44 h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="">All Plan Tiers</option>
                 <option value="starter">Starter</option>
@@ -255,7 +259,7 @@ export default function AdminCompanies() {
               <select
                 value={statusFilter}
                 onChange={handleStatusFilterChange}
-                className="w-full sm:w-44 h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm font-semibold text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full sm:w-44 h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="">All Statuses</option>
                 <option value="trial">Trial</option>
@@ -268,24 +272,24 @@ export default function AdminCompanies() {
         </CardContent>
       </Card>
 
-      {/* Companies Table */}
-      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      {/* ═══ Companies Table ═══ */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
         {loading ? (
-          <div className="flex flex-col items-center justify-center p-12 gap-3 bg-white dark:bg-slate-900/10">
+          <div className="flex flex-col items-center justify-center p-16 gap-3 bg-white dark:bg-slate-900">
             <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-semibold text-slate-500 animate-pulse">Loading workspace tenants...</span>
+            <span className="text-xs font-bold text-slate-500 animate-pulse">Loading workspace tenants...</span>
           </div>
         ) : companies.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-16 text-center gap-2">
+          <div className="flex flex-col items-center justify-center p-20 text-center gap-2">
             <Building2 className="h-10 w-10 text-slate-400" />
-            <span className="text-base font-bold text-slate-700 dark:text-slate-300">No workspace tenants found</span>
-            <span className="text-xs font-semibold text-slate-500">Try adjusting your search queries or filter categories.</span>
+            <span className="text-sm font-black text-slate-800 dark:text-slate-100">No Workspace Tenants Found</span>
+            <span className="text-xs font-bold text-slate-500">Try adjusting your search queries or filter categories.</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                <tr className="bg-slate-50 dark:bg-slate-950 text-slate-450 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-widest border-b border-slate-200 dark:border-slate-800/80">
                   <th className="px-6 py-4.5">Company Name</th>
                   <th className="px-6 py-4.5">Owner / Contact</th>
                   <th className="px-6 py-4.5">Plan Tier</th>
@@ -295,44 +299,44 @@ export default function AdminCompanies() {
                   <th className="px-6 py-4.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+              <tbody className="divide-y divide-slate-200/60 dark:divide-slate-805 text-xs font-bold">
                 {companies.map((company) => (
                   <tr 
                     key={company.id} 
-                    className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors ${
-                      company.suspended ? 'bg-rose-50/30 dark:bg-rose-950/5 opacity-80' : ''
+                    className={`hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-colors ${
+                      company.suspended ? 'bg-red-500/[0.03] dark:bg-red-500/[0.02] opacity-90' : ''
                     }`}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2.5">
-                        <span className="font-black text-slate-800 dark:text-slate-100">{company.name}</span>
+                        <span className="font-extrabold text-slate-800 dark:text-slate-100 text-[13px]">{company.name}</span>
                         {company.suspended && (
-                          <span className="text-[10px] font-black uppercase bg-red-500 text-white px-2 py-0.5 rounded-full tracking-wider animate-pulse">
+                          <span className="text-[9px] font-black uppercase bg-rose-500 text-white px-2 py-0.5 rounded-full tracking-wider animate-pulse">
                             Suspended
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">{company.owner_email || 'N/A'}</td>
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-bold">{company.owner_email || 'N/A'}</td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 border border-slate-200/50 dark:border-slate-700/50 uppercase tracking-wider">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 uppercase tracking-wider">
                         {company.subscription_tier || 'Starter'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border ${
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
                         company.subscription_status === 'active' 
-                          ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50' 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/25 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/50' 
                           : company.subscription_status === 'trial' 
-                          ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/50' 
+                          ? 'bg-amber-50 dark:bg-amber-950/25 text-amber-700 dark:text-amber-400 border-amber-250 dark:border-amber-900/50' 
                           : company.subscription_status === 'past_due'
-                          ? 'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/50'
-                          : 'bg-slate-50 dark:bg-slate-900/20 text-slate-655 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                          ? 'bg-rose-50 dark:bg-rose-950/25 text-rose-700 dark:text-rose-400 border-rose-250 dark:border-rose-900/50'
+                          : 'bg-slate-50 dark:bg-slate-950/20 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                       }`}>
                         {company.subscription_status || 'Trial'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-bold">{company.proposals_count}</td>
+                    <td className="px-6 py-4 text-slate-750 dark:text-slate-200 font-black">{company.proposals_count}</td>
                     <td className="px-6 py-4 text-slate-500 dark:text-slate-500 font-semibold">{formatShortDate(company.created_at)}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -340,7 +344,7 @@ export default function AdminCompanies() {
                           variant="ghost" 
                           size="sm"
                           onClick={() => handleViewDetails(company)}
-                          className="h-8.5 rounded-lg text-slate-600 dark:text-slate-300 flex items-center gap-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          className="h-8.5 rounded-lg text-slate-655 dark:text-slate-300 flex items-center gap-1 hover:bg-slate-100 dark:hover:bg-slate-950"
                         >
                           <Eye className="h-4 w-4" />
                           <span>View</span>
@@ -349,7 +353,7 @@ export default function AdminCompanies() {
                           variant="ghost" 
                           size="sm"
                           onClick={() => handleOpenOverride(company)}
-                          className="h-8.5 rounded-lg text-teal-650 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/30"
+                          className="h-8.5 rounded-lg text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/30"
                         >
                           <Settings className="h-4 w-4" />
                           <span>Plan</span>
@@ -361,7 +365,7 @@ export default function AdminCompanies() {
                           className={`h-8.5 rounded-lg flex items-center gap-1 font-bold ${
                             company.suspended 
                               ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30' 
-                              : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30'
+                              : 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30'
                           }`}
                         >
                           <Ban className="h-4 w-4" />
@@ -378,15 +382,15 @@ export default function AdminCompanies() {
 
         {/* Pagination bar */}
         {!loading && totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/10">
-            <span className="text-xs font-semibold text-slate-500">Page {page} of {totalPages}</span>
+          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/20">
+            <span className="text-[11px] font-bold text-slate-500">Page {page} of {totalPages}</span>
             <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"
                 size="sm"
                 disabled={page === 1}
                 onClick={() => setPage(p => Math.max(p - 1, 1))}
-                className="h-8 rounded-lg cursor-pointer flex items-center gap-1 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350"
+                className="h-8 rounded-lg cursor-pointer flex items-center gap-1 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span>Prev</span>
@@ -396,7 +400,7 @@ export default function AdminCompanies() {
                 size="sm"
                 disabled={page === totalPages}
                 onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-                className="h-8 rounded-lg cursor-pointer flex items-center gap-1 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350"
+                className="h-8 rounded-lg cursor-pointer flex items-center gap-1 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
               >
                 <span>Next</span>
                 <ChevronRight className="h-4 w-4" />
@@ -409,9 +413,8 @@ export default function AdminCompanies() {
       {/* Slide-over View Drawer */}
       {drawerOpen && selectedCompany && (
         <div className="fixed inset-0 z-50 overflow-hidden font-sans">
-          {/* Backdrop overlay */}
           <div 
-            className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs transition-opacity duration-300"
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300"
             onClick={() => setDrawerOpen(false)}
           />
 
@@ -423,7 +426,7 @@ export default function AdminCompanies() {
                   <Building2 className="h-5 w-5 text-teal-400" />
                   <div>
                     <h2 className="text-lg font-black tracking-tight">{selectedCompany.name}</h2>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Company Workspace Profile</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Company Workspace Profile</p>
                   </div>
                 </div>
                 <button 
@@ -435,7 +438,7 @@ export default function AdminCompanies() {
               </div>
 
               {/* Drawer Content */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-8 text-slate-800 dark:text-slate-250">
+              <div className="flex-1 overflow-y-auto p-6 space-y-8 text-slate-800 dark:text-slate-200">
                 {/* Visual Identity banner */}
                 <div 
                   className="rounded-2xl p-5 border text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
@@ -444,9 +447,9 @@ export default function AdminCompanies() {
                   }}
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase bg-white/20 px-2 py-0.5 rounded-full tracking-wider border border-white/10">Visual branding</span>
+                    <span className="text-[9px] font-black uppercase bg-white/20 px-2 py-0.5 rounded-full tracking-wider border border-white/10">Visual Identity</span>
                     <h3 className="text-xl font-extrabold tracking-tight">{selectedCompany.name}</h3>
-                    <p className="text-xs font-medium text-white/80">{selectedCompany.tagline || 'No tagline set'}</p>
+                    <p className="text-xs font-semibold text-white/80">{selectedCompany.tagline || 'No tagline set'}</p>
                   </div>
 
                   <div className="flex flex-col gap-2 font-bold text-xs bg-slate-950/20 backdrop-blur-md rounded-xl p-3 border border-white/10 min-w-[200px]">
@@ -466,7 +469,7 @@ export default function AdminCompanies() {
                   {/* General details */}
                   <div className="space-y-4">
                     <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Registration Details</h4>
-                    <div className="space-y-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-850 p-4.5 rounded-2xl text-sm font-semibold">
+                    <div className="space-y-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-805 p-4.5 rounded-2xl text-xs font-bold">
                       <div className="flex justify-between">
                         <span className="text-slate-450 dark:text-slate-400">CAC Number:</span>
                         <span className="text-slate-800 dark:text-slate-100">{selectedCompany.cac_number || 'Not provided'}</span>
@@ -489,14 +492,14 @@ export default function AdminCompanies() {
                   {/* Billing settings */}
                   <div className="space-y-4">
                     <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Billing Settings</h4>
-                    <div className="space-y-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-850 p-4.5 rounded-2xl text-sm font-semibold">
+                    <div className="space-y-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-805 p-4.5 rounded-2xl text-xs font-bold">
                       <div className="flex justify-between">
                         <span className="text-slate-450 dark:text-slate-400">Active Tier:</span>
                         <span className="text-slate-800 dark:text-slate-100 uppercase tracking-wide">{selectedCompany.subscription_tier}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-450 dark:text-slate-400">Status:</span>
-                        <span className="text-slate-850 dark:text-slate-100 font-bold capitalize">{selectedCompany.subscription_status}</span>
+                        <span className="text-slate-850 dark:text-slate-100 font-extrabold capitalize">{selectedCompany.subscription_status}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-450 dark:text-slate-400">Paystack ID:</span>
@@ -517,28 +520,28 @@ export default function AdminCompanies() {
                 {/* Team Members */}
                 <div className="space-y-4">
                   <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider flex items-center gap-1.5">
-                    <User className="h-4 w-4 text-teal-650" />
+                    <User className="h-4 w-4 text-teal-600" />
                     <span>Workspace Members ({selectedCompany.members?.length || 0})</span>
                   </h4>
-                  <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-xs">
+                  <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-slate-50 dark:bg-slate-850/40 text-slate-550 dark:text-slate-400 text-xs font-bold uppercase border-b border-slate-200 dark:border-slate-800">
+                        <tr className="bg-slate-50 dark:bg-slate-900 text-slate-450 dark:text-slate-400 text-[10px] font-extrabold uppercase border-b border-slate-200 dark:border-slate-800">
                           <th className="px-4 py-3">Email Address</th>
                           <th className="px-4 py-3">Role</th>
                           <th className="px-4 py-3 text-right">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850 text-xs font-semibold">
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-805 text-xs font-bold">
                         {selectedCompany.members?.map((member, i) => (
-                          <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
-                            <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-100">{member.email}</td>
+                          <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                            <td className="px-4 py-3 font-extrabold text-slate-800 dark:text-slate-100">{member.email}</td>
                             <td className="px-4 py-3 text-slate-500 uppercase tracking-wide">{member.role}</td>
                             <td className="px-4 py-3 text-right">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border ${
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] uppercase font-black border ${
                                 member.active !== false 
                                   ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200' 
-                                  : 'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-200'
+                                  : 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200'
                               }`}>
                                 {member.active !== false ? 'Active' : 'Deactivated'}
                               </span>
@@ -559,30 +562,30 @@ export default function AdminCompanies() {
                   {loadingProposals ? (
                     <div className="flex justify-center p-6 gap-2">
                       <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs font-semibold text-slate-500">Querying proposal vaults...</span>
+                      <span className="text-xs font-bold text-slate-500">Querying proposal vaults...</span>
                     </div>
                   ) : drawerProposals.length === 0 ? (
-                    <div className="p-6 border border-dashed rounded-2xl text-center text-xs font-semibold text-slate-450 dark:text-slate-550 bg-slate-50/30">
+                    <div className="p-6 border border-dashed rounded-2xl text-center text-xs font-bold text-slate-450 dark:text-slate-550 bg-slate-50/30">
                       No proposals created in this workspace.
                     </div>
                   ) : (
-                    <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-xs">
+                    <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="bg-slate-50 dark:bg-slate-850/40 text-slate-550 dark:text-slate-400 text-xs font-bold uppercase border-b border-slate-200 dark:border-slate-800">
+                          <tr className="bg-slate-50 dark:bg-slate-900 text-slate-450 dark:text-slate-400 text-[10px] font-extrabold uppercase border-b border-slate-200 dark:border-slate-800">
                             <th className="px-4 py-3">Client / Name</th>
                             <th className="px-4 py-3">Quoted Value</th>
                             <th className="px-4 py-3">Status</th>
                             <th className="px-4 py-3 text-right">Date</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-850 text-xs font-semibold">
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-805 text-xs font-bold">
                           {drawerProposals.map((prop, i) => (
-                            <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
-                              <td className="px-4 py-3 font-bold text-slate-850 dark:text-slate-100">{prop.customer_name}</td>
-                              <td className="px-4 py-3 text-slate-655 dark:text-slate-350">{formatNaira(prop.final_quoted_price_ngn)}</td>
+                            <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                              <td className="px-4 py-3 font-extrabold text-slate-850 dark:text-slate-100">{prop.customer_name}</td>
+                              <td className="px-4 py-3 text-slate-600 dark:text-slate-300 font-bold">{formatNaira(prop.final_quoted_price_ngn)}</td>
                               <td className="px-4 py-3">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border ${
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] uppercase font-black border ${
                                   prop.status === 'sent' 
                                     ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-250' 
                                     : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-250'
@@ -590,7 +593,7 @@ export default function AdminCompanies() {
                                   {prop.status}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-right text-slate-500">{formatShortDate(prop.created_at)}</td>
+                              <td className="px-4 py-3 text-right text-slate-500 font-semibold">{formatShortDate(prop.created_at)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -605,10 +608,10 @@ export default function AdminCompanies() {
                 <Button 
                   variant="outline"
                   onClick={() => handleSuspensionToggle(selectedCompany)}
-                  className={`h-10 rounded-xl font-bold cursor-pointer shadow-sm ${
+                  className={`h-10 rounded-xl font-black cursor-pointer shadow-sm ${
                     selectedCompany.suspended 
                       ? 'border-emerald-200 hover:bg-emerald-50 text-emerald-700' 
-                      : 'border-red-200 hover:bg-red-50 text-red-655'
+                      : 'border-rose-200 hover:bg-rose-50 text-rose-600'
                   }`}
                 >
                   <Ban className="h-4 w-4" />
@@ -617,7 +620,7 @@ export default function AdminCompanies() {
 
                 <Button 
                   onClick={() => handleOpenOverride(selectedCompany)}
-                  className="h-10 px-5 bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl cursor-pointer shadow-sm flex items-center gap-1.5"
+                  className="h-10 px-5 bg-teal-650 hover:bg-teal-700 text-white font-black rounded-xl cursor-pointer shadow-sm flex items-center gap-1.5"
                 >
                   <Settings className="h-4.5 w-4.5" />
                   <span>Override Subscription</span>
@@ -632,13 +635,13 @@ export default function AdminCompanies() {
       {overrideModalOpen && overrideCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center font-sans">
           <div 
-            className="absolute inset-0 bg-slate-950/50 backdrop-blur-xs"
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
             onClick={() => setOverrideModalOpen(false)}
           />
 
-          <Card className="relative z-10 w-full max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl overflow-hidden animate-scale-up mx-4">
-            <div className="px-6 py-4.5 bg-slate-900 text-slate-100 flex items-center justify-between">
-              <span className="font-black text-base tracking-tight">Manual Plan Override</span>
+          <Card className="relative z-10 w-full max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl overflow-hidden mx-4">
+            <div className="px-6 py-4.5 bg-slate-900 text-slate-100 flex items-center justify-between border-b border-slate-800">
+              <span className="font-black text-sm uppercase tracking-wider">Manual Plan Override</span>
               <button 
                 onClick={() => setOverrideModalOpen(false)}
                 className="p-1 rounded-md text-slate-400 hover:text-white"
@@ -648,17 +651,17 @@ export default function AdminCompanies() {
             </div>
 
             <CardContent className="p-6 space-y-5">
-              <div className="text-sm font-semibold text-slate-655 dark:text-slate-400">
-                Adjusting billing specifications for <strong className="text-slate-800 dark:text-white">{overrideCompany.name}</strong> workspace.
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                Adjusting billing specifications for <strong className="text-slate-800 dark:text-white font-extrabold">{overrideCompany.name}</strong> workspace.
               </div>
 
               {/* Plan Select */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-500">Subscription Tier</label>
+                <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-450 dark:text-slate-500">Subscription Tier</label>
                 <select
                   value={selectedTier}
                   onChange={(e) => setSelectedTier(e.target.value)}
-                  className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="starter">Starter Plan (₦0 / limited 3 proposals)</option>
                   <option value="pro">Pro Plan (₦9,900 / month)</option>
@@ -669,11 +672,11 @@ export default function AdminCompanies() {
 
               {/* Status Select */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-500">Subscription Status</label>
+                <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-450 dark:text-slate-500">Subscription Status</label>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="trial">Trialing</option>
                   <option value="active">Active (Good Standing)</option>
@@ -682,17 +685,17 @@ export default function AdminCompanies() {
                 </select>
               </div>
 
-              <div className="pt-4 border-t dark:border-slate-800 flex justify-end gap-2.5">
+              <div className="pt-4 border-t border-slate-250 dark:border-slate-805 flex justify-end gap-2.5">
                 <Button 
                   variant="outline"
                   onClick={() => setOverrideModalOpen(false)}
-                  className="h-10 rounded-xl font-bold cursor-pointer"
+                  className="h-10 rounded-xl font-black cursor-pointer text-xs"
                 >
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleSaveOverride}
-                  className="h-10 px-5 bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl cursor-pointer shadow-sm"
+                  className="h-10 px-5 bg-teal-600 hover:bg-teal-700 text-white font-black rounded-xl cursor-pointer shadow-sm text-xs"
                 >
                   Apply Override
                 </Button>

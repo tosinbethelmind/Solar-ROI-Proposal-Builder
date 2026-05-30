@@ -5,13 +5,13 @@ import {
   Search, 
   UserCheck, 
   UserX, 
-  ShieldAlert, 
   Building2, 
   Mail, 
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Filter
+  UserCheck2,
+  Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -137,32 +137,41 @@ export default function AdminUsers() {
 
   return (
     <div className="space-y-6">
-      {/* Title & Stats */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Users Directory</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium">Monitor active workspace members, team roles, and platform permissions.</p>
+      
+      {/* ═══ Header Title ═══ */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold text-teal-655 dark:text-teal-400 uppercase tracking-widest">
+            <Users className="h-4 w-4 shrink-0" />
+            <span>Operator & Team Access</span>
+          </div>
+          <h1 className="text-3xl font-black text-slate-850 dark:text-slate-55 tracking-tight mt-1">Users Directory</h1>
+          <p className="text-xs text-slate-550 dark:text-slate-400 font-bold mt-1">
+            Monitor active workspace members, configure administrative team roles, and coordinate user activities.
+          </p>
+        </div>
       </div>
 
-      {/* Filters Bar */}
-      <Card className="border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm backdrop-blur-md rounded-2xl">
-        <CardContent className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-450" />
+      {/* ═══ Filters Bar ═══ */}
+      <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-2xl">
+        <CardContent className="p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full lg:w-96">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Search by email, company or role..."
               value={search}
               onChange={handleSearchChange}
-              className="pl-10 h-10.5 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950"
+              className="pl-10 h-10.5 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-955 font-bold dark:text-slate-100 text-xs"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             {/* Company filter */}
             <div className="relative flex-1 sm:flex-none">
               <select
                 value={companyFilter}
                 onChange={handleCompanyFilterChange}
-                className="w-full sm:w-48 h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm font-semibold text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full sm:w-48 h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="">All Companies</option>
                 {companies.map((c) => (
@@ -176,7 +185,7 @@ export default function AdminUsers() {
               <select
                 value={statusFilter}
                 onChange={handleStatusFilterChange}
-                className="w-full sm:w-44 h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm font-semibold text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full sm:w-44 h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
@@ -187,24 +196,24 @@ export default function AdminUsers() {
         </CardContent>
       </Card>
 
-      {/* Users Table */}
-      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      {/* ═══ Users Table ═══ */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
         {loading ? (
-          <div className="flex flex-col items-center justify-center p-12 gap-3 bg-white dark:bg-slate-900/10">
+          <div className="flex flex-col items-center justify-center p-16 gap-3 bg-white dark:bg-slate-900">
             <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-semibold text-slate-500 animate-pulse">Loading platform members...</span>
+            <span className="text-xs font-bold text-slate-500 animate-pulse">Loading platform members...</span>
           </div>
         ) : users.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-16 text-center gap-2">
+          <div className="flex flex-col items-center justify-center p-20 text-center gap-2">
             <UserX className="h-10 w-10 text-slate-400" />
-            <span className="text-base font-bold text-slate-700 dark:text-slate-300">No workspace members found</span>
-            <span className="text-xs font-semibold text-slate-500">Try modifying your query constraints or filters.</span>
+            <span className="text-sm font-black text-slate-800 dark:text-slate-100">No Workspace Members Found</span>
+            <span className="text-xs font-bold text-slate-500">Try modifying your query constraints or filters.</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                <tr className="bg-slate-50 dark:bg-slate-950 text-slate-450 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-widest border-b border-slate-200 dark:border-slate-800/80">
                   <th className="px-6 py-4.5">Email Address</th>
                   <th className="px-6 py-4.5">Company / Tenant</th>
                   <th className="px-6 py-4.5">Role</th>
@@ -213,37 +222,43 @@ export default function AdminUsers() {
                   <th className="px-6 py-4.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+              <tbody className="divide-y divide-slate-200/60 dark:divide-slate-805 text-xs font-bold">
                 {users.map((member) => (
                   <tr 
                     key={member.id} 
-                    className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors ${
-                      member.active === false ? 'bg-red-50/30 dark:bg-red-950/5 opacity-85' : ''
+                    className={`hover:bg-slate-50/50 dark:hover:bg-slate-955/20 transition-colors ${
+                      member.active === false ? 'bg-red-500/[0.03] dark:bg-red-500/[0.02] opacity-90' : ''
                     }`}
                   >
-                    <td className="px-6 py-4 font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-slate-450" />
-                      <span>{member.email}</span>
+                    <td className="px-6 py-4 text-[13px] font-extrabold text-slate-800 dark:text-slate-100">
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-slate-400 shrink-0" />
+                        <span>{member.email}</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-655 dark:text-slate-400 font-bold flex items-center gap-1.5 mt-0.5">
-                      <Building2 className="h-4 w-4 text-slate-450" />
-                      <span>{member.company_name}</span>
+                    <td className="px-6 py-4 text-slate-655 dark:text-slate-400 font-bold">
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
+                        <span>{member.company_name}</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-450 font-semibold uppercase tracking-wider text-xs">
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                       {member.role || 'Member'}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border ${
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
                         member.active !== false 
-                          ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-255 dark:border-emerald-900/50' 
-                          : 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-255 dark:border-rose-900/50'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/25 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/50' 
+                          : 'bg-rose-50 dark:bg-rose-950/25 text-rose-700 dark:text-rose-400 border-rose-250 dark:border-rose-900/50'
                       }`}>
                         {member.active !== false ? 'Active' : 'Deactivated'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 dark:text-slate-500 font-semibold flex items-center gap-1.5 mt-0.5">
-                      <Calendar className="h-4 w-4 text-slate-450" />
-                      <span>{formatShortDate(member.created_at)}</span>
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-500 font-semibold">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
+                        <span>{formatShortDate(member.created_at)}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Button 
@@ -252,7 +267,7 @@ export default function AdminUsers() {
                         onClick={() => handleStatusToggle(member)}
                         className={`h-8.5 rounded-lg flex items-center gap-1 font-bold ${
                           member.active !== false 
-                            ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30' 
+                            ? 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30' 
                             : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
                         }`}
                       >
@@ -278,8 +293,8 @@ export default function AdminUsers() {
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/10">
-            <span className="text-xs font-semibold text-slate-500">Page {page} of {totalPages}</span>
+          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/20">
+            <span className="text-[11px] font-bold text-slate-500">Page {page} of {totalPages}</span>
             <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"

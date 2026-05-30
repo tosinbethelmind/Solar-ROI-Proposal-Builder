@@ -7,7 +7,6 @@ import {
   Building2, 
   User, 
   Calendar, 
-  Coins, 
   ChevronLeft, 
   ChevronRight,
   TrendingUp
@@ -79,46 +78,55 @@ export default function AdminProposals() {
 
   return (
     <div className="space-y-6">
-      {/* Title */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Proposals Vault</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium">Platform-wide overview of all commercial solar reports and ROI structures generated.</p>
+      
+      {/* ═══ Header Title ═══ */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold text-teal-655 dark:text-teal-400 uppercase tracking-widest">
+            <FileText className="h-4 w-4 shrink-0" />
+            <span>Commercial Estimator Output</span>
+          </div>
+          <h1 className="text-3xl font-black text-slate-850 dark:text-slate-55 tracking-tight mt-1">Proposals Vault</h1>
+          <p className="text-xs text-slate-550 dark:text-slate-400 font-bold mt-1">
+            Platform-wide overview of all commercial solar sizing reports, financial savings estimates, and ROI configurations.
+          </p>
+        </div>
       </div>
 
-      {/* Filters Bar */}
-      <Card className="border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm backdrop-blur-md rounded-2xl">
+      {/* ═══ Filters Bar ═══ */}
+      <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-2xl">
         <CardContent className="p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-450" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Search by client name, system name..."
               value={search}
               onChange={handleSearchChange}
-              className="pl-9 h-10 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950"
+              className="pl-9 h-10.5 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 font-bold dark:text-slate-100 text-xs"
             />
           </div>
-          <span className="text-xs font-semibold text-slate-450 hidden sm:block">Querying live database indexes</span>
+          <span className="text-[11px] font-bold text-slate-500 hidden sm:block">Querying live database indexes</span>
         </CardContent>
       </Card>
 
-      {/* Proposals Ledger Table */}
-      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      {/* ═══ Proposals Ledger Table ═══ */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
         {loading ? (
-          <div className="flex flex-col items-center justify-center p-12 gap-3 bg-white dark:bg-slate-900/10">
+          <div className="flex flex-col items-center justify-center p-16 gap-3">
             <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-semibold text-slate-500 animate-pulse">Retrieving proposal ledgers...</span>
+            <span className="text-xs font-bold text-slate-500 animate-pulse">Retrieving proposal ledgers...</span>
           </div>
         ) : proposals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-16 text-center gap-2">
-            <FileText className="h-10 w-10 text-slate-400 animate-bounce" />
-            <span className="text-base font-bold text-slate-700 dark:text-slate-350">No proposals found</span>
-            <span className="text-xs font-semibold text-slate-500">Workspace estimators have not logged any proposals matching your query.</span>
+          <div className="flex flex-col items-center justify-center p-20 text-center gap-2">
+            <FileText className="h-10 w-10 text-slate-400" />
+            <span className="text-sm font-black text-slate-800 dark:text-slate-100">No Proposals Found</span>
+            <span className="text-xs font-bold text-slate-500">Workspace estimators have not generated any proposals matching query constraints.</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                <tr className="bg-slate-50 dark:bg-slate-950 text-slate-450 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-widest border-b border-slate-200 dark:border-slate-805">
                   <th className="px-6 py-4.5">Client / Customer</th>
                   <th className="px-6 py-4.5">Tenant Company</th>
                   <th className="px-6 py-4.5">System Spec</th>
@@ -127,48 +135,52 @@ export default function AdminProposals() {
                   <th className="px-6 py-4.5">Generated</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+              <tbody className="divide-y divide-slate-200/60 dark:divide-slate-805 text-xs font-bold">
                 {proposals.map((prop) => (
                   <tr 
                     key={prop.id} 
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
+                    className="hover:bg-slate-50/50 dark:hover:bg-slate-955/20 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="space-y-0.5">
-                        <div className="font-bold text-slate-850 dark:text-slate-100 flex items-center gap-1.5">
-                          <User className="h-4 w-4 text-slate-450" />
+                        <div className="font-extrabold text-slate-850 dark:text-slate-100 text-[13px] flex items-center gap-1.5">
+                          <User className="h-4 w-4 text-slate-400 shrink-0" />
                           <span>{prop.customer_name}</span>
                         </div>
                         {prop.customer_email && (
-                          <div className="text-xs font-semibold text-slate-500 font-mono pl-5">{prop.customer_email}</div>
+                          <div className="text-[11px] font-bold text-slate-500 font-mono pl-5">{prop.customer_email}</div>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-655 dark:text-slate-350 font-bold">
+                    <td className="px-6 py-4 text-slate-655 dark:text-slate-400 font-bold">
                       <div className="flex items-center gap-1.5">
-                        <Building2 className="h-4 w-4 text-slate-450" />
+                        <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
                         <span>{prop.company_name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-655 dark:text-slate-400 font-semibold uppercase tracking-wider text-xs">
+                    <td className="px-6 py-4 text-slate-550 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                       {prop.system_name || 'Standard Solar Spec'} {prop.system_size_kwp ? `(${prop.system_size_kwp} kWp)` : ''}
                     </td>
-                    <td className="px-6 py-4 text-teal-655 dark:text-teal-400 font-extrabold flex items-center gap-1.5 mt-2">
-                      <TrendingUp className="h-4 w-4" />
-                      <span>{formatNaira(prop.final_quoted_price_ngn)}</span>
+                    <td className="px-6 py-4 text-teal-655 dark:text-teal-400 font-black text-[13px]">
+                      <div className="flex items-center gap-1.5">
+                        <TrendingUp className="h-4 w-4 text-teal-500 shrink-0" />
+                        <span>{formatNaira(prop.final_quoted_price_ngn)}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border ${
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
                         prop.status === 'sent' 
-                          ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/50' 
-                          : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-250 dark:border-amber-900/50'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/25 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/50' 
+                          : 'bg-amber-50 dark:bg-amber-950/25 text-amber-700 dark:text-amber-400 border-amber-250 dark:border-amber-900/50'
                       }`}>
                         {prop.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 dark:text-slate-500 font-semibold flex items-center gap-1.5 mt-2">
-                      <Calendar className="h-4 w-4 text-slate-450" />
-                      <span>{formatShortDate(prop.created_at)}</span>
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-500 font-semibold">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
+                        <span>{formatShortDate(prop.created_at)}</span>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -179,8 +191,8 @@ export default function AdminProposals() {
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/10">
-            <span className="text-xs font-semibold text-slate-500">Page {page} of {totalPages}</span>
+          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/20">
+            <span className="text-[11px] font-bold text-slate-500">Page {page} of {totalPages}</span>
             <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"

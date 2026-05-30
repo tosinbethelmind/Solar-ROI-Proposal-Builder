@@ -6,13 +6,11 @@ import {
   Coins, 
   TrendingUp, 
   Clock, 
-  PlusCircle, 
-  DollarSign, 
-  BadgeCheck, 
-  AlertTriangle,
   Settings,
   X,
-  Search
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -159,16 +157,25 @@ export default function AdminSubscriptions() {
 
   return (
     <div className="space-y-6">
-      {/* Title */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Subscriptions & Billing</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium">Oversight of SaaS commercialization pipeline, paystack nodes, and cash flows.</p>
+      
+      {/* ═══ Header Title ═══ */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold text-teal-655 dark:text-teal-400 uppercase tracking-widest">
+            <CreditCard className="h-4 w-4 shrink-0" />
+            <span>SaaS Cash Flow Monitor</span>
+          </div>
+          <h1 className="text-3xl font-black text-slate-850 dark:text-slate-55 tracking-tight mt-1">Subscriptions & Billing</h1>
+          <p className="text-xs text-slate-550 dark:text-slate-400 font-bold mt-1">
+            Real-time oversight of SaaS commercialization pipeline, active Paystack customer instances, and global platform MRR.
+          </p>
+        </div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* ═══ KPI Cards Grid ═══ */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total MRR */}
-        <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+        <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-2">
@@ -177,18 +184,18 @@ export default function AdminSubscriptions() {
                   {formatNaira(kpis?.totalMRR ?? 0)}
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm shrink-0">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-650 text-white shadow-sm shrink-0">
                 <TrendingUp className="h-5 w-5" />
               </div>
             </div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-4 leading-relaxed">
-              Sum of MRR from all active installer teams
+            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-4 leading-relaxed border-t border-slate-200/50 dark:border-slate-800/50 pt-3">
+              Aggregated recurring value from active installer workspaces.
             </p>
           </CardContent>
         </Card>
 
         {/* Paid Subscriptions */}
-        <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+        <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-2">
@@ -197,18 +204,18 @@ export default function AdminSubscriptions() {
                   {kpis?.paidCount ?? 0}
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm shrink-0">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-650 text-white shadow-sm shrink-0">
                 <CreditCard className="h-5 w-5" />
               </div>
             </div>
-            <p className="text-xs font-semibold text-slate-550 dark:text-slate-400 mt-4 leading-relaxed">
-              Paying customers, excluding free and trialers
+            <p className="text-[11px] font-bold text-slate-550 dark:text-slate-400 mt-4 leading-relaxed border-t border-slate-200/50 dark:border-slate-800/50 pt-3">
+              Total active premium tiers, excluding trailing accounts.
             </p>
           </CardContent>
         </Card>
 
         {/* ARPU */}
-        <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+        <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-2">
@@ -217,51 +224,51 @@ export default function AdminSubscriptions() {
                   {formatNaira(kpis?.arpu ?? 0)}
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white shadow-sm shrink-0">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-650 text-white shadow-sm shrink-0">
                 <Coins className="h-5 w-5" />
               </div>
             </div>
-            <p className="text-xs font-semibold text-slate-550 dark:text-slate-400 mt-4 leading-relaxed">
-              ARPU based on active billing contracts
+            <p className="text-[11px] font-bold text-slate-550 dark:text-slate-400 mt-4 leading-relaxed border-t border-slate-200/50 dark:border-slate-800/50 pt-3">
+              System ARPU based on active billing arrangements.
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Registry */}
-      <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden">
+      {/* ═══ Main Registry ═══ */}
+      <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-3xl overflow-hidden">
         {/* Table Header Filter */}
-        <div className="px-6 py-4.5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50 dark:bg-slate-900/10">
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <Coins className="h-4.5 w-4.5 text-teal-655" />
+        <div className="px-6 py-4.5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50 dark:bg-slate-950/20">
+          <h3 className="text-xs font-black text-slate-850 dark:text-slate-100 flex items-center gap-2 uppercase tracking-wider">
+            <Coins className="h-4.5 w-4.5 text-teal-600" />
             <span>Workspace Subscriptions Ledger</span>
           </h3>
 
           <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-450" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Quick search subscriptions..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-9.5 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950"
+              className="pl-9 h-9.5 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 text-xs font-bold dark:text-slate-100"
             />
           </div>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center p-12 gap-3">
+          <div className="flex flex-col items-center justify-center p-16 gap-3">
             <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-semibold text-slate-505 animate-pulse">Retrieving billing ledgers...</span>
+            <span className="text-xs font-bold text-slate-500 animate-pulse">Retrieving billing ledgers...</span>
           </div>
         ) : filteredCompanies.length === 0 ? (
-          <div className="p-16 text-center text-sm font-semibold text-slate-400">
+          <div className="p-20 text-center text-xs font-bold text-slate-450 dark:text-slate-500 bg-white dark:bg-slate-900">
             No active billing registries found matching query filters.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto bg-white dark:bg-slate-900">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                <tr className="bg-slate-50 dark:bg-slate-950 text-slate-450 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-widest border-b border-slate-200 dark:border-slate-805">
                   <th className="px-6 py-4">Company Name</th>
                   <th className="px-6 py-4">Subscription Plan</th>
                   <th className="px-6 py-4">Status</th>
@@ -270,39 +277,39 @@ export default function AdminSubscriptions() {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+              <tbody className="divide-y divide-slate-200/60 dark:divide-slate-805 text-xs font-bold">
                 {filteredCompanies.map((company) => (
                   <tr 
                     key={company.id} 
-                    className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors ${
-                      company.suspended ? 'bg-rose-50/30 dark:bg-rose-950/5 opacity-80' : ''
+                    className={`hover:bg-slate-50/50 dark:hover:bg-slate-955/20 transition-colors ${
+                      company.suspended ? 'bg-red-500/[0.03] dark:bg-red-500/[0.02] opacity-90' : ''
                     }`}
                   >
-                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100">
+                    <td className="px-6 py-4 font-extrabold text-slate-800 dark:text-slate-100 text-[13px]">
                       {company.name}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 border border-slate-200/50 dark:border-slate-700/50 uppercase tracking-wider">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-bold bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 uppercase tracking-wider">
                         {company.subscription_tier || 'Starter'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border ${
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
                         company.subscription_status === 'active' 
-                          ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/50' 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/25 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/50' 
                           : company.subscription_status === 'trial' 
-                          ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-250 dark:border-amber-900/50' 
+                          ? 'bg-amber-50 dark:bg-amber-950/25 text-amber-700 dark:text-amber-400 border-amber-250 dark:border-amber-900/50' 
                           : company.subscription_status === 'past_due'
-                          ? 'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-250 dark:border-red-900/50'
-                          : 'bg-slate-50 dark:bg-slate-900/20 text-slate-655 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                          ? 'bg-rose-50 dark:bg-rose-950/25 text-rose-700 dark:text-rose-400 border-rose-250 dark:border-rose-900/50'
+                          : 'bg-slate-50 dark:bg-slate-950/20 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                       }`}>
                         {company.subscription_status || 'Trial'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs text-slate-550 dark:text-slate-400">
+                    <td className="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-400 font-semibold">
                       {company.paystack_subscription_code || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-slate-500 font-semibold">
+                    <td className="px-6 py-4 text-slate-550 dark:text-slate-400 font-semibold">
                       {company.trial_ends_at ? formatShortDate(company.trial_ends_at) : 'N/A'}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -311,9 +318,9 @@ export default function AdminSubscriptions() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleOpenTrial(company)}
-                          className="h-8.5 rounded-lg text-slate-600 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          className="h-8.5 rounded-lg text-slate-655 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-950"
                         >
-                          <Clock className="h-4 w-4 text-amber-550" />
+                          <Clock className="h-4 w-4 text-amber-500" />
                           <span>Trial</span>
                         </Button>
                         <Button
@@ -339,13 +346,13 @@ export default function AdminSubscriptions() {
       {trialModalOpen && selectedCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center font-sans">
           <div 
-            className="absolute inset-0 bg-slate-950/50 backdrop-blur-xs"
+            className="absolute inset-0 bg-slate-955/60 backdrop-blur-xs"
             onClick={() => setTrialModalOpen(false)}
           />
 
-          <Card className="relative z-10 w-full max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl overflow-hidden animate-scale-up mx-4">
-            <div className="px-6 py-4.5 bg-slate-900 text-slate-100 flex items-center justify-between">
-              <span className="font-black text-base tracking-tight">Extend Onboarding Trial</span>
+          <Card className="relative z-10 w-full max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl overflow-hidden mx-4">
+            <div className="px-6 py-4.5 bg-slate-900 text-slate-100 flex items-center justify-between border-b border-slate-800">
+              <span className="font-black text-sm uppercase tracking-wider">Extend Onboarding Trial</span>
               <button 
                 onClick={() => setTrialModalOpen(false)}
                 className="p-1 rounded-md text-slate-400 hover:text-white"
@@ -355,32 +362,32 @@ export default function AdminSubscriptions() {
             </div>
 
             <CardContent className="p-6 space-y-4">
-              <div className="text-sm font-semibold text-slate-655 dark:text-slate-400 leading-relaxed">
-                Manually extending onboarding trial limits for <strong className="text-slate-800 dark:text-white">{selectedCompany.name}</strong> workspace.
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 leading-relaxed">
+                Manually extending onboarding trial limits for <strong className="text-slate-800 dark:text-white font-extrabold">{selectedCompany.name}</strong> workspace.
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-500">Days to Extend</label>
+                <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-450 dark:text-slate-500">Days to Extend</label>
                 <Input
                   type="number"
                   value={trialDays}
                   onChange={(e) => setTrialDays(e.target.value)}
-                  className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950"
+                  className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 font-bold dark:text-slate-100"
                   min="1"
                 />
               </div>
 
-              <div className="pt-4 border-t dark:border-slate-800 flex justify-end gap-2.5">
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2.5">
                 <Button 
                   variant="outline"
                   onClick={() => setTrialModalOpen(false)}
-                  className="h-10 rounded-xl font-bold cursor-pointer"
+                  className="h-10 rounded-xl font-black cursor-pointer text-xs"
                 >
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleSaveTrial}
-                  className="h-10 px-5 bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl cursor-pointer shadow-sm"
+                  className="h-10 px-5 bg-teal-650 hover:bg-teal-700 text-white font-black rounded-xl cursor-pointer shadow-sm text-xs"
                 >
                   Extend Trial Period
                 </Button>
@@ -394,13 +401,13 @@ export default function AdminSubscriptions() {
       {paymentModalOpen && selectedCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center font-sans">
           <div 
-            className="absolute inset-0 bg-slate-950/50 backdrop-blur-xs"
+            className="absolute inset-0 bg-slate-955/60 backdrop-blur-xs"
             onClick={() => setPaymentModalOpen(false)}
           />
 
-          <Card className="relative z-10 w-full max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl overflow-hidden animate-scale-up mx-4">
-            <div className="px-6 py-4.5 bg-slate-900 text-slate-100 flex items-center justify-between">
-              <span className="font-black text-base tracking-tight">Record Offline Cash Payment</span>
+          <Card className="relative z-10 w-full max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl overflow-hidden mx-4">
+            <div className="px-6 py-4.5 bg-slate-900 text-slate-100 flex items-center justify-between border-b border-slate-800">
+              <span className="font-black text-sm uppercase tracking-wider">Record Offline Cash Payment</span>
               <button 
                 onClick={() => setPaymentModalOpen(false)}
                 className="p-1 rounded-md text-slate-400 hover:text-white"
@@ -410,32 +417,32 @@ export default function AdminSubscriptions() {
             </div>
 
             <CardContent className="p-6 space-y-4">
-              <div className="text-sm font-semibold text-slate-655 dark:text-slate-400 leading-relaxed">
-                Log offline subscription payment (e.g. bank transfer or manual cash payout) for <strong className="text-slate-800 dark:text-white">{selectedCompany.name}</strong>.
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 leading-relaxed">
+                Log offline subscription payment (e.g. bank transfer or manual cash payout) for <strong className="text-slate-800 dark:text-white font-extrabold">{selectedCompany.name}</strong>.
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-500">Amount Received (NGN)</label>
+                <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-450 dark:text-slate-500">Amount Received (NGN)</label>
                 <Input
                   type="number"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950"
+                  className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 font-bold dark:text-slate-100"
                   min="1"
                 />
               </div>
 
-              <div className="pt-4 border-t dark:border-slate-800 flex justify-end gap-2.5">
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2.5">
                 <Button 
                   variant="outline"
                   onClick={() => setPaymentModalOpen(false)}
-                  className="h-10 rounded-xl font-bold cursor-pointer"
+                  className="h-10 rounded-xl font-black cursor-pointer text-xs"
                 >
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleSavePayment}
-                  className="h-10 px-5 bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl cursor-pointer shadow-sm"
+                  className="h-10 px-5 bg-teal-650 hover:bg-teal-700 text-white font-black rounded-xl cursor-pointer shadow-sm text-xs"
                 >
                   Log Payment
                 </Button>

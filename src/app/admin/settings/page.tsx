@@ -10,7 +10,8 @@ import {
   Percent,
   Flame,
   Zap,
-  ShieldCheck
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -79,7 +80,7 @@ export default function AdminSettings() {
       if (data.error) {
         toast.error(data.error);
       } else {
-        toast.success('Global platform constants updated.');
+        toast.success('Global platform constants updated successfully.');
         fetchSettings();
       }
     } catch (err) {
@@ -100,32 +101,44 @@ export default function AdminSettings() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-sm font-semibold text-slate-500 animate-pulse">Retrieving default platform specifications...</p>
+        <p className="text-xs font-semibold text-slate-500 animate-pulse">Retrieving default platform specifications...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Title */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Platform Settings</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium">Configure global solar default constants, generator parameters, and pricing components.</p>
+    <div className="space-y-8">
+      
+      {/* ═══ Header Title ═══ */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold text-teal-655 dark:text-teal-400 uppercase tracking-widest">
+            <Settings2 className="h-4 w-4 shrink-0" />
+            <span>Global Operations Configuration</span>
+          </div>
+          <h1 className="text-3xl font-black text-slate-850 dark:text-slate-50 tracking-tight mt-1">Platform Settings</h1>
+          <p className="text-xs text-slate-550 dark:text-slate-400 font-bold mt-1">
+            Configure global solar default constants, generator parameters, utility tariffs, and taxation variables.
+          </p>
+        </div>
       </div>
 
+      {/* ═══ Main Grid ═══ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
         {/* Left Form: Pricing Specifications */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 shadow-sm backdrop-blur-md rounded-2xl">
+          <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-3xl">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between pb-4 border-b dark:border-slate-850 mb-6">
-                <h3 className="font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                  <Settings2 className="h-5 w-5 text-teal-655" />
-                  <span>Global Constants override</span>
+              
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4.5 border-b border-slate-200/60 dark:border-slate-805 mb-6 gap-3">
+                <h3 className="font-extrabold text-slate-850 dark:text-slate-100 flex items-center gap-2 text-sm uppercase tracking-wider">
+                  <Settings2 className="h-4.5 w-4.5 text-teal-600" />
+                  <span>Global Constants Override</span>
                 </h3>
                 {settings && (
-                  <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 leading-none">
-                    <UserCheck className="h-4 w-4 text-emerald-500" />
+                  <div className="text-[10px] text-slate-500 font-bold flex items-center gap-1.5 leading-none">
+                    <UserCheck className="h-4 w-4 text-emerald-500 shrink-0" />
                     <span>Modified by <strong className="text-slate-700 dark:text-slate-350">{settings.lastUpdatedBy}</strong> at <strong className="text-slate-700 dark:text-slate-350">{formatShortDate(settings.lastUpdatedAt)}</strong></span>
                   </div>
                 )}
@@ -133,10 +146,11 @@ export default function AdminSettings() {
 
               <form onSubmit={handleSaveSettings} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  
                   {/* Diesel Price */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-500 flex items-center gap-1">
-                      <Flame className="h-4 w-4 text-orange-500" />
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-550 flex items-center gap-1.5">
+                      <Flame className="h-4 w-4 text-orange-500 shrink-0" />
                       <span>Diesel Price (₦/Liter)</span>
                     </label>
                     <Input
@@ -144,14 +158,14 @@ export default function AdminSettings() {
                       value={dieselPrice}
                       onChange={(e) => setDieselPrice(e.target.value)}
                       placeholder="e.g. 1400"
-                      className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950 font-bold"
+                      className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 font-bold dark:text-slate-100"
                     />
                   </div>
 
                   {/* Petrol Price */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-500 flex items-center gap-1">
-                      <Flame className="h-4 w-4 text-amber-550" />
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-550 flex items-center gap-1.5">
+                      <Flame className="h-4 w-4 text-amber-500 shrink-0" />
                       <span>Petrol Price (₦/Liter)</span>
                     </label>
                     <Input
@@ -159,14 +173,14 @@ export default function AdminSettings() {
                       value={petrolPrice}
                       onChange={(e) => setPetrolPrice(e.target.value)}
                       placeholder="e.g. 1100"
-                      className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950 font-bold"
+                      className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 font-bold dark:text-slate-100"
                     />
                   </div>
 
                   {/* Grid electricity Band A tariff */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-500 flex items-center gap-1">
-                      <Zap className="h-4 w-4 text-yellow-500" />
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-550 flex items-center gap-1.5">
+                      <Zap className="h-4 w-4 text-yellow-500 shrink-0" />
                       <span>Grid Tariff (₦/kWh)</span>
                     </label>
                     <Input
@@ -174,14 +188,14 @@ export default function AdminSettings() {
                       value={gridTariff}
                       onChange={(e) => setGridTariff(e.target.value)}
                       placeholder="e.g. 209.5"
-                      className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950 font-bold"
+                      className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 font-bold dark:text-slate-100"
                     />
                   </div>
 
                   {/* Value Added Tax */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-500 flex items-center gap-1">
-                      <Percent className="h-4 w-4 text-blue-500" />
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-450 dark:text-slate-550 flex items-center gap-1.5">
+                      <Percent className="h-4 w-4 text-blue-500 shrink-0" />
                       <span>Standard VAT rate (%)</span>
                     </label>
                     <Input
@@ -189,16 +203,27 @@ export default function AdminSettings() {
                       value={vatTaxRate}
                       onChange={(e) => setVatTaxRate(e.target.value)}
                       placeholder="e.g. 7.5"
-                      className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-white dark:bg-slate-950 font-bold"
+                      className="h-11 rounded-xl border-slate-200 dark:border-slate-800 focus:ring-teal-500 bg-slate-50 dark:bg-slate-950 font-bold dark:text-slate-100"
                       step="0.1"
                     />
                   </div>
                 </div>
 
-                <div className="pt-4 border-t dark:border-slate-800 flex justify-end">
+                {/* Safety Warning Alert */}
+                <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-250 dark:border-amber-900/30 rounded-2xl flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-extrabold text-amber-850 dark:text-amber-400 uppercase tracking-wide">Global Parameter Cascade</p>
+                    <p className="text-[10px] text-amber-600 dark:text-amber-500 font-bold leading-normal">
+                      Adjustments to standard grid tariffs, taxation percent, or commercial fuel indexes will immediately propagate system-wide. All active sizing calculations and savings projections in the proposal pipelines will adapt automatically.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
                   <Button 
                     type="submit"
-                    className="h-10 px-6 bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl cursor-pointer shadow-sm flex items-center gap-1.5"
+                    className="h-10 px-6 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl cursor-pointer shadow-sm flex items-center gap-1.5"
                   >
                     <Save className="h-4 w-4" />
                     <span>Save Platform Constants</span>
@@ -211,32 +236,32 @@ export default function AdminSettings() {
 
         {/* Right Info: Preset Guidelines */}
         <div className="space-y-6">
-          <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm rounded-2xl overflow-hidden p-6 flex flex-col justify-center gap-5">
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
-              <Info className="h-4.5 w-4.5 text-indigo-500" />
+          <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-3xl p-6 flex flex-col justify-center gap-5">
+            <h3 className="font-extrabold text-xs text-slate-855 dark:text-slate-105 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+              <Info className="h-4.5 w-4.5 text-indigo-500 shrink-0" />
               <span>Nigerian Utility Benchmarks</span>
             </h3>
 
-            <div className="space-y-3.5 text-xs text-slate-550 dark:text-slate-400 font-semibold leading-relaxed">
+            <div className="space-y-4 text-xs text-slate-550 dark:text-slate-400 font-semibold leading-relaxed">
               <p>
                 Default pricing factors are automatically queried by solar installation members when creating new client proposals.
               </p>
-              <div className="space-y-2 pt-2 border-t dark:border-slate-800 text-[11px]">
-                <div className="flex justify-between">
-                  <span>Standard Band A Tariff:</span>
-                  <span className="text-slate-800 dark:text-slate-200">₦209.5 / kWh</span>
+              <div className="space-y-3.5 pt-2 text-[11px]">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-450">Standard Band A Tariff:</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-bold font-mono">₦209.5 / kWh</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Commercial Diesel Avg:</span>
-                  <span className="text-slate-800 dark:text-slate-200">₦1,350 - ₦1,450 / L</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-450">Commercial Diesel Avg:</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-bold font-mono">₦1,350 - ₦1,450 / L</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Retail Petrol Avg:</span>
-                  <span className="text-slate-800 dark:text-slate-200">₦1,050 - ₦1,150 / L</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-450">Retail Petrol Avg:</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-bold font-mono">₦1,050 - ₦1,150 / L</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Federal VAT Rate:</span>
-                  <span className="text-slate-800 dark:text-slate-200">7.5%</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-450">Federal VAT Rate:</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-bold font-mono">7.5%</span>
                 </div>
               </div>
             </div>
