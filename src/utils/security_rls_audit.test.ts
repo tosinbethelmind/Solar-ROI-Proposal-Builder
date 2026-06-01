@@ -113,11 +113,11 @@ describe('SolarPro SaaS Security & RLS Leak Audit', () => {
       expect(json.error).toContain('Your workspace subscription is past due or cancelled')
     })
 
-    it('verifies the API blocks proposal creation (POST) when Starter tier quota is exceeded (3 proposals)', async () => {
+    it('verifies the API blocks proposal creation (POST) when Starter tier quota is exceeded (10 proposals)', async () => {
       const { POST } = await import('@/app/api/proposals/route')
       const { createClient } = await import('@/lib/supabase/server')
 
-      // Mock user authentication session for starter tier with 3 proposals
+      // Mock user authentication session for starter tier with 10 proposals
       const mockSupabase = {
         auth: {
           getUser: vi.fn().mockResolvedValue({
@@ -143,7 +143,7 @@ describe('SolarPro SaaS Security & RLS Leak Audit', () => {
               select: () => ({
                 eq: () => ({
                   single: () => ({
-                    data: { subscription_tier: 'starter', subscription_status: 'trial' },
+                    data: { subscription_tier: 'starter', subscription_status: 'active', proposal_usage_count: 10 },
                     error: null
                   })
                 })
@@ -155,7 +155,7 @@ describe('SolarPro SaaS Security & RLS Leak Audit', () => {
               select: () => ({
                 eq: () => ({
                   data: null,
-                  count: 3, // Already has 3 proposals
+                  count: 10, // Already has 10 proposals
                   error: null
                 })
               })
@@ -179,7 +179,7 @@ describe('SolarPro SaaS Security & RLS Leak Audit', () => {
       expect(response.status).toBe(403)
       
       const json = await response.json()
-      expect(json.error).toContain('Proposal quota reached')
+      expect(json.error).toContain('Proposal limit reached')
     })
   })
 })

@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   // 2. Enforce billing status blocks (expired, past due, or cancelled cannot create proposals)
   if (status === 'past_due' || status === 'cancelled' || status === 'expired') {
     return NextResponse.json({
-      error: `Your workspace subscription status is ${status.toUpperCase()}. Please update your payment details or contact support to continue creating proposals.`,
+      error: `Your workspace subscription is past due or cancelled. Please update your payment details or contact support to continue creating proposals.`,
       code: 'SUBSCRIPTION_BLOCKED'
     }, { status: 403 })
   }
