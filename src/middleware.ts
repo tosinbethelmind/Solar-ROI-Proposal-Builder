@@ -56,13 +56,20 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   const isAdminRoute = path.startsWith('/admin') || path.startsWith('/api/admin')
+  
+  // Exclude public POST endpoints for B2C sizer leads and B2B training cohort leads
+  const isPublicApi =
+    (path === '/api/leads/homeowner' && request.method === 'POST') ||
+    (path === '/api/leads/training' && request.method === 'POST') ||
+    path.startsWith('/api/auth/')
+
   const isProtected =
     path.startsWith('/workspace') ||
     path.startsWith('/proposals') ||
     path.startsWith('/settings') ||
     path.startsWith('/pricing') ||
     path.startsWith('/history') ||
-    (path.startsWith('/api/') && !path.startsWith('/api/auth/'))
+    (path.startsWith('/api/') && !isPublicApi)
 
   // 1. Guard for all protected routes (must be logged in)
   if ((isProtected || isAdminRoute) && !user) {
