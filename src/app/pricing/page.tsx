@@ -46,20 +46,20 @@ export interface PricingPlan {
 const proposalPlans: PricingPlan[] = [
   {
     id: 'free',
-    name: 'Free Plan',
+    name: 'Free Starter Plan',
     category: 'proposal',
-    bestFor: 'Homeowners & first-time testing',
+    bestFor: 'Solo installers & active technicians',
     priceMonthly: 0,
     priceQuarterly: 0,
     priceAnnual: 0,
     features: [
-      '1 proposal per month limit',
-      'Quick Proposal Mode only',
-      'Watermarked PDF Proposal',
-      'Single user seat only'
+      '3 proposals/month quota',
+      'Quick Proposal Mode included',
+      'Standard PDF (No Watermark)',
+      'Single user seat included'
     ],
-    ctaLabel: 'Start Sizing Free',
-    ctaHref: '/estimator'
+    ctaLabel: 'Activate Free Starter Workspace',
+    ctaHref: '/'
   },
   {
     id: 'starter',
@@ -123,21 +123,21 @@ const proposalPlans: PricingPlan[] = [
 const listingPlans: PricingPlan[] = [
   {
     id: 'list-free',
-    name: 'Free Listing',
+    name: 'Free Basic Listing',
     category: 'listing',
-    bestFor: 'New businesses seeking basic visibility',
+    bestFor: 'New businesses seeking visibility',
     priceMonthly: 0,
     priceQuarterly: 0,
     priceAnnual: 0,
     features: [
       'Basic public installer profile',
-      'Standard directory visibility',
+      'Standard directory visibility (₦0/mo)',
       'Company Name, City & Service Area',
-      'Limited text description',
+      'Limited profile description',
       'No verified partner badge',
       'No boosted search ranking'
     ],
-    ctaLabel: 'Register Free Profile',
+    ctaLabel: 'Register Free Listing Profile',
     ctaHref: '/workspace/listing'
   },
   {
@@ -325,6 +325,7 @@ export default function PricingPage() {
   const [setupWorkflow, setSetupWorkflow] = React.useState('');
   const [setupPackage, setSetupPackage] = React.useState('basic');
   const [setupSuccess, setSetupSuccess] = React.useState(false);
+  const [setupLoading, setSetupLoading] = React.useState(false);
 
   // Training Cohort Lead Form State
   const [trainName, setTrainName] = React.useState('');
@@ -334,6 +335,7 @@ export default function PricingPage() {
   const [trainRole, setTrainRole] = React.useState('');
   const [trainExp, setTrainExp] = React.useState('beginner');
   const [trainSuccess, setTrainSuccess] = React.useState(false);
+  const [trainLoading, setTrainLoading] = React.useState(false);
 
   React.useEffect(() => {
     Promise.resolve().then(() => {
@@ -353,7 +355,7 @@ export default function PricingPage() {
   const handleSubscribe = async (tierId: string) => {
     if (tierId === 'free') {
       setSubscription('free', 'monthly', false);
-      alert('🎉 Plan switched to Free Plan!');
+      alert('🎉 Plan switched to Free Starter Plan!');
       router.push('/');
       return;
     }
@@ -401,6 +403,7 @@ export default function PricingPage() {
 
   const handleSetupLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSetupLoading(true);
     try {
       const res = await fetch('/api/leads/implementation', {
         method: 'POST',
@@ -421,11 +424,14 @@ export default function PricingPage() {
       }
     } catch (err) {
       alert('Error connecting to setup lead capture.');
+    } finally {
+      setSetupLoading(false);
     }
   };
 
   const handleTrainingLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTrainLoading(true);
     try {
       const res = await fetch('/api/leads/training', {
         method: 'POST',
@@ -446,6 +452,8 @@ export default function PricingPage() {
       }
     } catch (err) {
       alert('Error connecting to training lead capture.');
+    } finally {
+      setTrainLoading(false);
     }
   };
 
@@ -529,6 +537,27 @@ export default function PricingPage() {
           </div>
         </section>
 
+        {/* ═══ Homeowner Free Estimator Callout ═══ */}
+        <section className="bg-gradient-to-r from-teal-500/10 via-indigo-500/5 to-teal-500/10 border border-teal-500/20 rounded-3xl p-6 sm:p-8 max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 shadow-md transition-all duration-300 hover:shadow-lg">
+          <div className="space-y-2 text-center md:text-left max-w-xl">
+            <div className="inline-flex items-center gap-2 text-xs font-extrabold text-teal-600 dark:text-teal-400 bg-teal-150/40 dark:bg-teal-950/40 px-3 py-1 rounded-full border border-teal-500/20">
+              <span className="size-2 rounded-full bg-teal-500 animate-pulse" />
+              For Homeowners & Residential Buildings
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100">
+              Size Your House Solar Setup for Free
+            </h2>
+            <p className="text-xs text-slate-555 dark:text-slate-350 leading-relaxed font-semibold">
+              Calculate your household load requirements, see monthly generator fuel savings, and get an instant cost-estimation checklist—completely free. No credit card or CAC registration required.
+            </p>
+          </div>
+          <Link href="/estimator" className="w-full md:w-auto shrink-0">
+            <Button size="lg" className="w-full md:w-auto bg-teal-650 hover:bg-teal-700 text-white font-black rounded-2xl h-12 px-6 flex items-center justify-center gap-2 shadow-lg hover:shadow-teal-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border-none">
+              🏠 Run Free House Estimator <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        </section>
+
         {/* ═══ 1. PROPOSAL BUILDER PLANS ═══ */}
         <section className="space-y-8">
           <div className="text-center md:text-left space-y-2">
@@ -603,7 +632,7 @@ export default function PricingPage() {
                       <Link href={plan.ctaHref} className="block w-full">
                         <Button
                           onClick={() => {
-                            if (plan.id !== 'free') handleSubscribe(plan.id);
+                            handleSubscribe(plan.id);
                           }}
                           variant={plan.highlighted ? 'default' : 'outline'}
                           className={`w-full text-[11px] font-black rounded-xl h-10 ${
@@ -968,8 +997,15 @@ export default function PricingPage() {
                     <label className="block text-[10px] text-slate-500 font-bold mb-1">Describe Current Proposal Flow</label>
                     <textarea rows={2} value={setupWorkflow} onChange={(e) => setSetupWorkflow(e.target.value)} placeholder="e.g. Quoting in Excel, designing outputs in Canva..." className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none resize-none" />
                   </div>
-                  <Button type="submit" className="w-full bg-indigo-650 hover:bg-indigo-700 text-white font-bold rounded-xl h-10 mt-1 shadow-sm border-none">
-                    Submit Onboarding Setup Request
+                  <Button type="submit" disabled={setupLoading} className="w-full bg-indigo-650 hover:bg-indigo-700 text-white font-bold rounded-xl h-10 mt-1 shadow-sm border-none transition-all flex items-center justify-center gap-2">
+                    {setupLoading ? (
+                      <>
+                        <span className="size-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Dispatched Setup Request...
+                      </>
+                    ) : (
+                      'Submit Onboarding Setup Request'
+                    )}
                   </Button>
                 </div>
               </form>
@@ -986,28 +1022,45 @@ export default function PricingPage() {
             <div>
               <h2 className="text-lg font-black text-slate-850 dark:text-slate-50">Join the Solar Sales Pro Training Cohort</h2>
               <p className="text-xs text-slate-400">Standardize pricing methodology and closing frameworks targeting HNW homeowners in Lagos.</p>
+              <div className="mt-2 text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/5 dark:bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/15">
+                🎁 <strong>Cohort Bonus:</strong> Register today and get instant access to download our premium <strong>Solar Proposal Excel Sizer Template</strong> (₦25,000 value).
+              </div>
             </div>
           </div>
 
           {trainSuccess ? (
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center text-emerald-800 dark:text-emerald-300 text-xs font-bold">
-              🎉 Seat Reservation Verified! You will receive syllabus details shortly.
+            <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-4">
+              <p className="text-emerald-800 dark:text-emerald-350 text-sm font-extrabold">
+                🎉 Seat Reservation Verified! You will receive syllabus details shortly.
+              </p>
+              <div className="pt-2">
+                <a 
+                  href="https://assets.solarpro.ng/templates/Solar_Proposal_Sizer_v2.xlsx" 
+                  download
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                  onClick={(e) => {
+                    alert('📥 Downloader triggered: Solar_Proposal_Sizer_v2.xlsx');
+                  }}
+                >
+                  📥 Download Solar Proposal Excel Sizer Template (XLSX)
+                </a>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleTrainingLeadSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div className="space-y-3">
                 <div>
                   <label className="block text-[10px] text-slate-500 font-bold mb-1">Full Legal Name</label>
-                  <input type="text" required value={trainName} onChange={(e) => setTrainName(e.target.value)} placeholder="e.g. Ademola Alabi" className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                  <input type="text" required value={trainName} onChange={(e) => setTrainName(e.target.value)} placeholder="e.g. Ademola Alabi" className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-500/30 transition-all duration-200" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] text-slate-500 font-bold mb-1">WhatsApp Phone Number</label>
-                    <input type="tel" required value={trainPhone} onChange={(e) => setTrainPhone(e.target.value)} placeholder="e.g. 080..." className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                    <input type="tel" required value={trainPhone} onChange={(e) => setTrainPhone(e.target.value)} placeholder="e.g. 080..." className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-500/30 transition-all duration-200" />
                   </div>
                   <div>
                     <label className="block text-[10px] text-slate-500 font-bold mb-1">Email</label>
-                    <input type="email" required value={trainEmail} onChange={(e) => setTrainEmail(e.target.value)} placeholder="name@solar.ng" className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                    <input type="email" required value={trainEmail} onChange={(e) => setTrainEmail(e.target.value)} placeholder="name@solar.ng" className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-500/30 transition-all duration-200" />
                   </div>
                 </div>
               </div>
@@ -1016,11 +1069,11 @@ export default function PricingPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] text-slate-500 font-bold mb-1">Role / Job Title</label>
-                    <input type="text" required value={trainRole} onChange={(e) => setTrainRole(e.target.value)} placeholder="e.g. Sales Manager" className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                    <input type="text" required value={trainRole} onChange={(e) => setTrainRole(e.target.value)} placeholder="e.g. Sales Manager" className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-500/30 transition-all duration-200" />
                   </div>
                   <div>
                     <label className="block text-[10px] text-slate-500 font-bold mb-1">Solar Experience Level</label>
-                    <select value={trainExp} onChange={(e) => setTrainExp(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none">
+                    <select value={trainExp} onChange={(e) => setTrainExp(e.target.value)} className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-500/30 transition-all duration-200">
                       <option value="beginner">Beginner (1-2 years)</option>
                       <option value="intermediate">Intermediate (2-5 years)</option>
                       <option value="advanced">Advanced Specialist (5+ years)</option>
@@ -1029,10 +1082,17 @@ export default function PricingPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] text-slate-500 font-bold mb-1">Company / EPC Name</label>
-                  <input type="text" required value={trainCompany} onChange={(e) => setTrainCompany(e.target.value)} placeholder="e.g. Alara Solar Solutions" className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none" />
+                  <input type="text" required value={trainCompany} onChange={(e) => setTrainCompany(e.target.value)} placeholder="e.g. Alara Solar Solutions" className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-500/30 transition-all duration-200" />
                 </div>
-                <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl h-10 mt-1 shadow-sm border-none">
-                  Register Interest in Next Cohort
+                <Button type="submit" disabled={trainLoading} className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl h-10 mt-1 shadow-sm border-none transition-all flex items-center justify-center gap-2">
+                  {trainLoading ? (
+                    <>
+                      <span className="size-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Reserving & Registering...
+                    </>
+                  ) : (
+                    'Register & Download Template'
+                  )}
                 </Button>
               </div>
             </form>

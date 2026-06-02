@@ -1,4 +1,4 @@
-﻿-- Enums
+-- Enums
 CREATE TYPE battery_chemistry AS ENUM ('lead-acid', 'lithium');
 CREATE TYPE generator_fuel_type AS ENUM ('petrol', 'diesel');
 CREATE TYPE appliance_load_type AS ENUM ('essential', 'heavy');
@@ -710,3 +710,21 @@ CREATE POLICY "Anyone can submit training lead interest" ON public.training_lead
 
 CREATE POLICY "Admins manage all training leads" ON public.training_leads
   FOR ALL USING (auth.uid() IN (SELECT user_id FROM public.platform_admins));
+
+-- Homeowner Leads (B2C Estimator Funnel)
+CREATE TABLE IF NOT EXISTS public.homeowner_leads (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  phone text NOT NULL,
+  email text,
+  location text,
+  running_load_w integer,
+  kva_recommended text,
+  monthly_savings_ngn numeric,
+  monthly_fuel_spend numeric,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.homeowner_leads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can insert homeowner leads" ON public.homeowner_leads FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admins manage homeowner leads" ON public.homeowner_leads FOR SELECT USING (true);

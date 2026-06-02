@@ -86,6 +86,13 @@ export default function HomeownerEstimatorPage() {
   const [monthlySpend, setMonthlySpend] = React.useState<string>(region.context.defaultMonthlySpend);
   const [activeTab, setActiveTab] = React.useState<'system' | 'financials' | 'guide'>('system');
 
+  /* ── Lead Capture Funnel State ── */
+  const [leadModalOpen, setLeadModalOpen] = React.useState(false);
+  const [leadName, setLeadName] = React.useState('');
+  const [leadPhone, setLeadPhone] = React.useState('');
+  const [leadEmail, setLeadEmail] = React.useState('');
+  const [leadLoading, setLeadLoading] = React.useState(false);
+
   /* ── Sizing Calculations ── */
   const runningLoad = React.useMemo(() => {
     return APPLIANCE_PRESETS.reduce((sum, p) => {
@@ -217,6 +224,55 @@ export default function HomeownerEstimatorPage() {
       const val = (prev[id] || 0) + delta;
       return { ...prev, [id]: Math.max(0, val) };
     });
+  };
+
+  const handleLeadSubmit = async (viaWhatsapp: boolean) => {
+    if (!leadName || !leadPhone) return;
+    setLeadLoading(true);
+    try {
+      const response = await fetch('/api/leads/homeowner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: leadName,
+          phone: leadPhone,
+          email: leadEmail || null,
+          location: region.name,
+          running_load_w: runningLoad,
+          kva_recommended: recommendation.kva,
+          monthly_savings_ngn: solarReplacedSavings,
+          monthly_fuel_spend: currentFuelSpendNaira
+        })
+      });
+      
+      if (response.ok) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('solar_lead_captured', 'true');
+        }
+        setLeadModalOpen(false);
+        setStep(3);
+        
+        if (viaWhatsapp) {
+          const contactNum = process.env.NEXT_PUBLIC_WHATSAPP_CONTACT_NUMBER || '+2348030000000';
+          const text = `Hello! I just sized my solar project on your website:
+- Running Load: ${runningLoad} Watts
+- Monthly Fuel Spend: ${formatCurrency(currentFuelSpendNaira, region)}/month
+- Recommended System: ${recommendation.title} (${recommendation.kva})
+- Sized Batteries: ${recommendation.battery}
+- Panels: ${recommendedPanelsQty}x 450W Panels
+
+Please send my detailed proposal and the Launch Premium Bundle (Tariff Shield Guide, Lagos Anti-Scam Checklist, and ₦50,000 Installation Voucher)!`;
+          window.open(`https://wa.me/${contactNum.replace(/[^0-9+]/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
+        }
+      } else {
+        const err = await response.json();
+        console.error('Lead submission failed:', err);
+      }
+    } catch (e) {
+      console.error('Error submitting lead:', e);
+    } finally {
+      setLeadLoading(false);
+    }
   };
 
   const handleWhatsAppShare = () => {
@@ -591,12 +647,13 @@ Could we connect to discuss a formal quote and installation assessment?`;
               <Button
                 className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-bold flex items-center gap-1 text-xs px-5 h-9"
                 onClick={() => {
-                  const access = homeownerSub.checkAccess();
-                  if (access.allowed) {
-                    homeownerSub.consumeEstimation();
+                  const isLeadCaptured = typeof window !== 'undefined' && localStorage.getItem('solar_lead_captured') === 'true';
+                  const isPaid = homeownerSub.tier !== 'free';
+                  
+                  if (isPaid || isLeadCaptured) {
                     setStep(3);
                   } else {
-                    homeownerSub.openUpgradeModal();
+                    setLeadModalOpen(true);
                   }
                 }}
               >
@@ -987,6 +1044,123 @@ Could we connect to discuss a formal quote and installation assessment?`;
               </Button>
             )}
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ═══ B2C Homeowner Lead Capture Modal (Choice Architecture & Loss Aversion) ═══ */}
+      <Dialog open={leadModalOpen} onOpenChange={setLeadModalOpen}>
+        <DialogContent className="sm:max-w-lg border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+          <DialogHeader className="space-y-2">
+            <div className="flex justify-center mb-1">
+              <div className="p-2.5 bg-rose-500/10 rounded-2xl border border-rose-500/20 text-rose-500 animate-pulse">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+            </div>
+            <DialogTitle className="text-xl font-black text-center text-slate-850 dark:text-white leading-snug">
+              Stop the Power Bleed! 💡
+            </DialogTitle>
+            <DialogDescription className="text-xs text-center text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              {fuelType !== 'none' ? (
+                <>
+                  You are currently losing up to <strong className="text-rose-500 font-black">{formatCurrency(solarReplacedSavings, region)}/month</strong> ({formatCurrency(solarReplacedSavings * 12, region)}/year) on generator runs &amp; Band A tariffs.
+                </>
+              ) : (
+                <>
+                  Get your customized sizer roadmap, sizing configuration, and tariff shield guide.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Value Prop Cards Grid */}
+          <div className="grid grid-cols-2 gap-2 my-4">
+            <div className="p-3 bg-teal-500/[0.03] dark:bg-teal-500/[0.01] border border-teal-500/10 rounded-2xl space-y-1">
+              <span className="text-base">📋</span>
+              <h5 className="font-extrabold text-[10px] text-slate-850 dark:text-slate-200 leading-tight">Solar Sizing Roadmap</h5>
+              <p className="text-[9px] text-slate-450 leading-snug">Custom KVA, panel array, and battery calculations.</p>
+            </div>
+            <div className="p-3 bg-amber-500/[0.03] dark:bg-amber-500/[0.01] border border-amber-500/10 rounded-2xl space-y-1">
+              <span className="text-base">🛡️</span>
+              <h5 className="font-extrabold text-[10px] text-slate-850 dark:text-slate-200 leading-tight">Band A Tariff Shield</h5>
+              <p className="text-[9px] text-slate-450 leading-snug">How to program inverters to cut off-peak NEPA costs.</p>
+            </div>
+            <div className="p-3 bg-indigo-500/[0.03] dark:bg-indigo-500/[0.01] border border-indigo-500/10 rounded-2xl space-y-1">
+              <span className="text-base">🔍</span>
+              <h5 className="font-extrabold text-[10px] text-slate-850 dark:text-slate-200 leading-tight">Lagos Anti-Scam Guide</h5>
+              <p className="text-[9px] text-slate-450 leading-snug">Identify fake lithium batteries and cowboy installers.</p>
+            </div>
+            <div className="p-3 bg-emerald-500/[0.03] dark:bg-emerald-500/[0.01] border border-emerald-500/10 rounded-2xl space-y-1">
+              <span className="text-base">🎟️</span>
+              <h5 className="font-extrabold text-[10px] text-slate-850 dark:text-slate-200 leading-tight">₦50,000 Install Voucher</h5>
+              <p className="text-[9px] text-slate-450 leading-snug">Redeemable with vetted directory EPC partners.</p>
+            </div>
+          </div>
+
+          {/* Form */}
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLeadSubmit(false);
+            }} 
+            className="space-y-3.5"
+          >
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[10px] text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Your Full Name</label>
+                <Input 
+                  type="text" 
+                  required 
+                  value={leadName} 
+                  onChange={(e) => setLeadName(e.target.value)} 
+                  placeholder="e.g. Ademola Alabi" 
+                  className="w-full text-xs p-3 rounded-xl border border-slate-250 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none py-5 font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] text-slate-500 font-extrabold mb-1 uppercase tracking-wider">WhatsApp Phone Number</label>
+                  <Input 
+                    type="tel" 
+                    required 
+                    value={leadPhone} 
+                    onChange={(e) => setLeadPhone(e.target.value)} 
+                    placeholder="e.g. 08030000000" 
+                    className="w-full text-xs p-3 rounded-xl border border-slate-250 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none py-5 font-bold font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Email (Optional)</label>
+                  <Input 
+                    type="email" 
+                    value={leadEmail} 
+                    onChange={(e) => setLeadEmail(e.target.value)} 
+                    placeholder="name@company.com" 
+                    className="w-full text-xs p-3 rounded-xl border border-slate-250 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none py-5 font-bold"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <Button 
+                type="button" 
+                disabled={leadLoading}
+                onClick={() => handleLeadSubmit(true)}
+                className="w-full bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold rounded-2xl h-12 text-xs shadow-md border-none flex items-center justify-center gap-2"
+              >
+                {leadLoading ? 'Securing Roadmap...' : 'Get Sizing & ₦120k Bundle via WhatsApp 📱'}
+              </Button>
+              
+              <button 
+                type="submit"
+                disabled={leadLoading}
+                className="w-full text-center text-[10px] font-bold text-slate-450 hover:text-slate-700 dark:hover:text-slate-350 transition-colors py-1 block underline underline-offset-4 bg-transparent border-none cursor-pointer"
+              >
+                Or view recommendations instantly on-site
+              </button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
