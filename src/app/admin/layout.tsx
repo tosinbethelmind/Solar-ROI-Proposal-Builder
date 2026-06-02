@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 const navItems = [
   { name: 'Overview Console', href: '/admin', icon: LayoutDashboard },
   { name: 'Installer Workspaces', href: '/admin/companies', icon: Building2 },
+  { name: 'B2C Sizer Leads', href: '/admin/leads', icon: UserCheck },
   { name: 'Team Members', href: '/admin/users', icon: Users2 },
   { name: 'Supplier Partnerships', href: '/admin/partners', icon: Handshake },
   { name: 'Plan Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
