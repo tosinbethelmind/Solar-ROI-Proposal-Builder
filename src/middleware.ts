@@ -95,7 +95,7 @@ export async function middleware(request: NextRequest) {
           .single()
 
         if (member) {
-          const isSuspended = (member.company as any)?.suspended === true
+          const isSuspended = (member.company as unknown as { suspended?: boolean })?.suspended === true
           const isDeactivated = member.active === false
 
           if (isSuspended || isDeactivated) {

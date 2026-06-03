@@ -23,7 +23,8 @@ import {
   ShieldCheck,
   Search,
   Bell,
-  Handshake
+  Handshake,
+  Compass
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ const navItems = [
   { name: 'Overview Console', href: '/admin', icon: LayoutDashboard },
   { name: 'Installer Workspaces', href: '/admin/companies', icon: Building2 },
   { name: 'B2C Sizer Leads', href: '/admin/leads', icon: UserCheck },
+  { name: 'Lead Scrapers Console', href: '/admin/scrapers', icon: Compass },
   { name: 'Team Members', href: '/admin/users', icon: Users2 },
   { name: 'Supplier Partnerships', href: '/admin/partners', icon: Handshake },
   { name: 'Plan Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
@@ -42,6 +44,7 @@ const navItems = [
   { name: 'System Telemetry Logs', href: '/admin/logs', icon: Terminal },
   { name: 'Global Settings', href: '/admin/settings', icon: Settings2 },
 ];
+
 
 export default function AdminLayout({
   children,
