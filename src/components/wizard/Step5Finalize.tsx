@@ -504,227 +504,7 @@ ${footerStr}`;
         </div>
       </div>
 
-      {/* 📋 LAGOS REGULATORY COMPLIANCE CHECKLIST */}
-      <div className="border rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <button
-          type="button"
-          onClick={() => setComplianceOpen(!complianceOpen)}
-          className="w-full flex items-center justify-between p-5 text-left font-bold text-sm bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border-b border-slate-200 dark:border-slate-800"
-        >
-          <div className="flex items-center gap-2.5">
-            <span className="text-lg">📋</span>
-            <div>
-              <span className="block font-black text-slate-850 dark:text-slate-150">Lagos Regulatory Compliance Checklist (Optional)</span>
-              <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Ensure site eligibility & state safety standards</span>
-            </div>
-          </div>
-          <span className="text-slate-400 text-lg transition-transform duration-200" style={{ transform: complianceOpen ? 'rotate(180deg)' : 'none' }}>
-            ▼
-          </span>
-        </button>
-
-        {complianceOpen && (
-          <div className="p-5 space-y-4 animate-in slide-in-from-top-2 duration-200">
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              Lagos State physical planning and electricity regulatory frameworks recommend documenting these pre-installation checks for residential and estate solar grids.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="flex items-start gap-3 p-3 rounded-xl border bg-slate-50/50 dark:bg-slate-950/40 hover:bg-slate-50 dark:hover:bg-slate-950/70 transition-all cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={compliance.nercPermit}
-                  onChange={e => setCompliance({ ...compliance, nercPermit: e.target.checked })}
-                  className="mt-1 rounded border-slate-350 text-teal-650 focus:ring-teal-500 size-4"
-                />
-                <div className="text-left">
-                  <span className="block text-xs font-bold text-slate-805 dark:text-slate-200">NERC Grid-Tie Permit</span>
-                  <span className="block text-[10px] text-slate-500">Required if system exceeds 1kW and has grid bypass.</span>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 p-3 rounded-xl border bg-slate-50/50 dark:bg-slate-950/40 hover:bg-slate-50 dark:hover:bg-slate-950/70 transition-all cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={compliance.laspppaApproval}
-                  onChange={e => setCompliance({ ...compliance, laspppaApproval: e.target.checked })}
-                  className="mt-1 rounded border-slate-350 text-teal-650 focus:ring-teal-500 size-4"
-                />
-                <div className="text-left">
-                  <span className="block text-xs font-bold text-slate-805 dark:text-slate-200">LASPPPA Approval Check</span>
-                  <span className="block text-[10px] text-slate-500">Lagos State Physical Planning permit (for residential estates).</span>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 p-3 rounded-xl border bg-slate-50/50 dark:bg-slate-950/40 hover:bg-slate-50 dark:hover:bg-slate-950/70 transition-all cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={compliance.landlordApproval}
-                  onChange={e => setCompliance({ ...compliance, landlordApproval: e.target.checked })}
-                  className="mt-1 rounded border-slate-350 text-teal-650 focus:ring-teal-500 size-4"
-                />
-                <div className="text-left">
-                  <span className="block text-xs font-bold text-slate-805 dark:text-slate-200">Landlord / Estate Clearance</span>
-                  <span className="block text-[10px] text-slate-500">Written approval of structural mounting from owner/facility head.</span>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 p-3 rounded-xl border bg-slate-50/50 dark:bg-slate-950/40 hover:bg-slate-50 dark:hover:bg-slate-950/70 transition-all cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={compliance.sonCertified}
-                  onChange={e => setCompliance({ ...compliance, sonCertified: e.target.checked })}
-                  className="mt-1 rounded border-slate-350 text-teal-650 focus:ring-teal-500 size-4"
-                />
-                <div className="text-left">
-                  <span className="block text-xs font-bold text-slate-805 dark:text-slate-200">SON Certified Components</span>
-                  <span className="block text-[10px] text-slate-500">Verify inverters and batteries carry Standards Organisation of Nigeria seals.</span>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 p-3 rounded-xl border bg-slate-50/50 dark:bg-slate-950/40 hover:bg-slate-50 dark:hover:bg-slate-950/70 transition-all cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={compliance.structuralRoof}
-                  onChange={e => setCompliance({ ...compliance, structuralRoof: e.target.checked })}
-                  className="mt-1 rounded border-slate-350 text-teal-650 focus:ring-teal-500 size-4"
-                />
-                <div className="text-left">
-                  <span className="block text-xs font-bold text-slate-805 dark:text-slate-200">Roof Structural Integrity</span>
-                  <span className="block text-[10px] text-slate-500">Confirmed wind load rating & trusses will hold panel array securely.</span>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 p-3 rounded-xl border bg-slate-50/50 dark:bg-slate-950/40 hover:bg-slate-50 dark:hover:bg-slate-950/70 transition-all cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={compliance.wiringDiagram}
-                  onChange={e => setCompliance({ ...compliance, wiringDiagram: e.target.checked })}
-                  className="mt-1 rounded border-slate-350 text-teal-650 focus:ring-teal-500 size-4"
-                />
-                <div className="text-left">
-                  <span className="block text-xs font-bold text-slate-805 dark:text-slate-200">Engineering Schematic Done</span>
-                  <span className="block text-[10px] text-slate-500">Bypass wiring, breaker sizing, and surge protection diagrams completed.</span>
-                </div>
-              </label>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ☀️ EQUIPMENT SOURCING & DISTRIBUTOR REFERRAL PANEL */}
-      <div className="border rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <button
-          type="button"
-          onClick={() => setSourcingOpen(!sourcingOpen)}
-          className="w-full flex items-center justify-between p-5 text-left font-bold text-sm bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border-b border-slate-200 dark:border-slate-800"
-        >
-          <div className="flex items-center gap-2.5">
-            <span className="text-lg">☀️</span>
-            <div>
-              <span className="block font-black text-slate-850 dark:text-slate-150">Equipment Sourcing & Distributor Quotes</span>
-              <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Request bulk wholesale pricing from registered partners</span>
-            </div>
-          </div>
-          <span className="text-slate-400 text-lg transition-transform duration-200" style={{ transform: sourcingOpen ? 'rotate(180deg)' : 'none' }}>
-            ▼
-          </span>
-        </button>
-
-        {sourcingOpen && (
-          <div className="p-5 space-y-4 animate-in slide-in-from-top-2 duration-200 text-xs">
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              Wholesale solar hardware supply requests in Nigeria. We pull your proposal hardware BOM (inverters, batteries, panels) and request direct wholesale deals with verified importers to secure installer cashbacks and referral commissions.
-            </p>
-
-            {sourcingSuccess ? (
-              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-center space-y-2 border border-emerald-100 dark:border-emerald-950/30 text-emerald-800 dark:text-emerald-300">
-                <p className="font-black text-sm">✓ Sourcing Quote Request Submitted!</p>
-                <p className="text-[11px]">
-                  Your component BOM was successfully dispatched. A sales representative from the preferred supplier will contact you within 15-30 minutes with installer discounts.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleRequestSourcingQuote} className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Preferred Supplier Partner</label>
-                    <select
-                      value={selectedPartnerId}
-                      onChange={e => setSelectedPartnerId(e.target.value)}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
-                    >
-                      {partners.map(p => (
-                        <option key={p.id} value={p.id}>
-                          {p.company_name} ({p.regions?.join(', ') || 'National'})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Preferred Contact Method</label>
-                    <select
-                      value={contactMethod}
-                      onChange={e => setContactMethod(e.target.value)}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
-                    >
-                      <option value="whatsapp">Direct WhatsApp Message (wa.me link)</option>
-                      <option value="phone">Direct Phone Call</option>
-                      <option value="email">Direct Email Quote</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] text-slate-455 font-bold mb-1">Custom Notes / Dropoff Site Address</label>
-                    <textarea
-                      rows={2}
-                      value={referralNotes}
-                      onChange={e => setReferralNotes(e.target.value)}
-                      placeholder="e.g. Needs delivery to Lekki Phase 1, Lagos. Please bundle mounting rails..."
-                      className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-850 dark:text-slate-200 focus:outline-none resize-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4 bg-slate-50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                  <p className="font-bold text-[10px] text-slate-500 uppercase tracking-wider">Components Sourced From BOM</p>
-                  <div className="space-y-2 text-[11px] text-slate-650 dark:text-slate-350">
-                    <div className="flex justify-between">
-                      <span>Inverter System Sizing:</span>
-                      <strong className="text-slate-800 dark:text-slate-200">
-                        {proposal.selectedInverterBrand || 'Growatt'} {calculations?.inverterKva || 5}kVA
-                      </strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Battery Capacity:</span>
-                      <strong className="text-slate-800 dark:text-slate-200">
-                        {calculations?.batteryTotalUnits || 1}x {proposal.selectedBatteryBrand || 'Felicity'} ({calculations?.batteryUnitVoltage || 48}V {calculations?.batteryUnitAh || 100}Ah)
-                      </strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Solar Panel Array:</span>
-                      <strong className="text-slate-800 dark:text-slate-200">
-                        {calculations?.panelCount || 8}x {proposal.selectedPanelBrand || 'Jinko'} ({calculations?.panelUnitWp || 450}Wp)
-                      </strong>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={sourcingLoading}
-                    className="w-full bg-teal-650 hover:bg-teal-700 text-white font-bold rounded-xl h-10 shadow-sm mt-1"
-                  >
-                    {sourcingLoading ? 'Dispatching BOM...' : 'Request Wholesale Quote'}
-                  </Button>
-                </div>
-              </form>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 📤 SHARE & EXPORT PROPOSAL PANEL */}
+      {/* 📤 SHARE & EXPORT PROPOSAL PANEL (Prioritized & Prominent) */}
       <div className="border rounded-2xl overflow-hidden bg-gradient-to-br from-teal-50/50 to-white dark:from-slate-900 dark:to-slate-950 shadow-md border-teal-100 dark:border-teal-900/40 p-6 space-y-5">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-xl text-lg shadow-inner">
@@ -736,383 +516,576 @@ ${footerStr}`;
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-          {/* WhatsApp Button */}
-          <button
-            onClick={handleWhatsAppShare}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-green-100 dark:border-green-900/20 bg-green-50/30 dark:bg-green-950/10 hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-300 dark:hover:border-green-800/40 transition-all group active:scale-95 text-left w-full"
-          >
-            <div className="p-3 bg-green-500 text-white rounded-full group-hover:scale-110 transition-transform shadow-md shadow-green-500/10">
-              <MessageCircle className="w-5 h-5" />
-            </div>
-            <div className="text-center">
-              <span className="block text-xs font-bold text-green-800 dark:text-green-400">Share on WhatsApp</span>
-              <span className="block text-[10px] text-green-600/80 dark:text-green-500/60 mt-0.5">Send directly via wa.me</span>
-            </div>
-          </button>
-
-          {/* Copy Link Button */}
-          <button
-            onClick={handleCopyLink}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-teal-100 dark:border-teal-900/20 bg-teal-50/20 dark:bg-slate-900 hover:bg-teal-50/50 dark:hover:bg-teal-900/10 hover:border-teal-300 dark:hover:border-teal-800/40 transition-all group active:scale-95 text-left w-full"
-          >
-            <div className="p-3 bg-teal-600 text-white rounded-full group-hover:scale-110 transition-transform shadow-md shadow-teal-600/10">
-              {copiedLink ? <CheckCircle2 className="w-5 h-5 text-emerald-300 animate-bounce" /> : <Copy className="w-5 h-5" />}
-            </div>
-            <div className="text-center">
-              <span className="block text-xs font-bold text-teal-800 dark:text-teal-400">
-                {copiedLink ? 'Link Copied!' : 'Copy Proposal Link'}
+        <div className="space-y-4">
+          {/* WhatsApp sharing as a big primary block */}
+          <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="font-extrabold text-[9px] uppercase tracking-wider bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full w-fit block">
+                Primary Action
               </span>
-              <span className="block text-[10px] text-teal-600/80 dark:text-teal-500/60 mt-0.5">
-                {copiedLink ? 'Copied to Clipboard' : 'For web-client reading'}
-              </span>
+              <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                <span>💬</span> Fast WhatsApp Share
+              </h4>
+              <p className="text-xs text-muted-foreground">Launches WhatsApp with a professionally formatted proposal summary and secure link.</p>
             </div>
-          </button>
+            <Button 
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 shadow-sm rounded-xl py-5"
+              onClick={handleWhatsAppShare}
+            >
+              <MessageCircle className="w-4 h-4" />
+              Share Proposal on WhatsApp
+            </Button>
+          </div>
 
-          {/* PDF/Print Button */}
-          <button
-            onClick={async () => {
-              const id = await ensureSaved();
-              if (!id) return;
-              trackEvent('proposal_generated', { customer: proposal.customer_name, proposalId: id });
-              router.push(`/proposals/print?id=${id}`);
-            }}
-            className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/20 hover:border-slate-300 dark:hover:border-slate-700 transition-all group active:scale-95 text-left w-full"
-          >
-            <div className="p-3 bg-slate-700 text-white rounded-full group-hover:scale-110 transition-transform shadow-md shadow-slate-700/10">
-              🖨️
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Action 2: Copy link */}
+            <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 rounded-2xl flex flex-col justify-between gap-3 shadow-sm">
+              <div className="space-y-1">
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  <span>🔗</span> Copy Proposal Web Link
+                </h4>
+                <p className="text-xs text-muted-foreground">Copy the unique web link of the proposal for sharing on other platforms.</p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full font-semibold border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl"
+                onClick={handleCopyLink}
+              >
+                {copiedLink ? '✓ Copied Link!' : 'Copy Web Link'}
+              </Button>
             </div>
-            <div className="text-center">
-              <span className="block text-xs font-bold text-slate-800 dark:text-slate-200">Print / Save as PDF</span>
-              <span className="block text-[10px] text-slate-500 mt-0.5">Full 2-page document</span>
+
+            {/* Action 3: Copy WhatsApp text summary */}
+            <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 rounded-2xl flex flex-col justify-between gap-3 shadow-sm">
+              <div className="space-y-1">
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  <span>📝</span> Copy Message Summary
+                </h4>
+                <p className="text-xs text-muted-foreground">Copy the full structured WhatsApp proposal text to your clipboard manually.</p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full font-semibold border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl"
+                onClick={handleCopy}
+              >
+                {copied ? '✓ Copied Text!' : 'Copy Message Text'}
+              </Button>
             </div>
-          </button>
+          </div>
         </div>
       </div>
 
-      {/* 💰 PRICING & PAYMENT TERMS CUSTOMIZATION CARD */}
-      <div className="border rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
-        <button 
-          className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 font-semibold text-left flex justify-between items-center"
-          onClick={() => setPricingOpen(!pricingOpen)}
-        >
-          <span className="flex items-center gap-2">💰 Pricing & Payment Terms Customization</span>
-          <span className="text-muted-foreground text-sm">{pricingOpen ? '▲ Hide' : '▼ Expand'}</span>
-        </button>
-        
-        {pricingOpen && (
-          <div className="p-5 space-y-6">
-            {/* 1. Base Cost Customization */}
-            <div className="space-y-4">
-              <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 border-b pb-1">1. Customize System Pricing</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                <div>
-                  <Label className="text-xs font-semibold text-slate-500">Labour (₦)</Label>
-                  <Input 
-                    type="number" 
-                    value={proposal.labour_cost_ngn ?? 80000} 
-                    onChange={e => handlePricingFieldChange('labour_cost_ngn', Math.max(0, Number(e.target.value)))} 
-                    placeholder="80,000"
-                    className="h-9 text-xs"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-semibold text-slate-500">Accessories (₦)</Label>
-                  <Input 
-                    type="number" 
-                    value={proposal.accessories_cost_ngn ?? 35000} 
-                    onChange={e => handlePricingFieldChange('accessories_cost_ngn', Math.max(0, Number(e.target.value)))} 
-                    placeholder="35,000"
-                    className="h-9 text-xs"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-semibold text-slate-500">Markup (%)</Label>
-                  <Input 
-                    type="number" 
-                    value={proposal.markup_percentage ?? 15} 
-                    onChange={e => handlePricingFieldChange('markup_percentage', Math.max(0, Number(e.target.value)))} 
-                    placeholder="15"
-                    className="h-9 text-xs"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-semibold text-slate-500">VAT (%)</Label>
-                  <Input 
-                    type="number" 
-                    value={proposal.vat_percentage ?? 7.5} 
-                    onChange={e => handlePricingFieldChange('vat_percentage', Math.max(0, Number(e.target.value)))} 
-                    placeholder="7.5"
-                    className="h-9 text-xs"
-                  />
-                </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <Label className="text-xs font-semibold text-slate-500">Discount (₦)</Label>
-                  <Input 
-                    type="number" 
-                    value={proposal.discount_ngn ?? 0} 
-                    onChange={e => handlePricingFieldChange('discount_ngn', Math.max(0, Number(e.target.value)))} 
-                    placeholder="0"
-                    className="h-9 text-xs"
-                  />
-                </div>
-              </div>
+      {/* 🛠️ ADMINISTRATIVE & ADVANCED SETTINGS ACCORDION */}
+      <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-1">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">🛠️ Administrative & Advanced Customization</h3>
+          <p className="text-[11px] text-muted-foreground">Adjust pricing, payment plans, brand colors, Lagos compliance, and distributor sourcing details if needed.</p>
+        </div>
 
-              {/* Dynamically calculated live breakdown box */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border space-y-2 text-xs">
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                  <span>Equipment Cost (Inverter, Batteries, Panels):</span>
-                  <span className="font-semibold">₦{hardwareSubtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                  <span>Labour & Installation Accessories:</span>
-                  <span className="font-semibold">₦{(labourCost + accessoriesCost).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                  <span>Base Subtotal:</span>
-                  <span className="font-semibold">₦{(hardwareSubtotal + labourCost + accessoriesCost).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                  <span>Installer Markup (+{markupPercent}%):</span>
-                  <span className="font-semibold">₦{Math.round((hardwareSubtotal + labourCost + accessoriesCost) * (markupPercent / 100)).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                  <span>VAT (+{vatPercent}%):</span>
-                  <span className="font-semibold">₦{Math.round(((hardwareSubtotal + labourCost + accessoriesCost) * (1 + markupPercent / 100)) * (vatPercent / 100)).toLocaleString()}</span>
-                </div>
-                {discountNgn > 0 && (
-                  <div className="flex justify-between text-rose-600 font-medium">
-                    <span>Discount Applied:</span>
-                    <span>-₦{discountNgn.toLocaleString()}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm font-extrabold border-t pt-2 mt-1 text-teal-600 dark:text-teal-400">
-                  <span>Final Quoted Price (Turnkey):</span>
-                  <span className="text-base font-black">₦{(proposal.final_quoted_price_ngn || 0).toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Payment Terms / Installment Customization */}
-            <div className="space-y-4 pt-4 border-t">
-              <div className="flex justify-between items-center">
-                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">2. Installment & Financing Terms</h4>
-                <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={plan.includeInProposal} 
-                    onChange={(e) => handlePaymentPlanChange('includeInProposal', e.target.checked)}
-                    className="w-4 h-4 accent-teal-600 rounded cursor-pointer"
-                  />
-                  <span>Include Installment Options in PDF</span>
-                </label>
-              </div>
-
-              {plan.includeInProposal && (
+        <div className="space-y-3">
+          {/* 💰 PRICING & PAYMENT TERMS CUSTOMIZATION CARD */}
+          <div className="border rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-sm border-slate-200 dark:border-slate-800">
+            <button 
+              type="button"
+              className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 font-semibold text-left flex justify-between items-center"
+              onClick={() => setPricingOpen(!pricingOpen)}
+            >
+              <span className="flex items-center gap-2">💰 Pricing & Payment Terms Customization</span>
+              <span className="text-muted-foreground text-sm">{pricingOpen ? '▲ Hide' : '▼ Expand'}</span>
+            </button>
+            
+            {pricingOpen && (
+              <div className="p-5 space-y-6 border-t border-slate-100 dark:border-slate-800">
+                {/* 1. Base Cost Customization */}
                 <div className="space-y-4">
-                  {/* Parameter Controls */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 border-b pb-1">1. Customize System Pricing</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                     <div>
-                      <Label className="text-xs font-semibold text-slate-500">Down Payment (%)</Label>
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          min={0}
-                          max={100}
-                          value={plan.downPaymentPercent ?? 20}
-                          onChange={e => handlePaymentPlanChange('downPaymentPercent', Math.max(0, Math.min(100, Number(e.target.value))))}
-                          className="h-9 pr-7 text-xs"
-                        />
-                        <span className="absolute right-3 top-2.5 text-[10px] text-slate-400 font-bold">%</span>
-                      </div>
+                      <Label className="text-xs font-semibold text-slate-500">Labour (₦)</Label>
+                      <Input 
+                        type="number" 
+                        value={proposal.labour_cost_ngn ?? 80000} 
+                        onChange={e => handlePricingFieldChange('labour_cost_ngn', Math.max(0, Number(e.target.value)))} 
+                        placeholder="80,000"
+                        className="h-9 text-xs"
+                      />
                     </div>
                     <div>
-                      <Label className="text-xs font-semibold text-slate-500">6-Month Markup (%)</Label>
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          min={0}
-                          value={plan.markup6Months ?? 10}
-                          onChange={e => handlePaymentPlanChange('markup6Months', Math.max(0, Number(e.target.value)))}
-                          className="h-9 pr-7 text-xs"
-                        />
-                        <span className="absolute right-3 top-2.5 text-[10px] text-slate-400 font-bold">%</span>
-                      </div>
+                      <Label className="text-xs font-semibold text-slate-500">Accessories (₦)</Label>
+                      <Input 
+                        type="number" 
+                        value={proposal.accessories_cost_ngn ?? 35000} 
+                        onChange={e => handlePricingFieldChange('accessories_cost_ngn', Math.max(0, Number(e.target.value)))} 
+                        placeholder="35,000"
+                        className="h-9 text-xs"
+                      />
                     </div>
                     <div>
-                      <Label className="text-xs font-semibold text-slate-500">12-Month Markup (%)</Label>
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          min={0}
-                          value={plan.markup12Months ?? 15}
-                          onChange={e => handlePaymentPlanChange('markup12Months', Math.max(0, Number(e.target.value)))}
-                          className="h-9 pr-7 text-xs"
-                        />
-                        <span className="absolute right-3 top-2.5 text-[10px] text-slate-400 font-bold">%</span>
-                      </div>
+                      <Label className="text-xs font-semibold text-slate-500">Markup (%)</Label>
+                      <Input 
+                        type="number" 
+                        value={proposal.markup_percentage ?? 15} 
+                        onChange={e => handlePricingFieldChange('markup_percentage', Math.max(0, Number(e.target.value)))} 
+                        placeholder="15"
+                        className="h-9 text-xs"
+                      />
                     </div>
                     <div>
-                      <Label className="text-xs font-semibold text-slate-500">24-Month Markup (%)</Label>
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          min={0}
-                          value={plan.markup24Months ?? 20}
-                          onChange={e => handlePaymentPlanChange('markup24Months', Math.max(0, Number(e.target.value)))}
-                          className="h-9 pr-7 text-xs"
-                        />
-                        <span className="absolute right-3 top-2.5 text-[10px] text-slate-400 font-bold">%</span>
-                      </div>
+                      <Label className="text-xs font-semibold text-slate-500">VAT (%)</Label>
+                      <Input 
+                        type="number" 
+                        value={proposal.vat_percentage ?? 7.5} 
+                        onChange={e => handlePricingFieldChange('vat_percentage', Math.max(0, Number(e.target.value)))} 
+                        placeholder="7.5"
+                        className="h-9 text-xs"
+                      />
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <Label className="text-xs font-semibold text-slate-500">Discount (₦)</Label>
+                      <Input 
+                        type="number" 
+                        value={proposal.discount_ngn ?? 0} 
+                        onChange={e => handlePricingFieldChange('discount_ngn', Math.max(0, Number(e.target.value)))} 
+                        placeholder="0"
+                        className="h-9 text-xs"
+                      />
                     </div>
                   </div>
 
-                  {/* Visual Plan Options Selector */}
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
-                    {(['outright', '6months', '12months', '24months'] as const).map((planType) => {
-                      const details = getInstallmentDetails(planType);
-                      const isSelected = plan.selectedPlan === planType;
-                      
-                      return (
-                        <div
-                          key={planType}
-                          onClick={() => handlePaymentPlanChange('selectedPlan', planType)}
-                          className={`text-left rounded-xl border p-4 transition-all flex flex-col justify-between hover:border-teal-500/50 cursor-pointer ${
-                            isSelected 
-                              ? 'border-teal-500 bg-teal-50/30 dark:bg-teal-950/15 shadow-sm ring-1 ring-teal-500' 
-                              : 'border-slate-200 bg-slate-50/50 dark:border-slate-800'
-                          }`}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase">
-                                {planType === 'outright' ? 'Outright' : `${details.months} Months`}
-                              </span>
-                              <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                                isSelected ? 'border-teal-500 bg-teal-500 text-white' : 'border-slate-300 bg-white'
-                              }`}>
-                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                              </div>
-                            </div>
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
-                              details.markupPercent > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                            }`}>
-                              {details.markupPercent}% Markup
-                            </span>
-                          </div>
+                  {/* Dynamically calculated live breakdown box */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border space-y-2 text-xs">
+                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                      <span>Equipment Cost (Inverter, Batteries, Panels):</span>
+                      <span className="font-semibold">₦{hardwareSubtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                      <span>Labour & Installation Accessories:</span>
+                      <span className="font-semibold">₦{(labourCost + accessoriesCost).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                      <span>Base Subtotal:</span>
+                      <span className="font-semibold">₦{(hardwareSubtotal + labourCost + accessoriesCost).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                      <span>Installer Markup (+{markupPercent}%):</span>
+                      <span className="font-semibold">₦{Math.round((hardwareSubtotal + labourCost + accessoriesCost) * (markupPercent / 100)).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                      <span>VAT (+{vatPercent}%):</span>
+                      <span className="font-semibold">₦{Math.round(((hardwareSubtotal + labourCost + accessoriesCost) * (1 + markupPercent / 100)) * (vatPercent / 100)).toLocaleString()}</span>
+                    </div>
+                    {discountNgn > 0 && (
+                      <div className="flex justify-between text-rose-600 font-medium">
+                        <span>Discount Applied:</span>
+                        <span>-₦{discountNgn.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-sm font-extrabold border-t pt-2 mt-1 text-teal-600 dark:text-teal-400">
+                      <span>Final Quoted Price (Turnkey):</span>
+                      <span className="text-base font-black">₦{(proposal.final_quoted_price_ngn || 0).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
 
-                          <div className="space-y-1.5 pt-3 text-[10px]">
-                            <div>
-                              <span className="text-slate-400 block uppercase tracking-wider text-[8px]">Down Payment</span>
-                              <span className="font-bold text-slate-700">₦{details.downPayment.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 block uppercase tracking-wider text-[8px]">Monthly Repayment</span>
-                              <span className="font-bold text-slate-700">
-                                {details.monthlyRepayment > 0 ? `₦${Math.round(details.monthlyRepayment).toLocaleString()}` : '—'}
-                              </span>
-                            </div>
-                            <div className="pt-1.5 border-t dark:border-slate-800">
-                              <span className="text-slate-400 block uppercase tracking-wider text-[8px]">Total Payable</span>
-                              <span className="text-xs font-extrabold text-teal-600">₦{Math.round(details.totalAmountPayable).toLocaleString()}</span>
-                            </div>
+                {/* 2. Payment Terms / Installment Customization */}
+                <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">2. Installment & Financing Terms</h4>
+                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={plan.includeInProposal} 
+                        onChange={(e) => handlePaymentPlanChange('includeInProposal', e.target.checked)}
+                        className="w-4 h-4 accent-teal-600 rounded cursor-pointer"
+                      />
+                      <span>Include Installment Options in PDF</span>
+                    </label>
+                  </div>
+
+                  {plan.includeInProposal && (
+                    <div className="space-y-4">
+                      {/* Parameter Controls */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-500">Down Payment (%)</Label>
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={plan.downPaymentPercent ?? 20}
+                              onChange={e => handlePaymentPlanChange('downPaymentPercent', Math.max(0, Math.min(100, Number(e.target.value))))}
+                              className="h-9 pr-7 text-xs"
+                            />
+                            <span className="absolute right-3 top-2.5 text-[10px] text-slate-400 font-bold">%</span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-500">6-Month Markup (%)</Label>
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              min={0}
+                              value={plan.markup6Months ?? 10}
+                              onChange={e => handlePaymentPlanChange('markup6Months', Math.max(0, Number(e.target.value)))}
+                              className="h-9 pr-7 text-xs"
+                            />
+                            <span className="absolute right-3 top-2.5 text-[10px] text-slate-400 font-bold">%</span>
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-500">12-Month Markup (%)</Label>
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              min={0}
+                              value={plan.markup12Months ?? 15}
+                              onChange={e => handlePaymentPlanChange('markup12Months', Math.max(0, Number(e.target.value)))}
+                              className="h-9 pr-7 text-xs"
+                            />
+                            <span className="absolute right-3 top-2.5 text-[10px] text-slate-400 font-bold">%</span>
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-500">24-Month Markup (%)</Label>
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              min={0}
+                              value={plan.markup24Months ?? 20}
+                              onChange={e => handlePaymentPlanChange('markup24Months', Math.max(0, Number(e.target.value)))}
+                              className="h-9 pr-7 text-xs"
+                            />
+                            <span className="absolute right-3 top-2.5 text-[10px] text-slate-400 font-bold">%</span>
+                          </div>
+                        </div>
+                      </div>
 
-      {/* UPGRADE 5: Installer Branding Collapsible */}
-      <div className="border rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
-        <button 
-          type="button"
-          className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 font-semibold text-left flex justify-between items-center"
-          onClick={() => {
-            if (!checkAccess('customBranding').unlocked) {
-              openUpgradeModal('customBranding');
-            } else {
-              setBrandingOpen(!brandingOpen);
-            }
-          }}
-        >
-          <span className="flex items-center gap-1.5">
-            <span>🎨</span> Installer Branding (For PDF)
-            {!checkAccess('customBranding').unlocked && (
-              <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 text-teal-650 bg-teal-50 dark:bg-teal-950 dark:text-teal-400 uppercase tracking-widest font-black">Enterprise</Badge>
+                      {/* Visual Plan Options Selector */}
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
+                        {(['outright', '6months', '12months', '24months'] as const).map((planType) => {
+                          const details = getInstallmentDetails(planType);
+                          const isSelected = plan.selectedPlan === planType;
+                          
+                          return (
+                            <div
+                              key={planType}
+                              onClick={() => handlePaymentPlanChange('selectedPlan', planType)}
+                              className={`text-left rounded-xl border p-4 transition-all flex flex-col justify-between hover:border-teal-500/50 cursor-pointer ${
+                                isSelected 
+                                  ? 'border-teal-500 bg-teal-50/30 dark:bg-teal-950/15 shadow-sm ring-1 ring-teal-500' 
+                                  : 'border-slate-200 bg-slate-50/50 dark:border-slate-800'
+                              }`}
+                            >
+                              <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <span className="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase">
+                                    {planType === 'outright' ? 'Outright' : `${details.months} Months`}
+                                  </span>
+                                  <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                                    isSelected ? 'border-teal-500 bg-teal-500 text-white' : 'border-slate-300 bg-white'
+                                  }`}>
+                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                  </div>
+                                </div>
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
+                                  details.markupPercent > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                                }`}>
+                                  {details.markupPercent}% Markup
+                                </span>
+                              </div>
+
+                              <div className="space-y-1.5 pt-3 text-[10px]">
+                                <div>
+                                  <span className="text-slate-400 block uppercase tracking-wider text-[8px]">Down Payment</span>
+                                  <span className="font-bold text-slate-700">₦{details.downPayment.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                </div>
+                                <div>
+                                  <span className="text-slate-400 block uppercase tracking-wider text-[8px]">Monthly Repayment</span>
+                                  <span className="font-bold text-slate-700">
+                                    {details.monthlyRepayment > 0 ? `₦${Math.round(details.monthlyRepayment).toLocaleString()}` : '—'}
+                                  </span>
+                                </div>
+                                <div className="pt-1.5 border-t dark:border-slate-800">
+                                  <span className="text-slate-400 block uppercase tracking-wider text-[8px]">Total Payable</span>
+                                  <span className="text-xs font-extrabold text-teal-600">₦{Math.round(details.totalAmountPayable).toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
-          </span>
-          <span className="text-muted-foreground text-sm">{brandingOpen ? '▲ Hide' : '▼ Expand'}</span>
-        </button>
-        
-        {brandingOpen && (
-          <div className="p-5 space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Primary Brand Color</Label>
-                <div className="flex gap-3">
-                  <div className="relative">
-                    <Input 
-                      type="color" 
-                      className="w-12 h-10 p-0.5 rounded cursor-pointer"
-                      value={proposal.installer_primary_color || '#01696f'}
-                      onChange={e => updateProposal({ installer_primary_color: e.target.value })}
-                    />
-                  </div>
-                  <Input 
-                    value={proposal.installer_primary_color || '#01696f'}
-                    onChange={e => updateProposal({ installer_primary_color: e.target.value })}
-                    placeholder="#01696f"
-                    className="font-mono text-sm uppercase"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Secondary Brand Color</Label>
-                <div className="flex gap-3">
-                  <div className="relative">
-                    <Input 
-                      type="color" 
-                      className="w-12 h-10 p-0.5 rounded cursor-pointer"
-                      value={proposal.installer_secondary_color || '#01414a'}
-                      onChange={e => updateProposal({ installer_secondary_color: e.target.value })}
-                    />
-                  </div>
-                  <Input 
-                    value={proposal.installer_secondary_color || '#01414a'}
-                    onChange={e => updateProposal({ installer_secondary_color: e.target.value })}
-                    placeholder="#01414a"
-                    className="font-mono text-sm uppercase"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Logo URL (or Base64 for offline use)</Label>
-              <Input 
-                value={proposal.installer_logo_url || ''}
-                onChange={e => updateProposal({ installer_logo_url: e.target.value })}
-                placeholder="https://yourcompany.com/logo.png"
-              />
-              <p className="text-[10px] text-muted-foreground">For full offline PWA support, paste a Base64 data URI here instead of a web URL.</p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Company Tagline / Slogan</Label>
-              <Input 
-                value={proposal.installer_tagline || ''}
-                onChange={e => updateProposal({ installer_tagline: e.target.value })}
-                placeholder="e.g. Powering Nigeria's Future"
-              />
-            </div>
           </div>
-        )}
+
+          {/* 🎨 INSTALLER BRANDING CUSTOMIZATION CARD */}
+          <div className="border rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-sm border-slate-200 dark:border-slate-800">
+            <button 
+              type="button"
+              className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 font-semibold text-left flex justify-between items-center"
+              onClick={() => {
+                if (!checkAccess('customBranding').unlocked) {
+                  openUpgradeModal('customBranding');
+                } else {
+                  setBrandingOpen(!brandingOpen);
+                }
+              }}
+            >
+              <span className="flex items-center gap-1.5">
+                <span>🎨</span> Installer Branding (For PDF)
+                {!checkAccess('customBranding').unlocked && (
+                  <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 text-teal-650 bg-teal-50 dark:bg-teal-950 dark:text-teal-400 uppercase tracking-widest font-black">Enterprise</Badge>
+                )}
+              </span>
+              <span className="text-muted-foreground text-sm">{brandingOpen ? '▲ Hide' : '▼ Expand'}</span>
+            </button>
+            
+            {brandingOpen && (
+              <div className="p-5 space-y-5 border-t border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label>Primary Brand Color</Label>
+                    <div className="flex gap-3">
+                      <div className="relative">
+                        <Input 
+                          type="color" 
+                          className="w-12 h-10 p-0.5 rounded cursor-pointer"
+                          value={proposal.installer_primary_color || '#01696f'}
+                          onChange={e => updateProposal({ installer_primary_color: e.target.value })}
+                        />
+                      </div>
+                      <Input 
+                        value={proposal.installer_primary_color || '#01696f'}
+                        onChange={e => updateProposal({ installer_primary_color: e.target.value })}
+                        placeholder="#01696f"
+                        className="font-mono text-sm uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Secondary Brand Color</Label>
+                    <div className="flex gap-3">
+                      <div className="relative">
+                        <Input 
+                          type="color" 
+                          className="w-12 h-10 p-0.5 rounded cursor-pointer"
+                          value={proposal.installer_secondary_color || '#01414a'}
+                          onChange={e => updateProposal({ installer_secondary_color: e.target.value })}
+                        />
+                      </div>
+                      <Input 
+                        value={proposal.installer_secondary_color || '#01414a'}
+                        onChange={e => updateProposal({ installer_secondary_color: e.target.value })}
+                        placeholder="#01414a"
+                        className="font-mono text-sm uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Logo URL (or Base64 for offline use)</Label>
+                  <Input 
+                    value={proposal.installer_logo_url || ''}
+                    onChange={e => updateProposal({ installer_logo_url: e.target.value })}
+                    placeholder="https://yourcompany.com/logo.png"
+                  />
+                  <p className="text-[10px] text-muted-foreground">For full offline PWA support, paste a Base64 data URI here instead of a web URL.</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Company Tagline / Slogan</Label>
+                  <Input 
+                    value={proposal.installer_tagline || ''}
+                    onChange={e => updateProposal({ installer_tagline: e.target.value })}
+                    placeholder="e.g. Powering Nigeria's Future"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 📋 LAGOS REGULATORY COMPLIANCE CHECKLIST */}
+          <div className="border rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <button 
+              type="button"
+              className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 font-semibold text-left flex justify-between items-center"
+              onClick={() => setComplianceOpen(!complianceOpen)}
+            >
+              <span className="flex items-center gap-1.5">
+                <span>📋</span> Lagos Regulatory Compliance Checklist
+              </span>
+              <span className="text-muted-foreground text-sm">{complianceOpen ? '▲ Hide' : '▼ Expand'}</span>
+            </button>
+            
+            {complianceOpen && (
+              <div className="p-5 space-y-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <p className="text-slate-500 font-medium leading-relaxed">
+                  Verify Lagos State and national regulatory codes to assure client credibility and minimize structural liabilities.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={compliance.nercPermit} 
+                      onChange={e => setCompliance({ ...compliance, nercPermit: e.target.checked })}
+                      className="mt-0.5 accent-teal-600 rounded"
+                    />
+                    <div>
+                      <span className="font-semibold block text-slate-700 dark:text-slate-300">NERC Microgrid Permit</span>
+                      <span className="text-[10px] text-slate-400 block">Not required if system capacity is &lt; 1 MW. Verified exempt.</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={compliance.laspppaApproval} 
+                      onChange={e => setCompliance({ ...compliance, laspppaApproval: e.target.checked })}
+                      className="mt-0.5 accent-teal-600 rounded"
+                    />
+                    <div>
+                      <span className="font-semibold block text-slate-700 dark:text-slate-300">LASPPPA Roof Setbacks</span>
+                      <span className="text-[10px] text-slate-400 block">Confirm panel placement respects Lagos structural roof boundary codes.</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={compliance.landlordApproval} 
+                      onChange={e => setCompliance({ ...compliance, landlordApproval: e.target.checked })}
+                      className="mt-0.5 accent-teal-600 rounded"
+                    />
+                    <div>
+                      <span className="font-semibold block text-slate-700 dark:text-slate-300">Landlord/Estate Consent</span>
+                      <span className="text-[10px] text-slate-400 block">Written consent acquired if rental or managed Lekki/Ikoyi estate.</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={compliance.sonCertified} 
+                      onChange={e => setCompliance({ ...compliance, sonCertified: e.target.checked })}
+                      className="mt-0.5 accent-teal-600 rounded"
+                    />
+                    <div>
+                      <span className="font-semibold block text-slate-700 dark:text-slate-300">SON Hardware Certificates</span>
+                      <span className="text-[10px] text-slate-400 block">Verify inverters and batteries are SONCAP certified import stock.</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={compliance.structuralRoof} 
+                      onChange={e => setCompliance({ ...compliance, structuralRoof: e.target.checked })}
+                      className="mt-0.5 accent-teal-600 rounded"
+                    />
+                    <div>
+                      <span className="font-semibold block text-slate-700 dark:text-slate-300">Roof Truss Integrity Audit</span>
+                      <span className="text-[10px] text-slate-400 block">Trusses inspected to support wind load specs (up to 45 m/s gust).</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={compliance.wiringDiagram} 
+                      onChange={e => setCompliance({ ...compliance, wiringDiagram: e.target.checked })}
+                      className="mt-0.5 accent-teal-600 rounded"
+                    />
+                    <div>
+                      <span className="font-semibold block text-slate-700 dark:text-slate-300">Single-Line Wiring Diagram</span>
+                      <span className="text-[10px] text-slate-400 block">Lagos distribution grid interlock safety schematic attached.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ☀️ EQUIPMENT SOURCING & DISTRIBUTOR QUOTES */}
+          <div className="border rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <button 
+              type="button"
+              className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 font-semibold text-left flex justify-between items-center"
+              onClick={() => setSourcingOpen(!sourcingOpen)}
+            >
+              <span className="flex items-center gap-1.5">
+                <span>☀️</span> Equipment Sourcing & Partner Referrals
+              </span>
+              <span className="text-muted-foreground text-sm">{sourcingOpen ? '▲ Hide' : '▼ Expand'}</span>
+            </button>
+            
+            {sourcingOpen && (
+              <div className="p-5 space-y-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+                {sourcingSuccess ? (
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/35 rounded-xl text-emerald-800 dark:text-emerald-350 font-semibold text-center">
+                    🎉 Supplier request logged successfully! Distributors will contact you directly.
+                  </div>
+                ) : (
+                  <form onSubmit={handleRequestSourcingQuote} className="space-y-4">
+                    <p className="text-slate-500 font-medium">
+                      Forward this bill of materials (BOM) to certified importers in Lagos (Ikeja, Alaba) to receive direct reseller pricing quotes.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Select Distributor</Label>
+                        <select 
+                          className="w-full mt-1.5 h-9 rounded-lg border bg-white dark:bg-slate-950 p-2 text-xs"
+                          value={selectedPartnerId}
+                          onChange={e => setSelectedPartnerId(e.target.value)}
+                        >
+                          {partners.map(p => (
+                            <option key={p.id} value={p.id}>
+                              {p.company_name} ({p.regions?.join(', ') || 'National'})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-450">Distributor Contact Mode</Label>
+                        <select 
+                          className="w-full mt-1.5 h-9 rounded-lg border bg-white dark:bg-slate-950 p-2 text-xs"
+                          value={contactMethod}
+                          onChange={e => setContactMethod(e.target.value)}
+                        >
+                          <option value="whatsapp">Direct WhatsApp Ping</option>
+                          <option value="email">Formal RFQ Email</option>
+                          <option value="phone">Callback Request</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-450">Additional Instructions</Label>
+                        <Input 
+                          value={referralNotes}
+                          onChange={e => setReferralNotes(e.target.value)}
+                          placeholder="e.g. Deliver to site in Gbagada"
+                          className="mt-1.5 h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-[11px] h-9 px-4 rounded-lg shadow-sm"
+                      disabled={sourcingLoading}
+                    >
+                      {sourcingLoading ? 'Sending RFQ...' : 'Submit Sourcing Request ☀️'}
+                    </Button>
+                  </form>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {error && <p className="text-red-500 text-sm font-semibold text-right">{error}</p>}

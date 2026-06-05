@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Switch } from '@/components/ui/switch';
 import { useHomeownerSubscriptionStore } from '@/store/homeownerSubscriptionStore';
 import { REGION_PROFILES, formatCurrency, convertCost, type RegionCode, type RegionProfile } from '@/lib/regionConfig';
+import { NIGERIAN_CITIES, getCityById, type NigerianCity } from '@/lib/nigerianCities';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +35,7 @@ import {
   Info,
   Globe
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 /* ─── Presets for Non-Installers ───────────────────────────────── */
 interface AppliancePreset {
@@ -52,7 +55,7 @@ const APPLIANCE_PRESETS: AppliancePreset[] = [
   { id: 'led_tv', name: 'Smart TV & Sound System', wattage: 150, defaultQty: 1, icon: '📺', category: 'entertainment', description: 'Television + decoder/speaker' },
   { id: 'laptops', name: 'Laptops & Phone Chargers', wattage: 65, defaultQty: 2, icon: '💻', category: 'office', description: 'Computers and charge bricks' },
   { id: 'standard_fridge', name: 'Standard Refrigerator', wattage: 250, defaultQty: 1, icon: '❄️', category: 'heavy', peakSurge: 700, description: 'Single or double-door fridge' },
-  { id: 'deep_freezer', name: 'Deep Freezer', wattage: 350, defaultQty: 1, icon: '🧊', category: 'heavy', peakSurge: 1000, description: 'Chest freezer for food storage' },
+  { id: 'deep_freezer', name: 'Deep Freezer', wattage: 350, defaultQty: 0, icon: '🧊', category: 'heavy', peakSurge: 1000, description: 'Chest freezer for food storage' },
   { id: 'inverter_ac', name: '1.5HP Inverter AC', wattage: 900, defaultQty: 0, icon: '🍃', category: 'ac', peakSurge: 1800, description: 'Power-efficient AC' },
   { id: 'standard_ac', name: '1.5HP Non-Inverter AC', wattage: 1300, defaultQty: 0, icon: '💨', category: 'ac', peakSurge: 3500, description: 'Standard high-surge AC' },
   { id: 'water_pump', name: '0.75HP Water Pump', wattage: 750, defaultQty: 0, icon: '🚰', category: 'heavy', peakSurge: 2200, description: 'Sumo or borehole pump' },
@@ -63,12 +66,68 @@ export default function HomeownerEstimatorPage() {
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
   const homeownerSub = useHomeownerSubscriptionStore();
   const [mounted, setMounted] = React.useState(false);
-  const [regionCode, setRegionCode] = React.useState<RegionCode>('NG');
+  
+  // Permanent lock to Nigeria region
+  const regionCode: RegionCode = 'NG';
   const region: RegionProfile = REGION_PROFILES[regionCode];
+
+  // Nigerian City state
+  const [cityId, setCityId] = React.useState<string>('lagos');
+  const activeCity = React.useMemo(() => getCityById(cityId), [cityId]);
+
+  // Live FX Rate States
+  const [usdToNgnRate, setUsdToNgnRate] = React.useState<number>(1500);
+  const [fxFetchedTime, setFxFetchedTime] = React.useState<string>('');
 
   React.useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
+  }, []);
+
+  React.useEffect(() => {
+    if (step === 3 && mounted) {
+      const isLeadCaptured = typeof window !== 'undefined' && localStorage.getItem('solar_lead_captured') === 'true';
+      const isPaid = homeownerSub.tier !== 'free';
+      if (!isPaid && !isLeadCaptured) {
+        setStep(2);
+        setLeadModalOpen(true);
+      }
+    }
+  }, [step, homeownerSub.tier, mounted]);
+
+  // Fetch FX Rate and Cache for 10 minutes
+  React.useEffect(() => {
+    const fetchFxRate = async () => {
+      if (typeof window === 'undefined') return;
+      const cachedRate = localStorage.getItem('solarpro_usd_ngn_rate');
+      const cachedTime = localStorage.getItem('solarpro_usd_ngn_timestamp');
+      
+      if (cachedRate && cachedTime) {
+        const age = Date.now() - parseInt(cachedTime, 10);
+        if (age < 10 * 60 * 1000) { // 10 minutes
+          setUsdToNgnRate(parseFloat(cachedRate));
+          setFxFetchedTime(new Date(parseInt(cachedTime, 10)).toLocaleTimeString());
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        if (res.ok) {
+          const data = await res.json();
+          const rate = data.rates?.NGN;
+          if (rate && typeof rate === 'number') {
+            setUsdToNgnRate(rate);
+            localStorage.setItem('solarpro_usd_ngn_rate', rate.toString());
+            localStorage.setItem('solarpro_usd_ngn_timestamp', Date.now().toString());
+            setFxFetchedTime(new Date().toLocaleTimeString());
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch live FX rate:', e);
+      }
+    };
+    fetchFxRate();
   }, []);
 
   /* ── State variables ── */
@@ -80,6 +139,18 @@ export default function HomeownerEstimatorPage() {
     return init;
   });
 
+  const [showHeavyLoads, setShowHeavyLoads] = React.useState(false);
+
+  // Auto-expand heavy loads if any have quantity > 0
+  React.useEffect(() => {
+    const hasHeavyLoad = ['deep_freezer', 'inverter_ac', 'standard_ac', 'water_pump', 'microwave'].some(
+      (id) => (quantities[id] || 0) > 0
+    );
+    if (hasHeavyLoad) {
+      setShowHeavyLoads(true);
+    }
+  }, [quantities]);
+
   const [nepaHours, setNepaHours] = React.useState<number>(8);
   const [backupHours, setBackupHours] = React.useState<number>(10);
   const [fuelType, setFuelType] = React.useState<'petrol' | 'diesel' | 'none'>('petrol');
@@ -88,8 +159,6 @@ export default function HomeownerEstimatorPage() {
 
   /* ── Lead Capture Funnel State ── */
   const [leadModalOpen, setLeadModalOpen] = React.useState(false);
-  const [leadName, setLeadName] = React.useState('');
-  const [leadPhone, setLeadPhone] = React.useState('');
   const [leadEmail, setLeadEmail] = React.useState('');
   const [leadLoading, setLeadLoading] = React.useState(false);
 
@@ -105,7 +174,6 @@ export default function HomeownerEstimatorPage() {
       const qty = quantities[p.id] || 0;
       if (qty === 0) return sum;
       const itemSurge = p.peakSurge ? p.peakSurge : p.wattage * 1.5;
-      // Surge is experienced mostly when turning on. Assume only one high-surge starts at once + others are running
       return Math.max(sum, runningLoad - p.wattage + itemSurge);
     }, runningLoad);
   }, [quantities, runningLoad]);
@@ -178,12 +246,10 @@ export default function HomeownerEstimatorPage() {
 
   /* ── Daily consumption and sizing metrics ── */
   const dailyConsumptionWh = React.useMemo(() => {
-    // Estimating daily backup Wh: running load * hours requested
     return runningLoad * backupHours;
   }, [runningLoad, backupHours]);
 
   const panelPeakWpNeeded = React.useMemo(() => {
-    // Region-specific average peak sun hours and panel efficiency
     if (dailyConsumptionWh === 0) return 0;
     return Math.ceil(dailyConsumptionWh / (region.solar.peakSunHours * region.solar.panelEfficiency));
   }, [dailyConsumptionWh, region.solar.peakSunHours, region.solar.panelEfficiency]);
@@ -202,7 +268,6 @@ export default function HomeownerEstimatorPage() {
   const annualFuelSpend = currentFuelSpendNaira * 12;
 
   const solarReplacedSavings = React.useMemo(() => {
-    // A robust solar system replaces ~80-95% of generator runs if properly sized
     if (fuelType === 'none') return 0;
     return currentFuelSpendNaira * 0.90;
   }, [fuelType, currentFuelSpendNaira]);
@@ -226,18 +291,21 @@ export default function HomeownerEstimatorPage() {
     });
   };
 
-  const handleLeadSubmit = async (viaWhatsapp: boolean) => {
-    if (!leadName || !leadPhone) return;
+  // Submit email lead only (B2)
+  const handleLeadSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!leadEmail || !leadEmail.includes('@')) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
     setLeadLoading(true);
     try {
-      const response = await fetch('/api/leads/homeowner', {
+      const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: leadName,
-          phone: leadPhone,
-          email: leadEmail || null,
-          location: region.name,
+          email: leadEmail,
+          location: activeCity.name,
           running_load_w: runningLoad,
           kva_recommended: recommendation.kva,
           monthly_savings_ngn: solarReplacedSavings,
@@ -251,41 +319,35 @@ export default function HomeownerEstimatorPage() {
         }
         setLeadModalOpen(false);
         setStep(3);
-        
-        if (viaWhatsapp) {
-          const contactNum = process.env.NEXT_PUBLIC_WHATSAPP_CONTACT_NUMBER || '+2348030000000';
-          const text = `Hello! I just sized my solar project on your website:
-- Running Load: ${runningLoad} Watts
-- Monthly Fuel Spend: ${formatCurrency(currentFuelSpendNaira, region)}/month
-- Recommended System: ${recommendation.title} (${recommendation.kva})
-- Sized Batteries: ${recommendation.battery}
-- Panels: ${recommendedPanelsQty}x 450W Panels
-
-Please send my detailed proposal and the Launch Premium Bundle (Tariff Shield Guide, Lagos Anti-Scam Checklist, and ₦50,000 Installation Voucher)!`;
-          window.open(`https://wa.me/${contactNum.replace(/[^0-9+]/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
-        }
+        toast.success('Roadmap and Anti-Scam Guide unlocked successfully!');
       } else {
         const err = await response.json();
-        console.error('Lead submission failed:', err);
+        toast.error(err.error || 'Submission failed.');
       }
     } catch (e) {
       console.error('Error submitting lead:', e);
+      toast.error('Connection error. Please try again.');
     } finally {
       setLeadLoading(false);
     }
   };
 
   const handleWhatsAppShare = () => {
-    const text = `Hello! I just used the *SolarPro Sizing Estimator* to calculate my solar needs:
+    const minUSD = targetCostMin / usdToNgnRate;
+    const maxUSD = targetCostMax / usdToNgnRate;
+    const savingsMoUSD = solarReplacedSavings / usdToNgnRate;
+    
+    const text = `Hello! I just used the *SolarPro Sizing Estimator* to calculate my solar needs for my property in ${activeCity.name}:
     
 - *Running Load:* ${runningLoad} W
 - *Sized Recommendation:* ${recommendation.title} (${recommendation.kva})
 - *Sized Batteries:* ${recommendation.battery}
 - *Solar Panels:* ${recommendedPanelsQty}x 450W Panels
-- *Estimated Cost:* ${formatCurrency(targetCostMin, region)} - ${formatCurrency(targetCostMax, region)}
+- *Estimated Cost:* ${formatCurrency(targetCostMin, region)} - ${formatCurrency(targetCostMax, region)} (~$${minUSD.toFixed(0)} - $${maxUSD.toFixed(0)} USD)
+- *Local grid:* ${activeCity.disco} (${activeCity.tariffBand} @ ₦${activeCity.tariffRateNGN}/kWh)
 - *My Current Fuel Cost:* ${formatCurrency(currentFuelSpendNaira, region)}/month
-- *Estimated Fuel Savings:* ${formatCurrency(solarReplacedSavings, region)}/month (${formatCurrency(annualSolarSavings, region)}/year)
-- *Calculated Payback Period:* ${paybackPeriodYears.toFixed(1)} years
+- *Estimated Fuel Savings:* ${formatCurrency(solarReplacedSavings, region)}/month (~$${savingsMoUSD.toFixed(0)} USD/mo)
+- *Payback Period:* ${paybackPeriodYears.toFixed(1)} years
 
 Could we connect to discuss a formal quote and installation assessment?`;
 
@@ -361,29 +423,49 @@ Could we connect to discuss a formal quote and installation assessment?`;
             Estimate Your Solar Power &amp; Savings
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto leading-relaxed font-medium">
-            No technical knowledge required. Tell us what appliances you use and what you currently spend on fuel, and get an immediate, transparent estimate tailored for {region.context.marketName}.
+            No technical knowledge required. Tell us what appliances you use and what you currently spend on fuel, and get an immediate, transparent estimate tailored for the Nigerian market.
           </p>
 
-          {/* ═══ Region Selector ═══ */}
-          <div className="flex items-center justify-center gap-2 pt-2">
-            <Globe className="w-4 h-4 text-slate-400" />
-            <select
-              title="Select your region"
-              value={regionCode}
-              onChange={(e) => {
-                const code = e.target.value as RegionCode;
-                setRegionCode(code);
-                setNepaHours(REGION_PROFILES[code].grid.avgHoursDefault);
-                setMonthlySpend(REGION_PROFILES[code].context.defaultMonthlySpend);
-              }}
-              className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-slate-700 dark:text-slate-300 cursor-pointer hover:border-teal-500/30 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-            >
-              {Object.values(REGION_PROFILES).map((r) => (
-                <option key={r.code} value={r.code}>
-                  {r.flag} {r.name} ({r.currency.code})
-                </option>
-              ))}
-            </select>
+          {/* ═══ Nigerian City Selector (B3) ═══ */}
+          <div className="flex flex-col items-center justify-center gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-slate-400" />
+              <span className="text-xs font-semibold text-slate-500">City / DISCO Territory:</span>
+              <select
+                title="Select your Nigerian City"
+                value={cityId}
+                onChange={(e) => {
+                  const cid = e.target.value;
+                  setCityId(cid);
+                  const city = getCityById(cid);
+                  if (city.gridReliability === 'good') {
+                    setNepaHours(16);
+                  } else if (city.gridReliability === 'moderate') {
+                    setNepaHours(10);
+                  } else {
+                    setNepaHours(5);
+                  }
+                }}
+                className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-slate-700 dark:text-slate-300 cursor-pointer hover:border-teal-500/30 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              >
+                {NIGERIAN_CITIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    🇳🇬 {c.name} ({c.disco})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Live FX Rate Ticker Pill (B4) */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 rounded-full text-[10px] font-bold shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+              </span>
+              <span>USD/NGN Rate: ₦{usdToNgnRate.toFixed(2)}</span>
+              <span className="text-slate-400 dark:text-slate-500">•</span>
+              <span className="text-[9px] text-slate-500">Live open.er-api.com {fxFetchedTime ? `(Updated ${fxFetchedTime})` : ''}</span>
+            </div>
           </div>
         </section>
 
@@ -395,12 +477,20 @@ Could we connect to discuss a formal quote and installation assessment?`;
           {[
             { num: 1, label: 'Appliances' },
             { num: 2, label: 'Fuel/Usage' },
-            { num: 3, label: 'Sizing Sizer' },
+            { num: 3, label: 'Sizing Report' },
           ].map((s) => (
             <div key={s.num} className="relative z-10 flex flex-col items-center">
               <button
                 onClick={() => {
-                  if (s.num < step || (s.num === 2 && runningLoad > 0) || s.num === 3) {
+                  if (s.num === 3) {
+                    const isLeadCaptured = typeof window !== 'undefined' && localStorage.getItem('solar_lead_captured') === 'true';
+                    const isPaid = homeownerSub.tier !== 'free';
+                    if (isPaid || isLeadCaptured) {
+                      setStep(3);
+                    } else {
+                      setLeadModalOpen(true);
+                    }
+                  } else if (s.num < step || (s.num === 2 && runningLoad > 0)) {
                     setStep(s.num as 1 | 2 | 3);
                   }
                 }}
@@ -415,7 +505,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
               >
                 {step > s.num ? '✓' : s.num}
               </button>
-              <span className={`text-[10px] font-bold mt-1.5 uppercase tracking-wider ${step === s.num ? 'text-teal-650 dark:text-teal-400' : 'text-slate-450 dark:text-slate-650'}`}>
+              <span className={`text-[10px] font-bold mt-1.5 uppercase tracking-wider ${step === s.num ? 'text-teal-650 dark:text-teal-400' : 'text-slate-450 dark:text-slate-655'}`}>
                 {s.label}
               </span>
             </div>
@@ -435,54 +525,143 @@ Could we connect to discuss a formal quote and installation assessment?`;
                   Set the quantities of each appliance you want to run. Leave at 0 for things you do not need to power with solar.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6 space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  {APPLIANCE_PRESETS.map((p) => {
-                    const qty = quantities[p.id] || 0;
-                    return (
-                      <div
-                        key={p.id}
-                        className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-200 ${
-                          qty > 0
-                            ? 'bg-teal-500/5 border-teal-500/30 shadow-sm'
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-750'
-                        }`}
-                      >
-                        <div className="flex items-start gap-3 min-w-0">
-                          <span className="text-2xl shrink-0 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl">{p.icon}</span>
-                          <div className="min-w-0">
-                            <p className="font-bold text-xs text-slate-850 dark:text-slate-100 truncate">{p.name}</p>
-                            <p className="text-[10px] text-slate-500 mt-0.5">{p.description}</p>
-                            <p className="text-[10px] font-semibold text-teal-650 dark:text-teal-400 mt-1">
-                              {p.wattage}W {p.peakSurge ? `(Surge: ${p.peakSurge}W)` : ''}
-                            </p>
+              <CardContent className="p-4 sm:p-6 space-y-5">
+                {/* Essentials Grid */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black text-slate-450 dark:text-slate-500 uppercase tracking-wider">
+                    🏠 Essential Home Appliances
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {APPLIANCE_PRESETS.filter(p => !['deep_freezer', 'inverter_ac', 'standard_ac', 'water_pump', 'microwave'].includes(p.id)).map((p) => {
+                      const qty = quantities[p.id] || 0;
+                      return (
+                        <div
+                          key={p.id}
+                          className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-200 ${
+                            qty > 0
+                              ? 'bg-teal-500/5 border-teal-500/30 dark:border-teal-500/20 shadow-sm'
+                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-750'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3 min-w-0">
+                            <span className="text-2xl shrink-0 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl">{p.icon}</span>
+                            <div className="min-w-0">
+                              <p className="font-bold text-xs text-slate-850 dark:text-slate-100 truncate">{p.name}</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">{p.description}</p>
+                              <p className="text-[10px] font-semibold text-teal-650 dark:text-teal-400 mt-1">
+                                {p.wattage}W {p.peakSurge ? `(Surge: ${p.peakSurge}W)` : ''}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => updateQty(p.id, -1)}
+                              disabled={qty === 0}
+                              className="size-7 rounded-xl flex items-center justify-center font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
+                            >
+                              -
+                            </button>
+                            <span className="w-6 text-center text-xs font-black tabular-nums text-slate-800 dark:text-slate-250">
+                              {qty}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateQty(p.id, 1)}
+                              className="size-7 rounded-xl flex items-center justify-center font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 active:scale-95 transition-all"
+                            >
+                              +
+                            </button>
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => updateQty(p.id, -1)}
-                            disabled={qty === 0}
-                            className="size-7 rounded-xl flex items-center justify-center font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
-                          >
-                            -
-                          </button>
-                          <span className="w-6 text-center text-xs font-black tabular-nums text-slate-800 dark:text-slate-250">
-                            {qty}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => updateQty(p.id, 1)}
-                            className="size-7 rounded-xl flex items-center justify-center font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 active:scale-95 transition-all"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
+
+                {/* Heavy Loads Toggle Switch Banner */}
+                <div className="border border-slate-250 dark:border-slate-850 rounded-2xl p-4 bg-slate-50 dark:bg-slate-900/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-4">
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-black text-slate-850 dark:text-slate-200 flex items-center gap-1.5">
+                      ⚡ Power heavy or high-power appliances?
+                    </h4>
+                    <p className="text-[10px] text-slate-500 max-w-md leading-normal">
+                      Include deep freezers, air conditioners (ACs), water pumps, or microwave ovens in your solar sizing.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={showHeavyLoads}
+                    onCheckedChange={(checked) => {
+                      setShowHeavyLoads(checked);
+                      if (!checked) {
+                        setQuantities((prev) => {
+                          const next = { ...prev };
+                          ['deep_freezer', 'inverter_ac', 'standard_ac', 'water_pump', 'microwave'].forEach(id => {
+                            next[id] = 0;
+                          });
+                          return next;
+                        });
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Heavy Loads Grid */}
+                {showHeavyLoads && (
+                  <div className="space-y-3 pt-3 animate-in fade-in slide-in-from-top-3 duration-300">
+                    <h3 className="text-xs font-black text-amber-600 dark:text-amber-500 uppercase tracking-wider flex items-center gap-1">
+                      ⚠️ Heavy / Surge Load Appliances
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {APPLIANCE_PRESETS.filter(p => ['deep_freezer', 'inverter_ac', 'standard_ac', 'water_pump', 'microwave'].includes(p.id)).map((p) => {
+                        const qty = quantities[p.id] || 0;
+                        return (
+                          <div
+                            key={p.id}
+                            className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-200 ${
+                              qty > 0
+                                ? 'bg-amber-500/5 border-amber-500/30 shadow-sm'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-750'
+                            }`}
+                          >
+                            <div className="flex items-start gap-3 min-w-0">
+                              <span className="text-2xl shrink-0 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl">{p.icon}</span>
+                              <div className="min-w-0">
+                                <p className="font-bold text-xs text-slate-850 dark:text-slate-100 truncate">{p.name}</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">{p.description}</p>
+                                <p className="text-[10px] font-semibold text-teal-650 dark:text-teal-400 mt-1">
+                                  {p.wattage}W {p.peakSurge ? `(Surge: ${p.peakSurge}W)` : ''}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => updateQty(p.id, -1)}
+                                disabled={qty === 0}
+                                className="size-7 rounded-xl flex items-center justify-center font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 disabled:opacity-30 disabled:pointer-events-none active:scale-95 transition-all"
+                              >
+                                -
+                              </button>
+                              <span className="w-6 text-center text-xs font-black tabular-nums text-slate-800 dark:text-slate-250">
+                                {qty}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateQty(p.id, 1)}
+                                className="size-7 rounded-xl flex items-center justify-center font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 active:scale-95 transition-all"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -496,7 +675,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
 
               <Button
                 disabled={runningLoad === 0}
-                className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-bold flex items-center gap-1 text-xs px-5 h-9"
+                className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-bold flex items-center gap-1 text-xs px-5 h-9 border-none cursor-pointer"
                 onClick={() => setStep(2)}
               >
                 Next Step <ArrowRight className="w-3.5 h-3.5" />
@@ -512,7 +691,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
               <CardHeader className="bg-slate-100/50 dark:bg-slate-900/30 border-b border-slate-200/60 dark:border-slate-850 py-5">
                 <CardTitle className="text-base font-extrabold flex items-center gap-2">
                   <Clock className="w-5 h-5 text-teal-650" />
-                  Step 2: Utility Sizing & Fuel Expenses
+                  Step 2: Utility Sizing &amp; Fuel Expenses
                 </CardTitle>
                 <CardDescription className="text-xs">
                   We use these details to calculate how many batteries you require and map your precise fuel ROI payback period.
@@ -524,7 +703,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-350">
-                      {region.grid.label}
+                      How many hours of grid ({activeCity.disco}) power do you get daily?
                     </label>
                     <span className="text-xs font-black text-teal-650 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">
                       {nepaHours} hours/day
@@ -542,10 +721,10 @@ Could we connect to discuss a formal quote and installation assessment?`;
                         setNepaHours(val);
                       }
                     }}
-                    className="py-2 text-teal-600"
+                    className="py-2 text-teal-650"
                   />
                   <p className="text-[10px] text-slate-450">
-                    {region.grid.lowGridNote}
+                    High DISCO hours mean you can recharge batteries mostly with grid, potentially needing fewer solar panels.
                   </p>
                 </div>
 
@@ -553,7 +732,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-350">
-                      How many hours of battery backup do you need when {region.grid.name} fails?
+                      How many hours of battery backup do you need when {activeCity.disco} fails?
                     </label>
                     <span className="text-xs font-black text-teal-650 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">
                       {backupHours} hours/day
@@ -588,15 +767,15 @@ Could we connect to discuss a formal quote and installation assessment?`;
 
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { id: 'petrol', label: region.fuel.petrolLabel, desc: 'Standard small/medium gen' },
-                      { id: 'diesel', label: region.fuel.dieselLabel, desc: 'Large high kVA gen' },
+                      { id: 'petrol', label: 'Petrol Gen ⛽', desc: 'Standard small/medium gen' },
+                      { id: 'diesel', label: 'Diesel Gen 🚜', desc: 'Large high kVA gen' },
                       { id: 'none', label: 'No Gen / Grid only 🔌', desc: 'No fuel costs to replace' },
                     ].map((g) => (
                       <button
                         key={g.id}
                         type="button"
                         onClick={() => setFuelType(g.id as 'petrol' | 'diesel' | 'none')}
-                        className={`p-3 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 ${
+                        className={`p-3 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
                           fuelType === g.id
                             ? 'bg-teal-500/5 border-teal-500/35 ring-2 ring-teal-500/10'
                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
@@ -627,7 +806,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                         />
                       </div>
                       <p className="text-[10px] text-slate-500 flex items-center gap-1 font-semibold">
-                        <Info className="w-3 h-3 text-teal-650" /> {region.fuel.priceNote}
+                        <Info className="w-3 h-3 text-teal-650" /> Fuel costs are based on current Nigerian rates (Petrol ₦1,250/L, Diesel ₦1,750/L as of 2026).
                       </p>
                     </div>
                   )}
@@ -638,14 +817,14 @@ Could we connect to discuss a formal quote and installation assessment?`;
             <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
               <Button
                 variant="ghost"
-                className="font-bold flex items-center gap-1 text-xs rounded-xl"
+                className="font-bold flex items-center gap-1 text-xs rounded-xl cursor-pointer"
                 onClick={() => setStep(1)}
               >
                 <ChevronLeft className="w-4 h-4" /> Edit Appliances
               </Button>
 
               <Button
-                className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-bold flex items-center gap-1 text-xs px-5 h-9"
+                className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-bold flex items-center gap-1 text-xs px-5 h-9 border-none cursor-pointer"
                 onClick={() => {
                   const isLeadCaptured = typeof window !== 'undefined' && localStorage.getItem('solar_lead_captured') === 'true';
                   const isPaid = homeownerSub.tier !== 'free';
@@ -678,13 +857,22 @@ Could we connect to discuss a formal quote and installation assessment?`;
 
                 <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
                   <h2 className="text-2xl sm:text-3xl font-black tracking-tight">{recommendation.title}</h2>
-                  <p className="text-teal-400 font-extrabold text-lg tabular-nums">
-                    {formatCurrency(convertCost(recommendation.costMin, region), region)} - {formatCurrency(convertCost(recommendation.costMax, region), region)}
-                  </p>
+                  <div className="text-right">
+                    <p className="text-teal-450 font-extrabold text-lg tabular-nums">
+                      {formatCurrency(convertCost(recommendation.costMin, region), region)} - {formatCurrency(convertCost(recommendation.costMax, region), region)}
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                      (${(convertCost(recommendation.costMin, region) / usdToNgnRate).toLocaleString(undefined, { maximumFractionDigits: 0 })} - ${(convertCost(recommendation.costMax, region) / usdToNgnRate).toLocaleString(undefined, { maximumFractionDigits: 0 })} USD)*
+                    </p>
+                  </div>
                 </div>
 
-                <p className="text-slate-350 text-xs leading-relaxed max-w-xl">
+                <p className="text-slate-355 text-xs leading-relaxed max-w-xl">
                   {recommendation.description}
+                </p>
+                
+                <p className="text-[9px] text-slate-500 italic mt-1">
+                  *Converted in real-time at the current parallel rate of ₦{usdToNgnRate.toFixed(2)}/USD via open.er-api.com.
                 </p>
 
                 <div className="h-px bg-white/10 my-4" />
@@ -717,13 +905,46 @@ Could we connect to discuss a formal quote and installation assessment?`;
               </div>
             </Card>
 
+            {/* Nigerian city compliance card (B3) */}
+            <Card className="border-amber-500/20 dark:border-amber-500/10 bg-amber-500/[0.02] dark:bg-amber-955/[0.05] shadow-md rounded-2xl p-5 sm:p-6 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <h3 className="font-extrabold text-sm text-slate-850 dark:text-slate-100 flex items-center gap-1.5">
+                    <span className="text-base">📍</span> {activeCity.name} Grid &amp; Compliance Registry
+                  </h3>
+                  <p className="text-[10px] text-slate-500">
+                    Local DISCO: <strong className="text-slate-700 dark:text-slate-350">{activeCity.discoFull} ({activeCity.disco})</strong> • Tariff Band: <strong className="text-slate-700 dark:text-slate-350">{activeCity.tariffBand}</strong>
+                  </p>
+                </div>
+                <span className="text-xs font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full shrink-0 border border-amber-500/20">
+                  ₦{activeCity.tariffRateNGN}/kWh NERC Rate
+                </span>
+              </div>
+
+              <div className="h-px bg-slate-200 dark:bg-slate-850" />
+
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-wider">
+                  📋 Local Compliance Requirements
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {activeCity.complianceNotes.map((note, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-[10px] text-slate-600 dark:text-slate-400 font-medium">
+                      <span className="text-emerald-500 shrink-0 mt-0.5">✓</span>
+                      <span>{note}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
             {/* Sizing details and analysis tabs */}
             <div className="space-y-4">
               <div className="flex gap-2 p-1 bg-slate-150 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setActiveTab('system')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     activeTab === 'system'
                       ? 'bg-white dark:bg-slate-850 text-teal-650 dark:text-teal-400 shadow-sm'
                       : 'text-slate-500 hover:text-slate-850 dark:hover:text-slate-350'
@@ -734,18 +955,18 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 <button
                   type="button"
                   onClick={() => setActiveTab('financials')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     activeTab === 'financials'
                       ? 'bg-white dark:bg-slate-850 text-teal-650 dark:text-teal-400 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-850 dark:hover:text-slate-350'
+                      : 'text-slate-500 hover:text-slate-850 dark:hover:text-slate-355'
                   }`}
                 >
-                  📈 ROI & Savings
+                  📈 ROI &amp; Savings
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('guide')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     activeTab === 'guide'
                       ? 'bg-white dark:bg-slate-850 text-teal-650 dark:text-teal-400 shadow-sm'
                       : 'text-slate-500 hover:text-slate-850 dark:hover:text-slate-350'
@@ -783,7 +1004,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                       <div className="border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Daily Wh Sized</p>
                         <p className="text-xl font-black text-slate-800 dark:text-slate-100 mt-1">{dailyConsumptionWh.toLocaleString()} Wh</p>
-                        <p className="text-[10px] text-slate-450 mt-1 leading-normal">
+                        <p className="text-[10px] text-slate-455 mt-1 leading-normal">
                           Your running load × {backupHours} backup hours daily. This determines battery size.
                         </p>
                       </div>
@@ -812,7 +1033,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 <Card className="border-slate-200 dark:border-slate-850 shadow-md animate-in fade-in duration-250">
                   <CardContent className="p-5 sm:p-6 space-y-4">
                     <h3 className="font-extrabold text-sm text-slate-850 dark:text-slate-100 flex items-center gap-1.5">
-                      <TrendingUp className="w-4 h-4 text-emerald-650" /> {region.currency.code} ROI &amp; Savings Analysis
+                      <TrendingUp className="w-4 h-4 text-emerald-650" /> ROI &amp; Savings Analysis (USD equivalents at ₦{usdToNgnRate.toFixed(1)}/$)
                     </h3>
 
                     {fuelType === 'none' ? (
@@ -821,7 +1042,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                           You indicated that you do not run a generator.
                         </p>
                         <p className="text-xs text-slate-450 max-w-sm mx-auto">
-                          Your main solar benefit will be providing 100% stable, uninterrupted 24/7 power during {region.grid.name} grid blackouts.
+                          Your main solar benefit will be providing 100% stable, uninterrupted 24/7 power during {activeCity.disco} grid blackouts.
                         </p>
                       </div>
                     ) : (
@@ -829,14 +1050,22 @@ Could we connect to discuss a formal quote and installation assessment?`;
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30">
                             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Current Fuel Bill</p>
-                            <p className="text-lg font-black text-rose-650 dark:text-rose-450 mt-1">{formatCurrency(currentFuelSpendNaira, region)} / mo</p>
-                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">{formatCurrency(annualFuelSpend, region)} / year</p>
+                            <p className="text-lg font-black text-rose-650 dark:text-rose-450 mt-1">
+                              {formatCurrency(currentFuelSpendNaira, region)} / mo
+                            </p>
+                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+                              {formatCurrency(annualFuelSpend, region)} / yr (${(annualFuelSpend / usdToNgnRate).toLocaleString(undefined, { maximumFractionDigits: 0 })} USD)
+                            </p>
                           </div>
 
                           <div className="border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30">
                             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Replaced by Solar</p>
-                            <p className="text-lg font-black text-emerald-650 dark:text-emerald-400 mt-1">{formatCurrency(solarReplacedSavings, region)} / mo</p>
-                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">{formatCurrency(annualSolarSavings, region)} / year</p>
+                            <p className="text-lg font-black text-emerald-650 dark:text-emerald-400 mt-1">
+                              {formatCurrency(solarReplacedSavings, region)} / mo
+                            </p>
+                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+                              {formatCurrency(annualSolarSavings, region)} / yr (${(annualSolarSavings / usdToNgnRate).toLocaleString(undefined, { maximumFractionDigits: 0 })} USD)
+                            </p>
                           </div>
 
                           <div className="border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30">
@@ -850,12 +1079,14 @@ Could we connect to discuss a formal quote and installation assessment?`;
 
                         {/* Payback chart mock representation */}
                         <div className="border border-slate-200 dark:border-slate-800 p-4 rounded-2xl bg-slate-100/50 dark:bg-slate-900/30">
-                          <p className="text-xs font-extrabold text-slate-850 dark:text-slate-100 mb-2">5-Year Financial Projection</p>
+                          <p className="text-xs font-extrabold text-slate-855 dark:text-slate-100 mb-2">5-Year Financial Projection</p>
                           <div className="space-y-3 pt-2">
                             <div>
                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                                 <span>Accumulated Fuel Expense (Gen)</span>
-                                <span className="text-rose-500">{formatCurrency(annualFuelSpend * 5, region)}</span>
+                                <span className="text-rose-500">
+                                  {formatCurrency(annualFuelSpend * 5, region)} (${((annualFuelSpend * 5) / usdToNgnRate).toLocaleString(undefined, { maximumFractionDigits: 0 })} USD)
+                                </span>
                               </div>
                               <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div className="h-full bg-rose-500 rounded-full" style={{ width: '100%' }} />
@@ -865,15 +1096,17 @@ Could we connect to discuss a formal quote and installation assessment?`;
                             <div>
                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                                 <span>Solar System Cost + Maintenance</span>
-                                <span className="text-teal-500">{formatCurrency(targetMidpointCost * 1.1, region)}</span>
+                                <span className="text-teal-500">
+                                  {formatCurrency(targetMidpointCost * 1.1, region)} (${((targetMidpointCost * 1.1) / usdToNgnRate).toLocaleString(undefined, { maximumFractionDigits: 0 })} USD)
+                                </span>
                               </div>
                               <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-teal-500 rounded-full" style={{ width: `${(targetMidpointCost * 1.1 / (annualFuelSpend * 5) * 100).toFixed(0)}%` }} />
+                                <div className="h-full bg-teal-500 rounded-full" style={{ width: `${Math.min(100, parseFloat((targetMidpointCost * 1.1 / (annualFuelSpend * 5) * 100).toFixed(0)))}%` }} />
                               </div>
                             </div>
                           </div>
                           <p className="text-[10px] text-slate-450 mt-3 leading-relaxed">
-                            💡 <strong>Informed Decision:</strong> {region.context.fuelLiabilityNote}
+                            💡 <strong>Informed Decision:</strong> In Nigeria, generator fuel is a continuous, burning liability. Solar is an asset that pays for itself and provides quiet, pollution-free power for 20+ years.
                           </p>
                         </div>
                       </div>
@@ -884,7 +1117,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
 
               {/* Tab 3: Buyer Guide */}
               {activeTab === 'guide' && (
-                <Card className="border-slate-200 dark:border-slate-850 shadow-md animate-in fade-in duration-250">
+                <Card className="border-slate-200 dark:border-slate-855 shadow-md animate-in fade-in duration-250">
                   <CardContent className="p-5 sm:p-6 space-y-4">
                     <h3 className="font-extrabold text-sm text-slate-850 dark:text-slate-100 flex items-center gap-1.5">
                       <HelpCircle className="w-4 h-4 text-amber-500" /> 4 Questions to Ask Any Installer Before Buying
@@ -902,7 +1135,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                         },
                         {
                           q: "3. What is the efficiency rating of the solar panels?",
-                          a: `Monocrystalline panels (efficiency > 20%) perform much better in ${region.solar.weatherNote}, especially during the cloudier rainy season, compared to older Polycrystalline panels.`
+                          a: "Monocrystalline panels (efficiency > 20%) perform much better in Nigerian weather, especially during the cloudier rainy season, compared to older Polycrystalline panels."
                         },
                         {
                           q: "4. What post-installation warranties do you offer?",
@@ -929,7 +1162,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
             <div className="flex flex-col sm:flex-row gap-3 pt-3">
               <Button
                 type="button"
-                className="flex-1 bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-2xl font-black py-6 text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+                className="flex-1 bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-2xl font-black py-6 text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all border-none cursor-pointer"
                 onClick={handleWhatsAppShare}
               >
                 Send Sizing Report to Installer on WhatsApp 📱
@@ -938,7 +1171,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
               <Button
                 type="button"
                 variant="outline"
-                className="bg-transparent hover:bg-slate-100 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-bold py-6 text-xs flex items-center justify-center gap-1.5"
+                className="bg-transparent hover:bg-slate-100 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-bold py-6 text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                 onClick={() => window.print()}
               >
                 <Printer className="w-4 h-4" /> Save as Sizing PDF
@@ -948,7 +1181,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
             <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
               <Button
                 variant="ghost"
-                className="font-bold flex items-center gap-1 text-xs rounded-xl"
+                className="font-bold flex items-center gap-1 text-xs rounded-xl cursor-pointer"
                 onClick={() => setStep(2)}
               >
                 <ChevronLeft className="w-4 h-4" /> Back to Usage Details
@@ -976,7 +1209,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
               💎 Unlock Solar ROI Calculator
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              You have used your free estimation for this month. Upgrade to get instant access to system recommendations, generator fuel payback projections, and installer-ready reports.
+              Upgrade to get instant access to system recommendations, generator fuel payback projections, and installer-ready reports.
             </DialogDescription>
           </DialogHeader>
 
@@ -992,7 +1225,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
               </div>
               <Button 
                 onClick={() => homeownerSub.purchaseTokens(1)}
-                className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-850 dark:hover:bg-slate-750 text-[11px] font-bold py-1.5 rounded-xl h-8"
+                className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-850 dark:hover:bg-slate-750 text-[11px] font-bold py-1.5 rounded-xl h-8 border-none cursor-pointer"
               >
                 Purchase 1 Token
               </Button>
@@ -1012,12 +1245,12 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-black text-teal-650 dark:text-teal-400 block">{region.subscription.monthlyPrice}</span>
-                  <span className="text-[9px] text-slate-450 block mt-0.5">per month</span>
+                  <span className="text-[9px] text-slate-455 block mt-0.5">per month</span>
                 </div>
               </div>
               <Button 
                 onClick={() => homeownerSub.subscribeMonthly()}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold py-1.5 rounded-xl h-8 shadow-sm shadow-teal-650/10"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold py-1.5 rounded-xl h-8 shadow-sm shadow-teal-650/10 border-none cursor-pointer"
               >
                 Subscribe Monthly
               </Button>
@@ -1028,7 +1261,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
             <Button
               variant="ghost"
               size="sm"
-              className="text-[10px] font-bold text-slate-500 hover:text-slate-800"
+              className="text-[10px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
               onClick={homeownerSub.closeUpgradeModal}
             >
               Cancel
@@ -1037,7 +1270,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-[10px] font-bold text-rose-500 hover:text-rose-650 hover:bg-rose-50/50"
+                className="text-[10px] font-bold text-rose-500 hover:text-rose-650 hover:bg-rose-50/50 cursor-pointer"
                 onClick={() => homeownerSub.cancelSubscription()}
               >
                 Reset Account to Free
@@ -1047,9 +1280,9 @@ Could we connect to discuss a formal quote and installation assessment?`;
         </DialogContent>
       </Dialog>
 
-      {/* ═══ B2C Homeowner Lead Capture Modal (Choice Architecture & Loss Aversion) ═══ */}
+      {/* ═══ B2C Email-only Lead Capture Gate (B2) ═══ */}
       <Dialog open={leadModalOpen} onOpenChange={setLeadModalOpen}>
-        <DialogContent className="sm:max-w-lg border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <DialogContent className="sm:max-w-md border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
           <DialogHeader className="space-y-2">
             <div className="flex justify-center mb-1">
               <div className="p-2.5 bg-rose-500/10 rounded-2xl border border-rose-500/20 text-rose-500 animate-pulse">
@@ -1062,7 +1295,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
             <DialogDescription className="text-xs text-center text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
               {fuelType !== 'none' ? (
                 <>
-                  You are currently losing up to <strong className="text-rose-500 font-black">{formatCurrency(solarReplacedSavings, region)}/month</strong> ({formatCurrency(solarReplacedSavings * 12, region)}/year) on generator runs &amp; Band A tariffs.
+                  You are currently losing up to <strong className="text-rose-500 font-black">{formatCurrency(solarReplacedSavings, region)} ({ (solarReplacedSavings / usdToNgnRate).toLocaleString(undefined, {maximumFractionDigits:0}) } USD)/month</strong> on generator runs.
                 </>
               ) : (
                 <>
@@ -1082,11 +1315,11 @@ Could we connect to discuss a formal quote and installation assessment?`;
             <div className="p-3 bg-amber-500/[0.03] dark:bg-amber-500/[0.01] border border-amber-500/10 rounded-2xl space-y-1">
               <span className="text-base">🛡️</span>
               <h5 className="font-extrabold text-[10px] text-slate-850 dark:text-slate-200 leading-tight">Band A Tariff Shield</h5>
-              <p className="text-[9px] text-slate-450 leading-snug">How to program inverters to cut off-peak NEPA costs.</p>
+              <p className="text-[9px] text-slate-455 leading-snug">How to program inverters to cut off-peak NEPA costs.</p>
             </div>
             <div className="p-3 bg-indigo-500/[0.03] dark:bg-indigo-500/[0.01] border border-indigo-500/10 rounded-2xl space-y-1">
               <span className="text-base">🔍</span>
-              <h5 className="font-extrabold text-[10px] text-slate-850 dark:text-slate-200 leading-tight">Lagos Anti-Scam Guide</h5>
+              <h5 className="font-extrabold text-[10px] text-slate-855 dark:text-slate-200 leading-tight">Lagos Anti-Scam Guide</h5>
               <p className="text-[9px] text-slate-450 leading-snug">Identify fake lithium batteries and cowboy installers.</p>
             </div>
             <div className="p-3 bg-emerald-500/[0.03] dark:bg-emerald-500/[0.01] border border-emerald-500/10 rounded-2xl space-y-1">
@@ -1098,67 +1331,31 @@ Could we connect to discuss a formal quote and installation assessment?`;
 
           {/* Form */}
           <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleLeadSubmit(false);
-            }} 
+            onSubmit={handleLeadSubmit} 
             className="space-y-3.5"
           >
             <div className="space-y-3">
               <div>
-                <label className="block text-[10px] text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Your Full Name</label>
+                <label className="block text-[10px] text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Email Address</label>
                 <Input 
-                  type="text" 
+                  type="email" 
                   required 
-                  value={leadName} 
-                  onChange={(e) => setLeadName(e.target.value)} 
-                  placeholder="e.g. Ademola Alabi" 
+                  value={leadEmail} 
+                  onChange={(e) => setLeadEmail(e.target.value)} 
+                  placeholder="e.g. name@company.com" 
                   className="w-full text-xs p-3 rounded-xl border border-slate-250 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none py-5 font-bold"
                 />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] text-slate-500 font-extrabold mb-1 uppercase tracking-wider">WhatsApp Phone Number</label>
-                  <Input 
-                    type="tel" 
-                    required 
-                    value={leadPhone} 
-                    onChange={(e) => setLeadPhone(e.target.value)} 
-                    placeholder="e.g. 08030000000" 
-                    className="w-full text-xs p-3 rounded-xl border border-slate-250 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none py-5 font-bold font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Email (Optional)</label>
-                  <Input 
-                    type="email" 
-                    value={leadEmail} 
-                    onChange={(e) => setLeadEmail(e.target.value)} 
-                    placeholder="name@company.com" 
-                    className="w-full text-xs p-3 rounded-xl border border-slate-250 bg-white dark:border-slate-800 dark:bg-slate-950 focus:outline-none py-5 font-bold"
-                  />
-                </div>
               </div>
             </div>
 
             <div className="space-y-2 pt-2">
               <Button 
-                type="button" 
+                type="submit" 
                 disabled={leadLoading}
-                onClick={() => handleLeadSubmit(true)}
-                className="w-full bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold rounded-2xl h-12 text-xs shadow-md border-none flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold rounded-2xl h-12 text-xs shadow-md border-none flex items-center justify-center gap-2 cursor-pointer"
               >
-                {leadLoading ? 'Securing Roadmap...' : 'Get Sizing & ₦120k Bundle via WhatsApp 📱'}
+                {leadLoading ? 'Securing Roadmap...' : 'Get Sizing & ₦120k Bundle via Email 📩'}
               </Button>
-              
-              <button 
-                type="submit"
-                disabled={leadLoading}
-                className="w-full text-center text-[10px] font-bold text-slate-450 hover:text-slate-700 dark:hover:text-slate-350 transition-colors py-1 block underline underline-offset-4 bg-transparent border-none cursor-pointer"
-              >
-                Or view recommendations instantly on-site
-              </button>
             </div>
           </form>
         </DialogContent>
