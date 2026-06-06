@@ -215,6 +215,156 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     response_speed: 'Usually under 1 hour',
     contact_preference: 'WhatsApp',
     created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-15',
+    user_id: 'user-inst-15',
+    business_name: 'JP2 Solar Power',
+    logo_url: '',
+    description: 'Prominent Lekki-based solar provider renowned for premium panel selection, hybrid inverter integration, and exceptional after-sales support. Serves high-density residential estates across Lekki Phase 1, Chevron, and Ajah corridors.',
+    specialty_tags: ['Residential Hybrid', 'Premium Inverters', 'After-Sales Support', 'LSEB Certified'],
+    brands_handled: ['Sunsynk', 'Victron Energy', 'Canadian Solar', 'Trina Solar'],
+    is_verified: true,
+    rating_count: 49,
+    rating_average: 4.8,
+    response_speed: 'Usually under 2 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-16',
+    user_id: 'user-inst-16',
+    business_name: 'PVPRO Solar Energy',
+    logo_url: '',
+    description: 'Ikeja-focused solar specialist known for reliable hybrid inverter systems and lithium battery installations for homes and small businesses. Offers detailed load analysis, NERC-compliant designs, and prompt field support across Lagos mainland.',
+    specialty_tags: ['Lithium Storage', 'Ikeja Specialist', 'Load Analysis', 'Residential Hybrid'],
+    brands_handled: ['Growatt', 'Deye', 'Jinko Solar', 'Pylontech'],
+    is_verified: true,
+    rating_count: 36,
+    rating_average: 4.7,
+    response_speed: 'Usually under 3 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-17',
+    user_id: 'user-inst-17',
+    business_name: 'Felicity Solar Nigeria',
+    logo_url: '',
+    description: 'Leading importer and installer of Felicity-branded solar inverters, batteries, and panels with established Ikeja showrooms. Popular among Lagos installers for affordable, quality wholesale procurement and consumer direct installations.',
+    specialty_tags: ['Wholesale Supply', 'Component Supply', 'Inverter Systems', 'Affordable Home Solar'],
+    brands_handled: ['Felicity Solar', 'Felicity Lithium', 'Luminous', 'Jinko Solar'],
+    is_verified: true,
+    rating_count: 58,
+    rating_average: 4.6,
+    response_speed: 'Usually under 4 hours',
+    contact_preference: 'Phone Call',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-18',
+    user_id: 'user-inst-18',
+    business_name: 'Daystar Power',
+    logo_url: '',
+    description: 'Nigeria\u2019s foremost commercial and industrial solar-as-a-service provider. Delivers hybrid solar + gas + battery Power-as-a-Service (PaaS) to factories, manufacturers, and large enterprises — eliminating diesel dependency without capital expenditure.',
+    specialty_tags: ['Industrial Solar', 'Power-as-a-Service', 'Commercial Grid-Tie', 'Diesel Offsets'],
+    brands_handled: ['SMA Inverters', 'BYD Batteries', 'JA Solar', 'Huawei Inverters'],
+    is_verified: true,
+    rating_count: 43,
+    rating_average: 4.9,
+    response_speed: 'Usually under 2 hours',
+    contact_preference: 'Email',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-19',
+    user_id: 'user-inst-19',
+    business_name: 'Solynta Energy',
+    logo_url: '',
+    description: 'Residential-focused solar subscription company helping Lagos homeowners eliminate generator noise with 1kW–5kW solar-as-a-service packages. Monthly subscription model removes upfront cost barriers for middle-income households.',
+    specialty_tags: ['Solar-as-a-Service', 'Subscription Model', 'Generator Replacement', 'Affordable Home Solar'],
+    brands_handled: ['Solynta Smart Packs', 'Must Inverters', 'Canadian Solar', 'Felicity Solar'],
+    is_verified: true,
+    rating_count: 31,
+    rating_average: 4.5,
+    response_speed: 'Usually under 3 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-20',
+    user_id: 'user-inst-20',
+    business_name: 'Simba Solar Nigeria',
+    logo_url: '',
+    description: 'A division of the Simba Group providing solar electrification for residential and commercial clients. Runs Nigeria\u2019s largest independent solar Installer Partner Program, training and equipping hundreds of field technicians across Lagos and beyond.',
+    specialty_tags: ['Installer Training', 'Residential Hybrid', 'SME Solar', 'Nationwide Coverage'],
+    brands_handled: ['Simba Panels', 'Growatt', 'Deye', 'Luminous'],
+    is_verified: true,
+    rating_count: 67,
+    rating_average: 4.6,
+    response_speed: 'Usually under 4 hours',
+    contact_preference: 'Phone Call',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-21',
+    user_id: 'user-inst-21',
+    business_name: 'Solar Haven Nigeria',
+    logo_url: '',
+    description: 'Ikoyi and Victoria Island solar specialist catering to high-end homeowners and diplomatic residences. Offers bespoke rooftop aesthetic designs, silent hybrid systems, and dedicated concierge-level after-sales maintenance packages.',
+    specialty_tags: ['Luxury Residential', 'Silent Hybrid Systems', 'Bespoke Design', 'Premium Inverters'],
+    brands_handled: ['Victron Energy', 'SMA Inverters', 'Canadian Solar', 'Pylontech'],
+    is_verified: true,
+    rating_count: 22,
+    rating_average: 4.9,
+    response_speed: 'Usually under 1 hour',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-22',
+    user_id: 'user-inst-22',
+    business_name: 'Solarity Plus Limited',
+    logo_url: '',
+    description: 'Consistently rated among Nigeria\u2019s top solar providers for 2025/2026. Serves both residential and nationwide commercial clients with tailored hybrid systems, NERC-compliant permit documentation, and full generator decommissioning packages.',
+    specialty_tags: ['Residential Hybrid', 'LSEB Certified', 'Generator Offsets', 'Nationwide Coverage'],
+    brands_handled: ['Sunsynk', 'Deye', 'Trina Solar', 'Pylontech'],
+    is_verified: true,
+    rating_count: 54,
+    rating_average: 4.8,
+    response_speed: 'Usually under 2 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-23',
+    user_id: 'user-inst-23',
+    business_name: 'Greenfield Energy Solutions',
+    logo_url: '',
+    description: 'Comprehensive solar and renewable energy provider offering end-to-end installations, equipment supply, and post-installation maintenance for residential, commercial, and industrial clients across Lagos State.',
+    specialty_tags: ['Turnkey Installation', 'Maintenance Contracts', 'Commercial Grid-Tie', 'System Design'],
+    brands_handled: ['Fronius', 'JA Solar', 'Growatt', 'BYD Batteries'],
+    is_verified: true,
+    rating_count: 28,
+    rating_average: 4.6,
+    response_speed: 'Usually under 4 hours',
+    contact_preference: 'Email',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-24',
+    user_id: 'user-inst-24',
+    business_name: 'Solar Valley Ltd',
+    logo_url: '',
+    description: 'Lagos-based installer specializing in medium-capacity inverter and solar panel systems for residential estates, schools, and small businesses. Known for fast deployment timelines, competitive pricing, and reliable post-installation monitoring.',
+    specialty_tags: ['Inverter Systems', 'School Solar', 'SME Solar', 'Fast Deployment'],
+    brands_handled: ['Must Inverters', 'Luminous', 'Jinko Solar', 'Felicity Solar'],
+    is_verified: false,
+    rating_count: 19,
+    rating_average: 4.4,
+    response_speed: 'Usually under 24 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
   }
 ];
 
@@ -278,7 +428,51 @@ const MOCK_SERVICE_AREAS: ServiceArea[] = [
   { id: 'sa-43', installer_id: 'inst-14', state: 'Lagos', city: 'Lekki' },
   { id: 'sa-44', installer_id: 'inst-14', state: 'Lagos', city: 'Victoria Island' },
   { id: 'sa-45', installer_id: 'inst-14', state: 'Lagos', city: 'Ikoyi' },
-  { id: 'sa-46', installer_id: 'inst-14', state: 'Abuja', city: 'Maitama' }
+  { id: 'sa-46', installer_id: 'inst-14', state: 'Abuja', city: 'Maitama' },
+  // JP2 Solar Power (Lekki, Chevron, Ajah)
+  { id: 'sa-47', installer_id: 'inst-15', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-48', installer_id: 'inst-15', state: 'Lagos', city: 'Ajah' },
+  { id: 'sa-49', installer_id: 'inst-15', state: 'Lagos', city: 'Ibeju-Lekki' },
+  // PVPRO Solar Energy (Ikeja, Agege, Ogba)
+  { id: 'sa-50', installer_id: 'inst-16', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-51', installer_id: 'inst-16', state: 'Lagos', city: 'Agege' },
+  { id: 'sa-52', installer_id: 'inst-16', state: 'Lagos', city: 'Surulere' },
+  // Felicity Solar Nigeria (Ikeja, Lagos Island, Badagry)
+  { id: 'sa-53', installer_id: 'inst-17', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-54', installer_id: 'inst-17', state: 'Lagos', city: 'Lagos Island' },
+  { id: 'sa-55', installer_id: 'inst-17', state: 'Lagos', city: 'Gbagada' },
+  // Daystar Power (Lagos Island, Apapa, Ikeja — industrial zones)
+  { id: 'sa-56', installer_id: 'inst-18', state: 'Lagos', city: 'Apapa' },
+  { id: 'sa-57', installer_id: 'inst-18', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-58', installer_id: 'inst-18', state: 'Lagos', city: 'Lagos Island' },
+  { id: 'sa-59', installer_id: 'inst-18', state: 'Abuja', city: 'Garki' },
+  // Solynta Energy (Lekki, Surulere, Yaba)
+  { id: 'sa-60', installer_id: 'inst-19', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-61', installer_id: 'inst-19', state: 'Lagos', city: 'Surulere' },
+  { id: 'sa-62', installer_id: 'inst-19', state: 'Lagos', city: 'Yaba' },
+  // Simba Solar (Ikeja, Gbagada, Kano, Abuja — nationwide)
+  { id: 'sa-63', installer_id: 'inst-20', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-64', installer_id: 'inst-20', state: 'Lagos', city: 'Gbagada' },
+  { id: 'sa-65', installer_id: 'inst-20', state: 'Kano', city: 'Kano' },
+  { id: 'sa-66', installer_id: 'inst-20', state: 'Abuja', city: 'Garki' },
+  { id: 'sa-67', installer_id: 'inst-20', state: 'Oyo', city: 'Ibadan' },
+  // Solar Haven (Ikoyi, Victoria Island, Lekki)
+  { id: 'sa-68', installer_id: 'inst-21', state: 'Lagos', city: 'Ikoyi' },
+  { id: 'sa-69', installer_id: 'inst-21', state: 'Lagos', city: 'Victoria Island' },
+  { id: 'sa-70', installer_id: 'inst-21', state: 'Lagos', city: 'Lekki' },
+  // Solarity Plus (Lagos, Abuja, PH — nationwide)
+  { id: 'sa-71', installer_id: 'inst-22', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-72', installer_id: 'inst-22', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-73', installer_id: 'inst-22', state: 'Abuja', city: 'Maitama' },
+  { id: 'sa-74', installer_id: 'inst-22', state: 'Rivers', city: 'Port Harcourt' },
+  // Greenfield Energy Solutions (Lekki, Surulere, Yaba)
+  { id: 'sa-75', installer_id: 'inst-23', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-76', installer_id: 'inst-23', state: 'Lagos', city: 'Surulere' },
+  { id: 'sa-77', installer_id: 'inst-23', state: 'Lagos', city: 'Yaba' },
+  // Solar Valley Ltd (Gbagada, Ojodu, Agege)
+  { id: 'sa-78', installer_id: 'inst-24', state: 'Lagos', city: 'Gbagada' },
+  { id: 'sa-79', installer_id: 'inst-24', state: 'Lagos', city: 'Ojodu' },
+  { id: 'sa-80', installer_id: 'inst-24', state: 'Lagos', city: 'Agege' }
 ];
 
 const MOCK_SUBSCRIPTIONS: ListingSubscription[] = [
@@ -296,7 +490,18 @@ const MOCK_SUBSCRIPTIONS: ListingSubscription[] = [
   { id: 'sub-11', installer_id: 'inst-11', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
   { id: 'sub-12', installer_id: 'inst-12', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
   { id: 'sub-13', installer_id: 'inst-13', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
-  { id: 'sub-14', installer_id: 'inst-14', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() }
+  { id: 'sub-14', installer_id: 'inst-14', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  // New Lagos batch — all unclaimed basic listings
+  { id: 'sub-15', installer_id: 'inst-15', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-16', installer_id: 'inst-16', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-17', installer_id: 'inst-17', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-18', installer_id: 'inst-18', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-19', installer_id: 'inst-19', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-20', installer_id: 'inst-20', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-21', installer_id: 'inst-21', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-22', installer_id: 'inst-22', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-23', installer_id: 'inst-23', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-24', installer_id: 'inst-24', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() }
 ];
 
 interface MarketplaceState {
