@@ -65,6 +65,156 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     response_speed: 'Usually within 24 hours',
     contact_preference: 'Email',
     created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-5',
+    user_id: 'user-inst-5',
+    business_name: 'Arnergy Solar',
+    logo_url: '',
+    description: 'Tech-driven Solar-as-a-Service provider using IoT-enabled smart energy monitoring systems. Specializes in solar+storage bundles for homes, businesses, hospitals, and schools across Nigeria — with real-time remote monitoring via the Arnergy app.',
+    specialty_tags: ['Solar-as-a-Service', 'IoT Monitoring', 'Commercial Storage', 'Pay-As-You-Go'],
+    brands_handled: ['Arnergy Smart Packs', 'LG Energy', 'Victron Energy', 'Pylontech'],
+    is_verified: true,
+    rating_count: 61,
+    rating_average: 4.8,
+    response_speed: 'Usually under 2 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-6',
+    user_id: 'user-inst-6',
+    business_name: 'SolarKobo',
+    logo_url: '',
+    description: 'Lagos-based renewable energy company offering full solar installations, inverter-only setups, solar water pumps, solar security systems, and maintenance contracts. Known for transparent pricing and detailed energy audits before any installation.',
+    specialty_tags: ['Solar Water Pumps', 'Inverter Systems', 'Energy Audits', 'Residential Hybrid'],
+    brands_handled: ['Luminous', 'Felicity Solar', 'Canadian Solar', 'Deye'],
+    is_verified: true,
+    rating_count: 44,
+    rating_average: 4.7,
+    response_speed: 'Usually under 3 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-7',
+    user_id: 'user-inst-7',
+    business_name: 'Auxano Solar Nigeria',
+    logo_url: '',
+    description: 'Pioneer of local solar panel manufacturing and assembly in Nigeria. Offers solar panel supply, inverter systems, street lighting, solar water pumps, and a certified solar training academy. Ideal for installers seeking locally-sourced components.',
+    specialty_tags: ['Local Manufacturing', 'Solar Training', 'Street Lighting', 'Wholesale Supply'],
+    brands_handled: ['Auxano Panels', 'Growatt', 'Jinko Solar', 'Trina Solar'],
+    is_verified: true,
+    rating_count: 38,
+    rating_average: 4.6,
+    response_speed: 'Usually under 4 hours',
+    contact_preference: 'Phone Call',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-8',
+    user_id: 'user-inst-8',
+    business_name: 'Gennex Technologies',
+    logo_url: '',
+    description: 'Well-established firm with deep expertise in both on-grid and off-grid solar solutions. Handles large-scale commercial and industrial projects across Lagos, Abuja, and Port Harcourt — including solar-powered borehole pumping systems and grid-interconnected arrays.',
+    specialty_tags: ['On-Grid Systems', 'Off-Grid Industrial', 'Solar Borehole', 'Commercial Grid-Tie'],
+    brands_handled: ['SMA Inverters', 'Fronius', 'Canadian Solar', 'BYD Batteries'],
+    is_verified: true,
+    rating_count: 53,
+    rating_average: 4.9,
+    response_speed: 'Usually under 2 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-9',
+    user_id: 'user-inst-9',
+    business_name: 'Rubitec Solar',
+    logo_url: '',
+    description: 'Major player in Nigerian solar manufacturing and mini-grid development. Specializes in industrial-scale solar farms, mini-grid deployment for rural communities, and EPC (Engineering, Procurement, Construction) contracts for public institutions.',
+    specialty_tags: ['Mini-Grid Development', 'Solar Farms', 'EPC Contracts', 'Rural Electrification'],
+    brands_handled: ['JA Solar', 'Huawei Inverters', 'CATL Batteries', 'Trina Solar'],
+    is_verified: true,
+    rating_count: 29,
+    rating_average: 4.7,
+    response_speed: 'Usually under 4 hours',
+    contact_preference: 'Email',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-10',
+    user_id: 'user-inst-10',
+    business_name: 'Solar Depot Nigeria',
+    logo_url: '',
+    description: 'Leading solar component supplier and installer with a strong Lagos showroom presence. Provides wide-ranging solar products, system design, and turnkey installation for homes and SMEs. A go-to destination for installers sourcing quality panels, inverters, and batteries.',
+    specialty_tags: ['Component Supply', 'Turnkey Installation', 'SME Solar', 'System Design'],
+    brands_handled: ['Victron Energy', 'Growatt', 'Felicity Solar', 'Sunsynk', 'Jinko Solar'],
+    is_verified: true,
+    rating_count: 72,
+    rating_average: 4.8,
+    response_speed: 'Usually under 2 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-11',
+    user_id: 'user-inst-11',
+    business_name: 'Solarlify Nigeria',
+    logo_url: '',
+    description: 'Customer-centric solar installer offering free maintenance packages and educational resources for system owners. Known for honest energy assessments, post-installation support, and helping Nigerian homeowners understand their solar systems better.',
+    specialty_tags: ['Free Maintenance', 'Customer Education', 'Residential Hybrid', 'Affordable Home Solar'],
+    brands_handled: ['Deye', 'Must Inverters', 'Luminous', 'Canadian Solar'],
+    is_verified: true,
+    rating_count: 33,
+    rating_average: 4.6,
+    response_speed: 'Usually under 3 hours',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-12',
+    user_id: 'user-inst-12',
+    business_name: 'Lumos Nigeria',
+    logo_url: '',
+    description: 'Widely recognized pioneer of Pay-As-You-Go household solar subscription services in Nigeria. Specializes in entry-level solar home systems with mobile payment integration, serving both urban and peri-urban households who cannot afford large upfront costs.',
+    specialty_tags: ['Pay-As-You-Go', 'Solar Home Systems', 'Mobile Payments', 'Affordable Home Solar'],
+    brands_handled: ['Lumos Classic', 'Lumos Mobile Solar', 'Lumos Max'],
+    is_verified: true,
+    rating_count: 88,
+    rating_average: 4.5,
+    response_speed: 'Usually under 24 hours',
+    contact_preference: 'Phone Call',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-13',
+    user_id: 'user-inst-13',
+    business_name: 'GVE Projects Ltd',
+    logo_url: '',
+    description: 'Specialist in off-grid solar power, rural electrification, and smart energy systems. GVE has deployed solar mini-grids serving thousands of rural Nigerian households. Also provides solar EPC services for commercial buildings and healthcare facilities.',
+    specialty_tags: ['Off-Grid Solar', 'Rural Electrification', 'Mini-Grids', 'Healthcare Solar'],
+    brands_handled: ['SMA Inverters', 'Victron Energy', 'JA Solar', 'BYD Batteries'],
+    is_verified: true,
+    rating_count: 41,
+    rating_average: 4.8,
+    response_speed: 'Usually under 4 hours',
+    contact_preference: 'Email',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'inst-14',
+    user_id: 'user-inst-14',
+    business_name: 'Astrum Energy Nigeria',
+    logo_url: '',
+    description: 'Premium solar solutions provider serving high-net-worth residential estates and commercial towers in Lagos and Abuja. Specializes in aesthetically designed rooftop installations, premium LFP battery storage systems, and 24/7 remote monitoring dashboards.',
+    specialty_tags: ['Premium Residential', 'LFP Batteries', 'Remote Monitoring', 'Commercial Grid-Tie'],
+    brands_handled: ['Tesla Powerwall', 'Fronius', 'Canadian Solar', 'Pylontech', 'SMA Inverters'],
+    is_verified: true,
+    rating_count: 27,
+    rating_average: 4.9,
+    response_speed: 'Usually under 1 hour',
+    contact_preference: 'WhatsApp',
+    created_at: new Date().toISOString()
   }
 ];
 
@@ -81,14 +231,72 @@ const MOCK_SERVICE_AREAS: ServiceArea[] = [
   { id: 'sa-7', installer_id: 'inst-3', state: 'Lagos', city: 'Lekki' },
   { id: 'sa-8', installer_id: 'inst-3', state: 'Lagos', city: 'Victoria Island' },
   // Ajao Estate Energy
-  { id: 'sa-9', installer_id: 'inst-4', state: 'Lagos', city: 'Gbagada' }
+  { id: 'sa-9', installer_id: 'inst-4', state: 'Lagos', city: 'Gbagada' },
+  // Arnergy Solar (Victoria Island, Ilupeju, Ikeja)
+  { id: 'sa-10', installer_id: 'inst-5', state: 'Lagos', city: 'Victoria Island' },
+  { id: 'sa-11', installer_id: 'inst-5', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-12', installer_id: 'inst-5', state: 'Abuja', city: 'Wuse' },
+  { id: 'sa-13', installer_id: 'inst-5', state: 'Rivers', city: 'Port Harcourt' },
+  // SolarKobo (Lekki, Ajah, Ibeju-Lekki)
+  { id: 'sa-14', installer_id: 'inst-6', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-15', installer_id: 'inst-6', state: 'Lagos', city: 'Ajah' },
+  { id: 'sa-16', installer_id: 'inst-6', state: 'Lagos', city: 'Ibeju-Lekki' },
+  // Auxano Solar (Lekki, Ibeju-Lekki, Ajah)
+  { id: 'sa-17', installer_id: 'inst-7', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-18', installer_id: 'inst-7', state: 'Lagos', city: 'Ibeju-Lekki' },
+  { id: 'sa-19', installer_id: 'inst-7', state: 'Lagos', city: 'Ajah' },
+  // Gennex Technologies (Ikeja, VI, Abuja, Port Harcourt)
+  { id: 'sa-20', installer_id: 'inst-8', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-21', installer_id: 'inst-8', state: 'Lagos', city: 'Victoria Island' },
+  { id: 'sa-22', installer_id: 'inst-8', state: 'Abuja', city: 'Maitama' },
+  { id: 'sa-23', installer_id: 'inst-8', state: 'Rivers', city: 'Port Harcourt' },
+  // Rubitec Solar (Abuja, Lagos, Kano)
+  { id: 'sa-24', installer_id: 'inst-9', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-25', installer_id: 'inst-9', state: 'Abuja', city: 'Garki' },
+  { id: 'sa-26', installer_id: 'inst-9', state: 'Kano', city: 'Kano' },
+  // Solar Depot Nigeria (Ikeja, Surulere, Lagos Island)
+  { id: 'sa-27', installer_id: 'inst-10', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-28', installer_id: 'inst-10', state: 'Lagos', city: 'Surulere' },
+  { id: 'sa-29', installer_id: 'inst-10', state: 'Lagos', city: 'Lagos Island' },
+  { id: 'sa-30', installer_id: 'inst-10', state: 'Lagos', city: 'Gbagada' },
+  // Solarlify (Lekki, Ajah, Ikoyi)
+  { id: 'sa-31', installer_id: 'inst-11', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-32', installer_id: 'inst-11', state: 'Lagos', city: 'Ajah' },
+  { id: 'sa-33', installer_id: 'inst-11', state: 'Lagos', city: 'Ikoyi' },
+  // Lumos Nigeria (Nationwide coverage - major cities)
+  { id: 'sa-34', installer_id: 'inst-12', state: 'Lagos', city: 'Ikeja' },
+  { id: 'sa-35', installer_id: 'inst-12', state: 'Lagos', city: 'Gbagada' },
+  { id: 'sa-36', installer_id: 'inst-12', state: 'Abuja', city: 'Garki' },
+  { id: 'sa-37', installer_id: 'inst-12', state: 'Kano', city: 'Kano' },
+  { id: 'sa-38', installer_id: 'inst-12', state: 'Oyo', city: 'Ibadan' },
+  // GVE Projects (Abuja, Lagos, Delta)
+  { id: 'sa-39', installer_id: 'inst-13', state: 'Abuja', city: 'Garki' },
+  { id: 'sa-40', installer_id: 'inst-13', state: 'Abuja', city: 'Wuse' },
+  { id: 'sa-41', installer_id: 'inst-13', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-42', installer_id: 'inst-13', state: 'Delta', city: 'Warri' },
+  // Astrum Energy (Lekki, Victoria Island, Abuja Maitama)
+  { id: 'sa-43', installer_id: 'inst-14', state: 'Lagos', city: 'Lekki' },
+  { id: 'sa-44', installer_id: 'inst-14', state: 'Lagos', city: 'Victoria Island' },
+  { id: 'sa-45', installer_id: 'inst-14', state: 'Lagos', city: 'Ikoyi' },
+  { id: 'sa-46', installer_id: 'inst-14', state: 'Abuja', city: 'Maitama' }
 ];
 
 const MOCK_SUBSCRIPTIONS: ListingSubscription[] = [
   { id: 'sub-1', installer_id: 'inst-1', tier: 'verified_partner_plus', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
   { id: 'sub-2', installer_id: 'inst-2', tier: 'verified_partner', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
   { id: 'sub-3', installer_id: 'inst-3', tier: 'verified_partner_plus', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
-  { id: 'sub-4', installer_id: 'inst-4', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() }
+  { id: 'sub-4', installer_id: 'inst-4', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  // Real Nigerian companies — all start as unclaimed basic listings
+  { id: 'sub-5',  installer_id: 'inst-5',  tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-6',  installer_id: 'inst-6',  tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-7',  installer_id: 'inst-7',  tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-8',  installer_id: 'inst-8',  tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-9',  installer_id: 'inst-9',  tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-10', installer_id: 'inst-10', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-11', installer_id: 'inst-11', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-12', installer_id: 'inst-12', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-13', installer_id: 'inst-13', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() },
+  { id: 'sub-14', installer_id: 'inst-14', tier: 'basic', status: 'active', expires_at: '2027-01-01T00:00:00Z', created_at: new Date().toISOString() }
 ];
 
 interface MarketplaceState {
