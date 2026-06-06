@@ -17,7 +17,7 @@ import { useTracking } from '@/hooks/useTracking';
 export default function Step5Finalize({ onBack }: { onBack: () => void }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const loadedId = searchParams.get('load') || undefined;
+  const loadedId = searchParams?.get('load') || undefined;
   const { proposal, updateProposal, calculations } = useWizardStore();
   const { trackEvent } = useTracking();
   const { checkAccess, openUpgradeModal } = useSubscriptionStore();

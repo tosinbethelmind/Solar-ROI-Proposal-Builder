@@ -119,7 +119,7 @@ function NewProposalPageInner() {
 
   // Switch between quick and full wizard flows
   const [flowType, setFlowType] = React.useState<'quick' | 'wizard'>(() => {
-    const t = searchParams.get('type');
+    const t = searchParams?.get('type');
     if (t === 'quick' || t === 'wizard') return t;
     return appMode === 'simple' ? 'quick' : 'wizard';
   });
@@ -137,7 +137,7 @@ function NewProposalPageInner() {
 
   // B1: Check for load query param and load data
   React.useEffect(() => {
-    const loadId = searchParams.get('load');
+    const loadId = searchParams?.get('load');
     if (!loadId) return;
 
     let loadedItem: any = null;
@@ -191,7 +191,7 @@ function NewProposalPageInner() {
 
   // ?reset=1 URL param: clears localStorage then redirects clean
   React.useEffect(() => {
-    if (searchParams.get('reset') === '1') {
+    if (searchParams?.get('reset') === '1') {
       try {
         Object.keys(localStorage).forEach((key) => {
           if (key.startsWith('solar-')) localStorage.removeItem(key);

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <defs>
+    <linearGradient id="batGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+  <rect width="160" height="50" rx="8" fill="#1E293B" />
+  
+  <g transform="translate(14, 12)">
+    <!-- Battery outline -->
+    <rect x="0" y="4" width="22" height="18" rx="2" fill="none" stroke="url(#batGrad)" stroke-width="2" />
+    <!-- Battery cap -->
+    <rect x="22" y="9" width="3" height="8" rx="1" fill="url(#batGrad)" />
+    <!-- Active charge waves -->
+    <path d="M 5 13 L 9 9 L 13 17 L 17 13" fill="none" stroke="url(#batGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+  
+  <!-- Typography -->
+  <text x="48" y="24" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="11" font-weight="900" letter-spacing="1">CELLMAX LITHIUM</text>
+  <text x="48" y="36" fill="#10B981" font-family="system-ui, sans-serif" font-size="7" font-weight="800" letter-spacing="1.5">LiFePO4 CERTIFIED</text>
+</svg>
