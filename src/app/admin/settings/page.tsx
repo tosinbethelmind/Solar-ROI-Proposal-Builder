@@ -17,6 +17,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { BUSINESS_PRESETS } from '@/lib/businessPresets';
+import { Badge } from '@/components/ui/badge';
 
 interface PlatformSettings {
   dieselPrice: number;
@@ -264,6 +266,31 @@ export default function AdminSettings() {
                   <span className="text-slate-800 dark:text-slate-200 font-bold font-mono">7.5%</span>
                 </div>
               </div>
+            </div>
+          </Card>
+
+          <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm rounded-3xl p-6">
+            <h3 className="font-extrabold text-xs text-slate-855 dark:text-slate-105 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+              <ShieldCheck className="h-4.5 w-4.5 text-teal-650 shrink-0" />
+              <span>Active Sizing Templates ({BUSINESS_PRESETS.length})</span>
+            </h3>
+
+            <div className="space-y-3">
+              {BUSINESS_PRESETS.map((bp) => (
+                <div key={bp.id} className="p-3 bg-slate-50 dark:bg-slate-950/45 border border-slate-200/60 dark:border-slate-850 rounded-xl space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-[11px] text-slate-800 dark:text-slate-105">{bp.label}</span>
+                    <Badge className="bg-teal-100 dark:bg-teal-950 text-teal-850 dark:text-teal-400 border-none font-bold text-[8px] px-1.5 py-0 shadow-none uppercase">
+                      {bp.confidence}
+                    </Badge>
+                  </div>
+                  <p className="text-[10px] text-slate-500 leading-normal line-clamp-2">{bp.description}</p>
+                  <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold pt-1.5 border-t border-slate-200/40 dark:border-slate-800/40">
+                    <span>{bp.appliances.length} Load items</span>
+                    <span>{bp.suggestedBackupHours}h target</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
         </div>

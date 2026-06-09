@@ -37,8 +37,9 @@ def record(name, passed, detail=""):
 
 
 def warmup(page):
-    """Hit the homepage repeatedly until Next.js finishes compiling."""
+    """Hit the homepage repeatedly until Next.js finishes compiling, and pre-compile other critical pages."""
     print("\n[WARMUP] Waiting for Next.js dev server to compile...")
+    server_ready = False
     for attempt in range(1, 19):  # up to ~3 minutes
         try:
             resp = page.goto(BASE, wait_until="domcontentloaded", timeout=15000)
@@ -46,18 +47,41 @@ def warmup(page):
                 # Wait a bit more for full hydration
                 page.wait_for_load_state("networkidle", timeout=30000)
                 print(f"[WARMUP] Server ready after attempt {attempt}")
-                return True
+                server_ready = True
+                break
         except Exception:
             print(f"[WARMUP] Attempt {attempt}/18 - server still compiling, retrying in 10s...")
             time.sleep(10)
-    print("[WARMUP] Server did not become ready in time!")
-    return False
+
+    if not server_ready:
+        print("[WARMUP] Server did not become ready in time!")
+        return False
+
+    # Pre-compile critical routes to avoid timeouts/swallowed clicks during tests
+    print("[WARMUP] Pre-compiling critical routes...")
+    for path in ["/workspace", "/history", "/proposals/new?type=wizard"]:
+        try:
+            print(f"[WARMUP] Pre-compiling {path}...")
+            page.goto(f"{BASE}{path}", wait_until="networkidle", timeout=45000)
+        except Exception as e:
+            print(f"[WARMUP] Pre-compiling {path} warning: {str(e)[:80]}")
+
+    print("[WARMUP] Pre-compilation complete.")
+    return True
 
 
 def run_tests():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1280, "height": 900})
+        context.add_cookies([
+            {
+                "name": "bypass_auth",
+                "value": "true",
+                "domain": "localhost",
+                "path": "/"
+            }
+        ])
         page = context.new_page()
 
         # Warmup phase - let Next.js compile
@@ -175,15 +199,15 @@ def run_tests():
 
         # 3b - Navigate to step 3 (Hardware Selection where Tiers are visible)
         try:
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(5000)
             
             # Step 1: Click quick-add load presets to add typical Lagos loads.
-            # Retry click up to 4 times to bypass early-hydration click swallows.
+            # Retry click up to 10 times to bypass early-hydration click swallows.
             tv_preset = page.locator("button:has-text('LED TV'), button:has-text('TV')").first
             tv_preset.wait_for(state="visible", timeout=15000)
             
             success = False
-            for attempt in range(4):
+            for attempt in range(10):
                 try:
                     tv_preset.click(timeout=5000)
                     page.wait_for_timeout(1000)

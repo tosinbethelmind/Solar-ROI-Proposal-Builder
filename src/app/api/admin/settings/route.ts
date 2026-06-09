@@ -1,20 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabaseAdmin';
-import { createClient } from '@/lib/supabase/server';
+import { verifyAdmin } from '@/utils/adminAuth';
 import * as fs from 'fs';
 import * as path from 'path';
 
 const settingsFilePath = path.join(process.cwd(), 'src', 'utils', 'platformSettings.json');
-
-// Helper to verify if user is platform administrator
-async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
-  const { data, error } = await adminClient
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle();
-  return !error && !!data;
-}
 
 function readPlatformSettings() {
   try {
@@ -51,18 +40,9 @@ function writePlatformSettings(settings: any) {
 }
 
 export async function GET() {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
-
-  // Enforce Authentication & Admin Authorization
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
-  }
-
-  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-  if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
   const settings = readPlatformSettings();
@@ -70,19 +50,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
-
-  // Enforce Authentication & Admin Authorization
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
-  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-  if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
-  }
+  const { user } = auth;
 
   try {
     const body = await request.json();
@@ -131,7 +104,7 @@ export async function POST(request: Request) {
       settings.vatTaxRate = parsedVat;
     }
 
-    settings.lastUpdatedBy = updatedBy || user.email || 'admin@solarpro.com';
+    settings.lastUpdatedBy = updatedBy || user?.email || 'admin@solarpro.com';
     settings.lastUpdatedAt = new Date().toISOString();
 
     const success = writePlatformSettings(settings);

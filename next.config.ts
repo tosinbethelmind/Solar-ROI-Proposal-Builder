@@ -12,11 +12,13 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  outputFileTracingRoot: process.cwd(),
+  cacheComponents: true,
   async rewrites() {
     return [
       {
         source: '/api/apexreach/:path*',
-        destination: 'http://localhost:3000/api/:path*',
+        destination: 'http://localhost:3001/api/:path*',
       },
     ];
   },

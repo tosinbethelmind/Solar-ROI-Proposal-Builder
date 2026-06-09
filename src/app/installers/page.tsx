@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMarketplaceStore } from '@/store/marketplaceStore';
 import { LeadSubmissionModal } from '@/components/marketplace/LeadSubmissionModal';
+import { ClaimListingModal } from '@/components/marketplace/ClaimListingModal';
 
 export default function InstallersDirectoryPage() {
   const { installers, serviceAreas, subscriptions } = useMarketplaceStore();
@@ -34,6 +35,10 @@ export default function InstallersDirectoryPage() {
   // Lead Intake Modal State
   const [selectedInstallerId, setSelectedInstallerId] = React.useState<string | null>(null);
   const [showLeadModal, setShowLeadModal] = React.useState(false);
+
+  // Claim Listing Modal State
+  const [selectedClaimId, setSelectedClaimId] = React.useState<string | null>(null);
+  const [showClaimModal, setShowClaimModal] = React.useState(false);
 
   // States/Cities options from Service Areas
   const availableStates = Array.from(new Set(serviceAreas.map(sa => sa.state)));
@@ -91,6 +96,11 @@ export default function InstallersDirectoryPage() {
   const handleOpenLeadModal = (installerId?: string) => {
     setSelectedInstallerId(installerId || null);
     setShowLeadModal(true);
+  };
+
+  const handleOpenClaimModal = (installerId: string) => {
+    setSelectedClaimId(installerId);
+    setShowClaimModal(true);
   };
 
   return (
@@ -260,12 +270,23 @@ export default function InstallersDirectoryPage() {
               return (
                 <Card 
                   key={inst.id}
-                  className={`rounded-3xl bg-white dark:bg-slate-900 border transition-all duration-300 flex flex-col justify-between hover:shadow-md ${
+                  className={`rounded-3xl bg-white dark:bg-slate-900 border transition-all duration-300 flex flex-col justify-between hover:shadow-md overflow-hidden ${
                     isPremiumPlus 
                       ? 'border-teal-500 dark:border-teal-500/40 ring-1 ring-teal-500/10' 
                       : 'border-slate-200 dark:border-slate-850'
                   }`}
                 >
+                  {!inst.is_claimed && (
+                    <div className="bg-amber-500/10 border-b border-amber-500/10 px-6 py-2 flex items-center justify-between text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                      <span>⚠️ Unclaimed Seeded Profile</span>
+                      <button 
+                        onClick={() => handleOpenClaimModal(inst.id)}
+                        className="hover:underline font-extrabold text-teal-650 dark:text-teal-400"
+                      >
+                        Claim Profile ➔
+                      </button>
+                    </div>
+                  )}
                   <CardHeader className="p-6 pb-2 space-y-3 relative">
                     {/* Badge Treatment */}
                     <div className="flex items-center justify-between">
@@ -347,6 +368,14 @@ export default function InstallersDirectoryPage() {
         <LeadSubmissionModal 
           installerId={selectedInstallerId} 
           onClose={() => setShowLeadModal(false)} 
+        />
+      )}
+
+      {/* claim listing popup modal */}
+      {showClaimModal && selectedClaimId && (
+        <ClaimListingModal 
+          installerId={selectedClaimId} 
+          onClose={() => setShowClaimModal(false)} 
         />
       )}
     </div>

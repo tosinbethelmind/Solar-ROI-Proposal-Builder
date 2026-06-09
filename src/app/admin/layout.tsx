@@ -24,7 +24,8 @@ import {
   Search,
   Bell,
   Handshake,
-  Compass
+  Compass,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ import { toast } from 'sonner';
 const navItems = [
   { name: 'Overview Console', href: '/admin', icon: LayoutDashboard },
   { name: 'Installer Workspaces', href: '/admin/companies', icon: Building2 },
+  { name: 'Insights Blog Editor', href: '/admin/content', icon: FileText },
   { name: 'B2C Sizer Leads', href: '/admin/leads', icon: UserCheck },
   { name: 'Lead Scrapers Console', href: '/admin/scrapers', icon: Compass },
   { name: 'Team Members', href: '/admin/users', icon: Users2 },

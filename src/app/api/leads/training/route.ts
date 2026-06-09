@@ -1,26 +1,14 @@
 import { NextResponse } from 'next/server'
+import { verifyAdmin } from '@/utils/adminAuth'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
-  const supabase = await createClient()
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await verifyAdmin()
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg || 'Forbidden' }, { status: auth.errorStatus || 403 })
   }
 
-  // Admin check
-  const { data: admin } = await supabase
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!admin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { data: leads, error } = await supabase
+  const { data: leads, error } = await auth.adminClient
     .from('training_leads')
     .select('*')
     .order('created_at', { ascending: false })
@@ -70,22 +58,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createClient()
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Admin check
-  const { data: admin } = await supabase
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!admin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const auth = await verifyAdmin()
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg || 'Forbidden' }, { status: auth.errorStatus || 403 })
   }
 
   try {
@@ -96,7 +71,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Missing ID or status' }, { status: 400 })
     }
 
-    const { data: lead, error: updateError } = await supabase
+    const { data: lead, error: updateError } = await auth.adminClient
       .from('training_leads')
       .update({ status })
       .eq('id', id)

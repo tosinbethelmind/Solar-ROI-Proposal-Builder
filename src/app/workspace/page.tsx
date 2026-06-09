@@ -12,6 +12,7 @@ import { AuthButton } from '@/components/auth/AuthButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { CopyrightYear } from '@/components/ui/CopyrightYear';
 import { Settings, FileText, Plus, Zap, Sparkles, TrendingUp, DollarSign, ArrowRight } from 'lucide-react';
 
 /* ─── Helpers ───────────────────────────────────────────────── */
@@ -283,6 +284,10 @@ export default function WorkspaceDashboardPage() {
               CRM & History
             </Button>
 
+            <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-350 dark:hover:bg-slate-800" onClick={() => router.push('/workspace/listing')}>
+              🏪 Partner Hub
+            </Button>
+
             <Button variant="ghost" size="sm" className="text-xs font-bold text-teal-650 hover:text-teal-700 dark:text-teal-400 dark:hover:bg-slate-800 flex items-center gap-1" onClick={() => router.push('/estimator')}>
               🏡 Client Estimator
             </Button>
@@ -497,6 +502,38 @@ export default function WorkspaceDashboardPage() {
           </Button>
         </section>
 
+        {/* ═══ Partner Directory Hub Banner ═══ */}
+        <section className="relative overflow-hidden rounded-3xl border border-amber-500/15 bg-amber-500/5 dark:bg-amber-955/10 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all hover:border-amber-500/25">
+          <div className="space-y-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-955/40 dark:text-amber-400">
+              Solar Directory & Leads
+            </span>
+            <h3 className="font-extrabold text-sm text-slate-850 dark:text-slate-100">
+              Claim Your Free Solar Directory Listing & Manage Leads
+            </h3>
+            <p className="text-xs text-slate-550 dark:text-slate-400 leading-normal max-w-xl font-semibold">
+              Get discovered by local Lagos homeowners, receive verified inbound quotation requests, and manage your public certifications.
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs px-5 h-9"
+              onClick={() => router.push('/installers')}
+            >
+              Browse Directory ➔
+            </Button>
+            <Button
+              size="sm"
+              className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs px-5 h-9"
+              onClick={() => router.push('/workspace/listing')}
+            >
+              Go to Partner Hub ➔
+            </Button>
+          </div>
+        </section>
+
         {/* ═══ Recent Proposals List ═══ */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -563,7 +600,7 @@ export default function WorkspaceDashboardPage() {
       {/* ═══ Footer ═══ */}
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-12 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 dark:text-slate-500">
-          <p>© {new Date().getFullYear()} SolarPro — Built for Nigerian Installers</p>
+          <p>© <CopyrightYear /> SolarPro — Built for Nigerian Installers</p>
           <p className="flex items-center gap-1.5">
             <span className="inline-block size-1.5 rounded-full bg-emerald-500 animate-pulse animate-duration-1000" />
             Offline-ready PWA active

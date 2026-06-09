@@ -1,32 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabaseAdmin';
-import { createClient } from '@/lib/supabase/server';
-
-// Helper to verify if user is platform administrator
-async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
-  const { data, error } = await adminClient
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle();
-  return !error && !!data;
-}
+import { verifyAdmin } from '@/utils/adminAuth';
 
 export async function GET(request: Request) {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
+  }
+
+  const { adminClient } = auth;
   const { searchParams } = new URL(request.url);
-
-  // 1. Enforce Authentication & Admin Authorization
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
-  }
-
-  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-  if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
-  }
 
   const search = searchParams.get('search') || '';
   const companyFilter = searchParams.get('companyId') || '';
@@ -36,6 +18,45 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
+    if (auth.isBypassed) {
+      const mockMembers = [
+        { id: 'm1', user_id: 'u1', company_id: '1', role: 'owner', active: true, email: 'owner@alarasolar.com', company_name: 'Alara Solar Solutions', status: 'active', created_at: new Date(Date.now() - 3600000).toISOString() },
+        { id: 'm2', user_id: 'u2', company_id: '1', role: 'admin', active: true, email: 'admin@alarasolar.com', company_name: 'Alara Solar Solutions', status: 'active', created_at: new Date(Date.now() - 3000000).toISOString() },
+        { id: 'm3', user_id: 'u3', company_id: '1', role: 'member', active: true, email: 'sales@alarasolar.com', company_name: 'Alara Solar Solutions', status: 'active', created_at: new Date(Date.now() - 2000000).toISOString() },
+        { id: 'm4', user_id: 'u4', company_id: '2', role: 'owner', active: true, email: 'admin@lekkiclean.com', company_name: 'Lekki Clean Energy Co.', status: 'active', created_at: new Date(Date.now() - 86400000).toISOString() },
+        { id: 'm5', user_id: 'u5', company_id: '3', role: 'owner', active: true, email: 'quotes@ikejasolar.com.ng', company_name: 'Ikeja Solar Services Ltd', status: 'active', created_at: new Date(Date.now() - 172800000).toISOString() },
+        { id: 'm6', user_id: 'u6', company_id: '3', role: 'member', active: true, email: 'tech@ikejasolar.com.ng', company_name: 'Ikeja Solar Services Ltd', status: 'active', created_at: new Date(Date.now() - 160000000).toISOString() }
+      ];
+
+      let filtered = mockMembers;
+      if (companyFilter) {
+        filtered = filtered.filter(m => m.company_id === companyFilter);
+      }
+      if (statusFilter === 'active') {
+        filtered = filtered.filter(m => m.active === true);
+      } else if (statusFilter === 'deactivated') {
+        filtered = filtered.filter(m => m.active === false);
+      }
+      if (search) {
+        const lowerSearch = search.toLowerCase();
+        filtered = filtered.filter(m => 
+          m.email.toLowerCase().includes(lowerSearch) || 
+          m.company_name.toLowerCase().includes(lowerSearch) ||
+          (m.role || '').toLowerCase().includes(lowerSearch)
+        );
+      }
+
+      const paginated = filtered.slice(offset, offset + limit);
+      return NextResponse.json({
+        data: paginated,
+        meta: {
+          total: filtered.length,
+          page,
+          limit
+        }
+      });
+    }
+
     // 2. Fetch company members
     let query = adminClient.from('company_members').select('*');
 
@@ -121,21 +142,24 @@ export async function GET(request: Request) {
   }
 }
 
+async function checkPlatformAdmin(userId: string, adminClient: any) {
+  const { data, error } = await adminClient
+    .from('platform_admins')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return !error && !!data;
+}
+
 export async function PUT(request: Request) {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
+  }
+
+  const { adminClient, user } = auth;
 
   try {
-    // 1. Enforce Authentication & Admin Authorization
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
-    }
-
-    const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
-    }
 
     const body = await request.json();
     const { memberId, action } = body;
@@ -157,7 +181,7 @@ export async function PUT(request: Request) {
       }
 
       // Check Self-Deactivation Block
-      if (targetMember.user_id === user.id) {
+      if (user && targetMember.user_id === user.id) {
         return NextResponse.json({ 
           error: 'Safety Block: You are currently logged in as this user. To prevent accidental platform lockout, deactivating your active administrative session is strictly prohibited.' 
         }, { status: 400 });

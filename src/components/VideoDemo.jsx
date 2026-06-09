@@ -53,6 +53,7 @@ export default function VideoDemo() {
               poster="/assets/video-thumbnail.jpg" 
               className="w-full h-full object-cover opacity-60"
               controls
+              preload="none"
             >
               <source src="/assets/solarpro-demo.mp4" type="video/mp4" />
               Your browser does not support the video tag.

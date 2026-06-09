@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { BLOG_ARTICLES } from '@/lib/blog';
 import { AuthButton } from '@/components/auth/AuthButton';
+import { CopyrightYear } from '@/components/ui/CopyrightYear';
 import Testimonials from '@/components/Testimonials';
 import ComparePlans from '@/components/ComparePlans';
 import ROICalculator, { PlanROILabel } from '@/components/ROICalculator';
@@ -816,7 +817,7 @@ export default function SolarProHomepage() {
                 </div>
                 <div>
                   <Link href="/start-simple" className="hover:underline font-bold text-slate-750 dark:text-slate-350">⚡ Start Simple</Link>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Quick site survey presets for active field installers.</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Quick site survey templates for active field installers.</p>
                 </div>
                 <div>
                   <Link href="/workspace" className="hover:underline font-bold text-slate-750 dark:text-slate-350">🛠️ Installer Pro Workspace</Link>
@@ -844,7 +845,7 @@ export default function SolarProHomepage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 border-t border-slate-100 dark:border-slate-850 mt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400">
-          <p>© {new Date().getFullYear()} SolarPro. Dedicated to stable Nigerian electricity.</p>
+          <p>© <CopyrightYear /> SolarPro. Dedicated to stable Nigerian electricity.</p>
           <div className="flex gap-4 mt-2 sm:mt-0">
             <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
             <Link href="/terms" className="hover:underline">Terms of Service</Link>

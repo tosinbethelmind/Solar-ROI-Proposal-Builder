@@ -1,24 +1,15 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { verifyAdmin } from '@/utils/adminAuth'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await verifyAdmin()
+  if (!auth.isAdmin && !auth.user) {
+    return NextResponse.json({ error: auth.errorMsg || 'Unauthorized' }, { status: auth.errorStatus || 401 })
   }
 
-  // Admin check
-  const { data: admin } = await supabase
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (admin) {
+  if (auth.isAdmin) {
     // Admin gets all referrals with partner and company names
-    const { data: referrals, error } = await supabase
+    const { data: referrals, error } = await auth.adminClient
       .from('supplier_referrals')
       .select('*, companies(name), supplier_partners(company_name)')
       .order('created_at', { ascending: false })
@@ -30,17 +21,17 @@ export async function GET(request: Request) {
   }
 
   // Normal users get only their own company's referrals
-  const { data: member } = await supabase
+  const { data: member } = await auth.userClient
     .from('company_members')
     .select('company_id')
-    .eq('user_id', user.id)
+    .eq('user_id', auth.user?.id || '')
     .single()
 
   if (!member) {
     return NextResponse.json({ error: 'No company found' }, { status: 404 })
   }
 
-  const { data: referrals, error } = await supabase
+  const { data: referrals, error } = await auth.userClient
     .from('supplier_referrals')
     .select('*, supplier_partners(company_name)')
     .eq('company_id', member.company_id)
@@ -54,20 +45,35 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await verifyAdmin()
+  if (!auth.isAdmin && !auth.user) {
+    return NextResponse.json({ error: auth.errorMsg || 'Unauthorized' }, { status: auth.errorStatus || 401 })
   }
 
-  const { data: member } = await supabase
+  const userId = auth.user?.id || 'dev-admin-id'
+  let companyId: string | null = null
+
+  const { data: member } = await auth.userClient
     .from('company_members')
     .select('company_id')
-    .eq('user_id', user.id)
-    .single()
+    .eq('user_id', userId)
+    .maybeSingle()
 
-  if (!member) {
+  if (member) {
+    companyId = member.company_id
+  } else if (auth.isBypassed) {
+    // Fallback to the first available company during dev auth bypass testing
+    const { data: firstCompany } = await auth.adminClient
+      .from('companies')
+      .select('id')
+      .limit(1)
+      .maybeSingle()
+    if (firstCompany) {
+      companyId = firstCompany.id
+    }
+  }
+
+  if (!companyId) {
     return NextResponse.json({ error: 'No company found' }, { status: 404 })
   }
 
@@ -90,7 +96,7 @@ export async function POST(request: Request) {
     // Auto-calculate expected commission
     let expectedCommission = 0
     if (preferred_supplier_id) {
-      const { data: partner } = await supabase
+      const { data: partner } = await auth.adminClient
         .from('supplier_partners')
         .select('commission_model, commission_rate')
         .eq('id', preferred_supplier_id)
@@ -101,7 +107,7 @@ export async function POST(request: Request) {
           expectedCommission = partner.commission_rate || 0
         } else if (partner.commission_model === 'percentage_of_sale') {
           // Fetch proposal price
-          const { data: proposal } = await supabase
+          const { data: proposal } = await auth.adminClient
             .from('proposals')
             .select('final_quoted_price_ngn')
             .eq('id', proposal_id)
@@ -114,12 +120,12 @@ export async function POST(request: Request) {
       }
     }
 
-    const { data: referral, error: insertError } = await supabase
+    const { data: referral, error: insertError } = await auth.adminClient
       .from('supplier_referrals')
       .insert({
         proposal_id,
-        company_id: member.company_id,
-        user_id: user.id,
+        company_id: companyId,
+        user_id: userId,
         customer_name: customer_name || 'Unnamed Project',
         equipment_summary: equipment_summary || null,
         system_size: system_size || null,
@@ -147,22 +153,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createClient()
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Admin check
-  const { data: admin } = await supabase
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!admin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const auth = await verifyAdmin()
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg || 'Forbidden' }, { status: auth.errorStatus || 403 })
   }
 
   try {
@@ -194,7 +187,7 @@ export async function PATCH(request: Request) {
     if (payout_date !== undefined) updatePayload.payout_date = payout_date || null
     if (latest_note !== undefined) updatePayload.latest_note = latest_note
 
-    const { data: referral, error: updateError } = await supabase
+    const { data: referral, error: updateError } = await auth.adminClient
       .from('supplier_referrals')
       .update(updatePayload)
       .eq('id', id)

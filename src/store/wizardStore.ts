@@ -56,6 +56,10 @@ export interface ProposalState {
   nepa_daily_hours: number;
   nepa_tariff_per_kwh: number;
   
+  // Template Tracking
+  appliedTemplateId?: string;
+  isCustomized?: boolean;
+  
   // ROI Calculator Fields
   roi_gen_size_kva?: number;
   roi_fuel_consumption?: number;
@@ -199,7 +203,9 @@ const defaultProposal: ProposalState = {
   pricing_mode: 'simple',
   proposal_notes: '',
   proposal_exclusions: '',
-  include_vat: true
+  include_vat: true,
+  appliedTemplateId: '',
+  isCustomized: false
 };
 
 export const useWizardStore = create<WizardStore>()(

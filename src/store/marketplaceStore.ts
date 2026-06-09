@@ -510,6 +510,7 @@ interface MarketplaceState {
   subscriptions: ListingSubscription[];
   leads: HomeownerLead[];
   leadAssignments: LeadAssignment[];
+  currentInstallerId: string | null;
   
   // Actions
   addInstallerProfile: (profile: Omit<InstallerProfile, 'id' | 'rating_count' | 'rating_average' | 'created_at'>) => void;
@@ -521,6 +522,7 @@ interface MarketplaceState {
   updateLeadPipelineStatus: (assignmentId: string, pipelineStatus: 'New' | 'Contacted' | 'Qualified' | 'Proposal Sent' | 'Won' | 'Lost') => void;
   moderateListing: (id: string, isVerified: boolean) => void;
   moderateListingSubscription: (id: string, tier: ListingSubscription['tier']) => void;
+  claimListing: (id: string, email: string, phone: string) => void;
 }
 
 // Helper to calculate routing match score
@@ -536,11 +538,15 @@ const computeRoutePriority = (installerId: string, lead: Omit<HomeownerLead, 'id
 export const useMarketplaceStore = create<MarketplaceState>()(
   persist(
     (set, get) => ({
-      installers: MOCK_INSTALLERS,
+      installers: MOCK_INSTALLERS.map(inst => ({
+        ...inst,
+        is_claimed: inst.id === 'inst-1' || inst.id === 'inst-2' || inst.id === 'inst-3'
+      })),
       serviceAreas: MOCK_SERVICE_AREAS,
       subscriptions: MOCK_SUBSCRIPTIONS,
       leads: [],
       leadAssignments: [],
+      currentInstallerId: 'inst-1',
 
       addInstallerProfile: (profile) => {
         const id = 'inst-' + Math.random().toString(36).substr(2, 9);
@@ -701,6 +707,23 @@ export const useMarketplaceStore = create<MarketplaceState>()(
           subscriptions: state.subscriptions.map((sub) =>
             sub.installer_id === id ? { ...sub, tier } : sub
           )
+        }));
+      },
+
+      claimListing: (id, email, phone) => {
+        set((state) => ({
+          installers: state.installers.map((inst) =>
+            inst.id === id
+              ? {
+                  ...inst,
+                  is_claimed: true,
+                  claimed_at: new Date().toISOString(),
+                  claimed_by_email: email,
+                  claimed_by_phone: phone
+                }
+              : inst
+          ),
+          currentInstallerId: id
         }));
       }
     }),

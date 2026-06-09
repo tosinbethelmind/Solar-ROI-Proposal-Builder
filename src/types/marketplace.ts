@@ -13,6 +13,10 @@ export interface InstallerProfile {
   rating_average: number;
   response_speed: string;
   contact_preference: 'WhatsApp' | 'Phone Call' | 'Email';
+  is_claimed?: boolean;
+  claimed_at?: string;
+  claimed_by_email?: string;
+  claimed_by_phone?: string;
   created_at: string;
 }
 

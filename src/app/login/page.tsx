@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { CopyrightYear } from '@/components/ui/CopyrightYear'
 import { 
   Sun, 
   ArrowRight, 
@@ -486,7 +487,7 @@ export default function LoginPage() {
           </div>
 
           <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-500 flex justify-between">
-            <span>© {new Date().getFullYear()} SolarPro NG</span>
+            <span>© <CopyrightYear /> SolarPro NG</span>
             <span>Reliable solar operations</span>
           </div>
         </div>

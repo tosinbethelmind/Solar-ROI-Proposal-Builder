@@ -1,42 +1,36 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabaseAdmin';
-import { createClient } from '@/lib/supabase/server';
-
-// Helper to verify if user is platform administrator
-async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
-  const { data, error } = await adminClient
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle();
-  return !error && !!data;
-}
+import { verifyAdmin } from '@/utils/adminAuth';
 
 
 export async function GET() {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
-
-  // 1. Enforce Authentication & Admin Authorization
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
-  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-  if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
-  }
+  const { adminClient } = auth;
 
   try {
-    const { data: companies, error } = await adminClient
-      .from('companies')
-      .select('*')
-      .order('subscription_tier', { ascending: false });
+    let companies = [];
+    if (auth.isBypassed) {
+      companies = [
+        { id: '1', name: 'Alara Solar Solutions', subscription_tier: 'business', subscription_status: 'active', suspended: false, created_at: new Date(Date.now() - 3600000).toISOString() },
+        { id: '2', name: 'Lekki Clean Energy Co.', subscription_tier: 'pro', subscription_status: 'trial', suspended: false, created_at: new Date(Date.now() - 86400000).toISOString() },
+        { id: '3', name: 'Ikeja Solar Services Ltd', subscription_tier: 'starter', subscription_status: 'active', suspended: false, created_at: new Date(Date.now() - 172800000).toISOString() },
+        { id: '4', name: 'Abuja Microgrid Systems', subscription_tier: 'enterprise', subscription_status: 'active', suspended: false, created_at: new Date(Date.now() - 259200000).toISOString() },
+        { id: '5', name: 'Port Harcourt Solar Hub', subscription_tier: 'pro', subscription_status: 'past_due', suspended: false, created_at: new Date(Date.now() - 345600000).toISOString() }
+      ];
+    } else {
+      const { data, error } = await adminClient
+        .from('companies')
+        .select('*')
+        .order('subscription_tier', { ascending: false });
 
-    if (error) {
-      console.error('[Admin Subscriptions GET] Lookup failed:', error.message);
-      return NextResponse.json({ error: 'Failed to retrieve subscription registries.' }, { status: 500 });
+      if (error) {
+        console.error('[Admin Subscriptions GET] Lookup failed:', error.message);
+        return NextResponse.json({ error: 'Failed to retrieve subscription registries.' }, { status: 500 });
+      }
+      companies = data || [];
     }
 
     const tierPrices: Record<string, number> = {
@@ -80,19 +74,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
-
-  // 1. Enforce Authentication & Admin Authorization
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
-  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-  if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
-  }
+  const { adminClient } = auth;
 
   try {
     const body = await request.json();

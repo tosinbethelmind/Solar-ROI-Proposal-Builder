@@ -1,32 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabaseAdmin';
-import { createClient } from '@/lib/supabase/server';
-
-// Helper to verify if user is platform administrator
-async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
-  const { data, error } = await adminClient
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle();
-  return !error && !!data;
-}
+import { verifyAdmin } from '@/utils/adminAuth';
 
 
 export async function GET(request: Request) {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
-
-  // 1. Enforce Authentication & Admin Authorization
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
-  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-  if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
-  }
+  const { adminClient } = auth;
   const { searchParams } = new URL(request.url);
 
   const search = searchParams.get('search') || '';
@@ -37,6 +19,110 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
+    if (auth.isBypassed) {
+      const mockCompanies = [
+        {
+          id: '1',
+          name: 'Alara Solar Solutions',
+          email: 'owner@alarasolar.com',
+          subscription_tier: 'business',
+          subscription_status: 'active',
+          suspended: false,
+          created_at: new Date(Date.now() - 3600000).toISOString(),
+          owner_email: 'owner@alarasolar.com',
+          proposals_count: 14,
+          members_count: 3,
+          members: [
+            { id: 'm1', role: 'owner', email: 'owner@alarasolar.com', active: true },
+            { id: 'm2', role: 'admin', email: 'admin@alarasolar.com', active: true },
+            { id: 'm3', role: 'member', email: 'sales@alarasolar.com', active: true }
+          ]
+        },
+        {
+          id: '2',
+          name: 'Lekki Clean Energy Co.',
+          email: 'admin@lekkiclean.com',
+          subscription_tier: 'pro',
+          subscription_status: 'trial',
+          suspended: false,
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          owner_email: 'admin@lekkiclean.com',
+          proposals_count: 8,
+          members_count: 1,
+          members: [
+            { id: 'm4', role: 'owner', email: 'admin@lekkiclean.com', active: true }
+          ]
+        },
+        {
+          id: '3',
+          name: 'Ikeja Solar Services Ltd',
+          email: 'quotes@ikejasolar.com.ng',
+          subscription_tier: 'starter',
+          subscription_status: 'active',
+          suspended: false,
+          created_at: new Date(Date.now() - 172800000).toISOString(),
+          owner_email: 'quotes@ikejasolar.com.ng',
+          proposals_count: 22,
+          members_count: 2,
+          members: [
+            { id: 'm5', role: 'owner', email: 'quotes@ikejasolar.com.ng', active: true },
+            { id: 'm6', role: 'member', email: 'tech@ikejasolar.com.ng', active: true }
+          ]
+        },
+        {
+          id: '4',
+          name: 'Abuja Microgrid Systems',
+          email: 'contact@abujamicrogrid.com',
+          subscription_tier: 'enterprise',
+          subscription_status: 'active',
+          suspended: false,
+          created_at: new Date(Date.now() - 259200000).toISOString(),
+          owner_email: 'contact@abujamicrogrid.com',
+          proposals_count: 47,
+          members_count: 5,
+          members: [
+            { id: 'm7', role: 'owner', email: 'contact@abujamicrogrid.com', active: true }
+          ]
+        },
+        {
+          id: '5',
+          name: 'Port Harcourt Solar Hub',
+          email: 'info@phsolardepot.com',
+          subscription_tier: 'pro',
+          subscription_status: 'past_due',
+          suspended: false,
+          created_at: new Date(Date.now() - 345600000).toISOString(),
+          owner_email: 'info@phsolardepot.com',
+          proposals_count: 19,
+          members_count: 2,
+          members: [
+            { id: 'm8', role: 'owner', email: 'info@phsolardepot.com', active: true }
+          ]
+        }
+      ];
+
+      let filtered = mockCompanies;
+      if (plan) {
+        filtered = filtered.filter(c => c.subscription_tier === plan);
+      }
+      if (status) {
+        filtered = filtered.filter(c => c.subscription_status === status);
+      }
+      if (search) {
+        const lowerSearch = search.toLowerCase();
+        filtered = filtered.filter(c => c.name.toLowerCase().includes(lowerSearch) || c.owner_email.toLowerCase().includes(lowerSearch));
+      }
+
+      return NextResponse.json({
+        data: filtered,
+        meta: {
+          total: filtered.length,
+          page,
+          limit
+        }
+      });
+    }
+
     // 1. Fetch companies
     let query = adminClient
       .from('companies')
@@ -123,19 +209,12 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
-
-  // 1. Enforce Authentication & Admin Authorization
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
-  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-  if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
-  }
+  const { adminClient } = auth;
 
   try {
     const body = await request.json();

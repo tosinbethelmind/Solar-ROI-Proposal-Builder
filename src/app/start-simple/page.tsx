@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
   FolderSync
 } from 'lucide-react';
+import { CopyrightYear } from '@/components/ui/CopyrightYear';
 
 interface QuickPackage {
   id: string;
@@ -267,7 +268,7 @@ export default function StartSimplePage() {
       {/* ═══ Footer ═══ */}
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-16 bg-white dark:bg-slate-900 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-          <p>© {new Date().getFullYear()} SolarPro Shortcut Layer</p>
+          <p>© <CopyrightYear /> SolarPro Shortcut Layer</p>
           <Link href="/workspace" className="text-teal-655 font-bold hover:underline">
             Open Installer Workspace
           </Link>

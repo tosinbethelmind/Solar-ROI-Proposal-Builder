@@ -1,24 +1,15 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { verifyAdmin } from '@/utils/adminAuth'
 
 export async function GET() {
-  const supabase = await createClient()
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await verifyAdmin()
+  if (!auth.isAdmin && !auth.user) {
+    return NextResponse.json({ error: auth.errorMsg || 'Unauthorized' }, { status: auth.errorStatus || 401 })
   }
 
-  // Check if admin
-  const { data: admin } = await supabase
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (admin) {
+  if (auth.isAdmin) {
     // Admin gets all implementation leads with company info
-    const { data: leads, error } = await supabase
+    const { data: leads, error } = await auth.adminClient
       .from('implementation_leads')
       .select('*, companies(name)')
       .order('created_at', { ascending: false })
@@ -30,17 +21,17 @@ export async function GET() {
   }
 
   // Non-admin company members get only their company's leads
-  const { data: member } = await supabase
+  const { data: member } = await auth.userClient
     .from('company_members')
     .select('company_id')
-    .eq('user_id', user.id)
+    .eq('user_id', auth.user?.id || '')
     .single()
 
   if (!member) {
     return NextResponse.json({ error: 'No company found' }, { status: 404 })
   }
 
-  const { data: leads, error } = await supabase
+  const { data: leads, error } = await auth.userClient
     .from('implementation_leads')
     .select('*')
     .eq('company_id', member.company_id)
@@ -54,20 +45,35 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await verifyAdmin()
+  if (!auth.isAdmin && !auth.user) {
+    return NextResponse.json({ error: auth.errorMsg || 'Unauthorized' }, { status: auth.errorStatus || 401 })
   }
 
-  const { data: member } = await supabase
+  const userId = auth.user?.id || 'dev-admin-id'
+  let companyId: string | null = null
+
+  const { data: member } = await auth.userClient
     .from('company_members')
     .select('company_id')
-    .eq('user_id', user.id)
-    .single()
+    .eq('user_id', userId)
+    .maybeSingle()
 
-  if (!member) {
+  if (member) {
+    companyId = member.company_id
+  } else if (auth.isBypassed) {
+    // Fallback to the first available company during dev auth bypass testing
+    const { data: firstCompany } = await auth.adminClient
+      .from('companies')
+      .select('id')
+      .limit(1)
+      .maybeSingle()
+    if (firstCompany) {
+      companyId = firstCompany.id
+    }
+  }
+
+  if (!companyId) {
     return NextResponse.json({ error: 'No company found for user' }, { status: 404 })
   }
 
@@ -79,10 +85,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Contact name is required' }, { status: 400 })
     }
 
-    const { data: lead, error: insertError } = await supabase
+    const { data: lead, error: insertError } = await auth.adminClient
       .from('implementation_leads')
       .insert({
-        company_id: member.company_id,
+        company_id: companyId,
         contact_name,
         phone: phone || null,
         email: email || null,
@@ -107,22 +113,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createClient()
-  
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Only platform admins can edit lead status
-  const { data: admin } = await supabase
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!admin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const auth = await verifyAdmin()
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg || 'Forbidden' }, { status: auth.errorStatus || 403 })
   }
 
   try {
@@ -133,7 +126,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Missing lead ID or status' }, { status: 400 })
     }
 
-    const { data: lead, error: updateError } = await supabase
+    const { data: lead, error: updateError } = await auth.adminClient
       .from('implementation_leads')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', id)

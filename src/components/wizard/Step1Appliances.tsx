@@ -7,7 +7,8 @@ import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Lightbulb, Wind, Refrigerator, Monitor, ShieldCheck,
-  Plus, Minus, Search, Zap, AlertTriangle, PlusCircle,
+  Plus, Minus, Search, Zap, AlertTriangle, PlusCircle, Sparkles,
+  CheckCircle, Clock, Info,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -16,13 +17,14 @@ import { supabase } from '@/lib/supabase/client';
 import { useWizardStore, InputAppliance } from '@/store/wizardStore';
 import { useUiStore } from '@/store/uiStore';
 import { calculateDailyLoad, calculateInverterSize } from '@/utils/calculations';
+import { BUSINESS_PRESETS, mapTemplateToWizard, type BusinessLoadTemplate } from '@/lib/businessPresets';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
@@ -71,6 +73,15 @@ const GROUP_ICONS: Record<string, React.ReactNode> = {
   Security: <ShieldCheck className="w-5 h-5" />,
 };
 
+const TEMPLATE_ICONS: Record<string, string> = {
+  residential: '🏠',
+  office: '🏢',
+  restaurant: '☕',
+  retail: '🛍️',
+  salon: '💈',
+  clinic: '🏥'
+};
+
 const GROUPS = ['All', 'Lighting', 'Cooling', 'Kitchen', 'Office', 'Security'];
 
 function inferGroup(name: string): string {
@@ -103,6 +114,9 @@ export default function Step1Appliances({ onNext }: { onNext: () => void }) {
   const [activeTab, setActiveTab] = useState('All');
   const [showCustom, setShowCustom] = useState(false);
   const [formError, setFormError] = useState('');
+  const [selectedPreset, setSelectedPreset] = useState<string>('');
+  const [pendingTemplate, setPendingTemplate] = useState<BusinessLoadTemplate | null>(null);
+  const [hideBadge, setHideBadge] = useState<boolean>(false);
 
   // Local qty+hours map for grid controls
   const [localState, setLocalState] = useState<
@@ -195,6 +209,10 @@ export default function Step1Appliances({ onNext }: { onNext: () => void }) {
 
   // ── Qty / Hours helpers ────────────────────────────────────────────────
   const setQty = (id: string, delta: number) => {
+    setSelectedPreset('');
+    if (proposal.appliedTemplateId) {
+      updateProposal({ isCustomized: true });
+    }
     setLocalState((prev) => {
       const cur = prev[id]?.qty ?? 0;
       const next = Math.max(0, Math.min(20, cur + delta));
@@ -203,6 +221,10 @@ export default function Step1Appliances({ onNext }: { onNext: () => void }) {
   };
 
   const setHours = (id: string, val: number) => {
+    setSelectedPreset('');
+    if (proposal.appliedTemplateId) {
+      updateProposal({ isCustomized: true });
+    }
     setLocalState((prev) => ({
       ...prev,
       [id]: { qty: prev[id]?.qty ?? 0, hours: val },
@@ -216,6 +238,9 @@ export default function Step1Appliances({ onNext }: { onNext: () => void }) {
   });
 
   const addCustom = (data: CustomAppForm) => {
+    if (proposal.appliedTemplateId) {
+      updateProposal({ isCustomized: true });
+    }
     const newApp: InputAppliance = {
       id: uuidv4(),
       name: data.name,
@@ -270,6 +295,132 @@ export default function Step1Appliances({ onNext }: { onNext: () => void }) {
           </Button>
         </div>
 
+        {/* Business Load Templates Selector */}
+        <div className="mb-5 space-y-2.5">
+          <p className="text-xs font-semibold text-slate-700 dark:text-slate-350 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-teal-650 dark:text-teal-400" />
+            Start from a Business Template
+          </p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-450 leading-normal">
+            Choose a starting profile below. Typical loads will populate instantly. You can fully customize them.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {BUSINESS_PRESETS.map((bp) => {
+              const isCurrent = proposal.appliedTemplateId === bp.id;
+              const icon = TEMPLATE_ICONS[bp.id] || '🏠';
+              return (
+                <button
+                  key={bp.id}
+                  type="button"
+                  onClick={() => setPendingTemplate(bp)}
+                  className={`flex flex-col items-start p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer hover:shadow-sm ${
+                    isCurrent
+                      ? 'bg-teal-500/[0.03] dark:bg-teal-950/20 border-teal-550 dark:border-teal-500 shadow-sm ring-1 ring-teal-500'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-teal-550/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2 w-full">
+                    <span className="text-xl shrink-0">{icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">{bp.label}</p>
+                      <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 block uppercase">
+                        {bp.confidence} Confidence
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal line-clamp-2 mb-2 w-full">
+                    {bp.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1 mt-auto">
+                    {bp.summaryBadges.map((badge, bidx) => (
+                      <Badge key={bidx} className="bg-slate-100 dark:bg-slate-850 text-slate-600 dark:text-slate-405 border-none font-semibold text-[8px] px-1 py-0 shadow-none">
+                        {badge}
+                      </Badge>
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Template Customization Banner */}
+        {proposal.appliedTemplateId && !hideBadge && (() => {
+          const activeTemplate = BUSINESS_PRESETS.find(t => t.id === proposal.appliedTemplateId);
+          if (!activeTemplate) return null;
+          return (
+            <div className={`mb-5 p-3.5 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200 ${
+              proposal.isCustomized
+                ? 'bg-amber-500/[0.03] border-amber-500/25 dark:bg-amber-950/[0.03] dark:border-amber-500/15'
+                : 'bg-teal-500/[0.03] border-teal-500/25 dark:bg-teal-950/[0.03] dark:border-teal-500/15'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                <div className={`p-1.5 rounded-xl ${
+                  proposal.isCustomized ? 'bg-amber-500/10 text-amber-600' : 'bg-teal-500/10 text-teal-650'
+                }`}>
+                  {proposal.isCustomized ? <Info className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {proposal.isCustomized ? (
+                      <>Customized from <strong className="text-amber-600 dark:text-amber-400 font-extrabold">{activeTemplate.label}</strong></>
+                    ) : (
+                      <>Template active: <strong className="text-teal-650 dark:text-teal-400 font-extrabold">{activeTemplate.label}</strong></>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-450 mt-0.5">
+                    {proposal.isCustomized
+                      ? 'Some template values have been modified for this client.'
+                      : 'Recommended loads for this business type are active.'
+                    }
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const mappedQty = mapTemplateToWizard(activeTemplate);
+                    setLocalState(mappedQty);
+                    updateProposal({
+                      backup_hours: activeTemplate.suggestedBackupHours,
+                      isCustomized: false
+                    });
+                  }}
+                  className="px-2 py-1.5 text-[9px] font-black text-teal-700 dark:text-teal-400 hover:bg-teal-500/10 rounded-lg transition-all cursor-pointer border border-teal-500/20 dark:border-teal-500/10 bg-white dark:bg-slate-900"
+                >
+                  Reset Defaults
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const clearedQty: Record<string, { qty: number; hours: number }> = {};
+                    library.forEach((r) => {
+                      clearedQty[r.id] = { qty: 0, hours: 4 };
+                    });
+                    setLocalState(clearedQty);
+                    updateProposal({
+                      appliedTemplateId: '',
+                      isCustomized: false
+                    });
+                  }}
+                  className="px-2 py-1.5 text-[9px] font-black text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer border border-rose-500/20 dark:border-rose-500/10 bg-white dark:bg-slate-900"
+                >
+                  Clear Loads
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHideBadge(true)}
+                  className="px-2 py-1.5 text-[9px] font-black text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all cursor-pointer bg-transparent border-0"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Lagos Load Presets Quick-Add Tray */}
         <div className="mb-6 p-4 rounded-xl border border-teal-500/20 bg-teal-50/20 dark:border-teal-500/10 dark:bg-teal-950/10">
           <p className="text-xs font-semibold text-teal-800 dark:text-teal-400 mb-2.5 flex items-center gap-1.5">
@@ -278,12 +429,12 @@ export default function Step1Appliances({ onNext }: { onNext: () => void }) {
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              { label: '📺 LED TV', defaultId: '5', watts: 80, hours: 6, inductive: false, type: 'essential' },
-              { label: '🥶 Fridge/Freezer', defaultId: '3', watts: 250, hours: 24, inductive: true, type: 'essential' },
-              { label: '💨 Standing Fan', defaultId: '2', watts: 60, hours: 10, inductive: true, type: 'essential' },
-              { label: '💻 Laptop', defaultId: '8', watts: 90, hours: 8, inductive: false, type: 'essential' },
-              { label: '❄️ 1.5HP AC', defaultId: '1', watts: 1200, hours: 8, inductive: true, type: 'heavy' },
-              { label: '🚰 Water Pump', defaultId: '9', watts: 750, hours: 1, inductive: true, type: 'heavy' },
+              { label: '📺 LED TV', defaultId: '5', name: '43" LED TV', watts: 80, hours: 6, inductive: false, type: 'essential' },
+              { label: '🥶 Fridge/Freezer', defaultId: '3', name: 'Chest Freezer (200L)', watts: 250, hours: 24, inductive: true, type: 'essential' },
+              { label: '💨 Standing Fan', defaultId: '2', name: '1HP Standing Fan', watts: 60, hours: 10, inductive: true, type: 'essential' },
+              { label: '💻 Laptop', defaultId: '8', name: 'Laptop/Charger', watts: 90, hours: 8, inductive: false, type: 'essential' },
+              { label: '❄️ 1.5HP AC', defaultId: '1', name: '1.5HP Inverter Split AC', watts: 1200, hours: 8, inductive: true, type: 'heavy' },
+              { label: '🚰 Water Pump', defaultId: '9', name: '0.75HP Submersible Pump', watts: 750, hours: 1, inductive: true, type: 'heavy' },
             ].map((preset) => (
               <Button
                 key={preset.label}
@@ -291,11 +442,14 @@ export default function Step1Appliances({ onNext }: { onNext: () => void }) {
                 size="sm"
                 className="justify-start text-xs py-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-500 hover:bg-teal-50/20 text-slate-800 dark:text-slate-200"
                 onClick={() => {
+                  setSelectedPreset('');
+                  const matchedApp = library.find((l) => l.name === preset.name);
+                  const targetId = matchedApp ? matchedApp.id : preset.defaultId;
                   setLocalState(prev => {
-                    const currentVal = prev[preset.defaultId] || { qty: 0, hours: preset.hours };
+                    const currentVal = prev[targetId] || { qty: 0, hours: preset.hours };
                     return {
                       ...prev,
-                      [preset.defaultId]: {
+                      [targetId]: {
                         qty: currentVal.qty + 1,
                         hours: preset.hours
                       }
@@ -572,6 +726,110 @@ export default function Step1Appliances({ onNext }: { onNext: () => void }) {
               <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white">Add Appliance</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template Confirmation Dialog */}
+      <Dialog open={!!pendingTemplate} onOpenChange={(open) => !open && setPendingTemplate(null)}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none p-6 shadow-2xl rounded-2xl">
+          <DialogHeader className="space-y-3">
+            <div className="flex justify-center mb-1">
+              <div className="p-3 bg-teal-500/10 rounded-2xl border border-teal-500/20 text-teal-650 dark:text-teal-400">
+                <Sparkles className="w-6 h-6 animate-pulse" />
+              </div>
+            </div>
+            <DialogTitle className="text-lg font-black text-center text-slate-850 dark:text-white leading-snug">
+              Apply Template: {pendingTemplate?.label}?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-center text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              This will replace all current Step 1 appliances and recommended hours with defaults for a typical {pendingTemplate?.label.toLowerCase()}.
+            </DialogDescription>
+          </DialogHeader>
+
+          {pendingTemplate && (
+            <div className="my-4 space-y-4">
+              {/* Suggested Backup Hours */}
+              <div className="p-3.5 bg-teal-500/[0.03] dark:bg-teal-500/[0.01] border border-teal-500/10 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-teal-650 dark:text-teal-400" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Recommended Backup</p>
+                    <p className="text-[10px] text-slate-400">Target runtime configuration</p>
+                  </div>
+                </div>
+                <Badge className="bg-teal-100 dark:bg-teal-950 text-teal-850 dark:text-teal-400 border-none font-extrabold text-xs">
+                  {pendingTemplate.suggestedBackupHours} Hours
+                </Badge>
+              </div>
+
+              {/* Typical Loads Preview */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800 rounded-xl space-y-2">
+                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-450 uppercase tracking-wider">
+                  Typical Loads Preview
+                </p>
+                <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 text-slate-700 dark:text-slate-350">
+                  {pendingTemplate.appliances.map((app, idx) => {
+                    const matchedLib = library.find(l => l.id === app.applianceKey) || DEFAULT_ROWS.find(l => l.id === app.applianceKey);
+                    if (!matchedLib) return null;
+                    return (
+                      <div key={idx} className="flex justify-between items-center text-[11px] font-semibold border-b border-slate-100 dark:border-slate-800/40 pb-1.5 last:border-0 last:pb-0">
+                        <span className="flex items-center gap-1.5 truncate">
+                          <span>{inferGroup(matchedLib.name) === 'Lighting' ? '💡' : inferGroup(matchedLib.name) === 'Cooling' ? '💨' : '🔌'}</span>
+                          <span className="truncate">{matchedLib.name}</span>
+                        </span>
+                        <span className="font-extrabold shrink-0 text-slate-650 dark:text-slate-300">
+                          Qty: {app.quantity} ({app.runtimeHours}h)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Warning/Caution */}
+              {pendingTemplate.warning && (
+                <div className="p-3 bg-amber-500/[0.03] dark:bg-amber-500/[0.01] border border-amber-500/20 rounded-xl flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-550 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider">Caution Note</p>
+                    <p className="text-[10px] text-amber-700 dark:text-amber-450 leading-relaxed font-semibold mt-0.5">
+                      {pendingTemplate.warning}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="grid grid-cols-2 gap-2 mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPendingTemplate(null)}
+              className="w-full text-slate-600 dark:text-slate-350 font-bold rounded-xl h-11 text-xs border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (pendingTemplate) {
+                  const mappedQty = mapTemplateToWizard(pendingTemplate);
+                  setLocalState(mappedQty);
+                  updateProposal({
+                    backup_hours: pendingTemplate.suggestedBackupHours,
+                    appliedTemplateId: pendingTemplate.id,
+                    isCustomized: false
+                  });
+                  setHideBadge(false);
+                }
+                setPendingTemplate(null);
+              }}
+              className="w-full bg-teal-650 hover:bg-teal-700 text-white font-bold rounded-xl h-11 text-xs border-none cursor-pointer"
+            >
+              Apply Template
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

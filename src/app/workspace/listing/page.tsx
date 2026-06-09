@@ -37,19 +37,18 @@ export default function InstallerListingDashboard() {
     addServiceArea,
     removeServiceArea,
     updateLeadPipelineStatus,
-    moderateListingSubscription
+    moderateListingSubscription,
+    currentInstallerId
   } = useMarketplaceStore();
 
   const { tier: softwareTier } = useSubscriptionStore();
 
-  // For simulation: assume we are logged in as installer "inst-1"
-  const currentInstallerId = 'inst-1';
   const installer = installers.find(i => i.id === currentInstallerId) || installers[0];
-  const installerSub = subscriptions.find(s => s.installer_id === installer.id);
-  const myServiceAreas = serviceAreas.filter(sa => sa.installer_id === installer.id);
+  const installerSub = subscriptions.find(s => s.installer_id === installer?.id);
+  const myServiceAreas = serviceAreas.filter(sa => sa.installer_id === installer?.id);
   
   // Filter leads assigned to me
-  const myLeadAssignments = leadAssignments.filter(la => la.installer_id === installer.id);
+  const myLeadAssignments = leadAssignments.filter(la => la.installer_id === installer?.id);
   const myLeads = myLeadAssignments.map(la => {
     const lead = leads.find(l => l.id === la.lead_id);
     return {
@@ -67,6 +66,14 @@ export default function InstallerListingDashboard() {
   const [brandInput, setBrandInput] = React.useState('');
   const [activeTab, setActiveTab] = React.useState<'profile' | 'leads' | 'billing'>('leads');
 
+  // Sync state when installer changes
+  React.useEffect(() => {
+    if (installer) {
+      setBusinessName(installer.business_name);
+      setDescription(installer.description);
+    }
+  }, [installer]);
+
   // Service Area Form State
   const [newState, setNewState] = React.useState('Lagos');
   const [newCity, setNewCity] = React.useState('');
@@ -74,6 +81,7 @@ export default function InstallerListingDashboard() {
   // Handle Profile Update
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!installer) return;
     updateInstallerProfile(installer.id, {
       business_name: businessName,
       description

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Switch } from '@/components/ui/switch';
 import { useHomeownerSubscriptionStore } from '@/store/homeownerSubscriptionStore';
+import { CopyrightYear } from '@/components/ui/CopyrightYear';
 import { REGION_PROFILES, formatCurrency, convertCost, type RegionCode, type RegionProfile } from '@/lib/regionConfig';
 import { NIGERIAN_CITIES, getCityById, type NigerianCity } from '@/lib/nigerianCities';
 import {
@@ -36,6 +37,7 @@ import {
   Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { BUSINESS_PRESETS, mapTemplateToEstimator, type BusinessLoadTemplate } from '@/lib/businessPresets';
 
 /* ─── Presets for Non-Installers ───────────────────────────────── */
 interface AppliancePreset {
@@ -61,6 +63,15 @@ const APPLIANCE_PRESETS: AppliancePreset[] = [
   { id: 'water_pump', name: '0.75HP Water Pump', wattage: 750, defaultQty: 0, icon: '🚰', category: 'heavy', peakSurge: 2200, description: 'Sumo or borehole pump' },
   { id: 'microwave', name: 'Microwave Oven', wattage: 1200, defaultQty: 0, icon: '🍲', category: 'heavy', peakSurge: 1600, description: 'Used briefly for heating' },
 ];
+
+const TEMPLATE_ICONS: Record<string, string> = {
+  residential: '🏠',
+  office: '🏢',
+  restaurant: '☕',
+  retail: '🛍️',
+  salon: '💈',
+  clinic: '🏥'
+};
 
 export default function HomeownerEstimatorPage() {
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
@@ -140,6 +151,11 @@ export default function HomeownerEstimatorPage() {
   });
 
   const [showHeavyLoads, setShowHeavyLoads] = React.useState(false);
+  const [selectedPreset, setSelectedPreset] = React.useState<string>('');
+  const [appliedTemplateId, setAppliedTemplateId] = React.useState<string | null>(null);
+  const [isCustomized, setIsCustomized] = React.useState<boolean>(false);
+  const [pendingTemplate, setPendingTemplate] = React.useState<BusinessLoadTemplate | null>(null);
+  const [hideBadge, setHideBadge] = React.useState<boolean>(false);
 
   // Auto-expand heavy loads if any have quantity > 0
   React.useEffect(() => {
@@ -285,6 +301,10 @@ export default function HomeownerEstimatorPage() {
 
   /* ── Event handlers ── */
   const updateQty = (id: string, delta: number) => {
+    setSelectedPreset('');
+    if (appliedTemplateId) {
+      setIsCustomized(true);
+    }
     setQuantities((prev) => {
       const val = (prev[id] || 0) + delta;
       return { ...prev, [id]: Math.max(0, val) };
@@ -515,6 +535,130 @@ Could we connect to discuss a formal quote and installation assessment?`;
         {/* ═══ Step 1: Appliances Selector ═══ */}
         {step === 1 && (
           <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Business Load Templates Selector */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-teal-650 dark:text-teal-400" />
+                Select Property or Business Type (Smart Starting Templates)
+              </h3>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal max-w-2xl">
+                Choose a template below to pre-populate typical appliance loads and recommended backup hours. You can customize any item afterwards.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {BUSINESS_PRESETS.map((bp) => {
+                  const isCurrent = appliedTemplateId === bp.id;
+                  const icon = TEMPLATE_ICONS[bp.id] || '🏠';
+                  return (
+                    <button
+                      key={bp.id}
+                      type="button"
+                      onClick={() => setPendingTemplate(bp)}
+                      className={`flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer hover:shadow-md ${
+                        isCurrent
+                          ? 'bg-teal-500/[0.04] dark:bg-teal-950/20 border-teal-550 dark:border-teal-500 shadow-sm ring-1 ring-teal-500'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-teal-500/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 mb-2.5 w-full">
+                        <span className="text-2xl shrink-0">{icon}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-extrabold text-xs text-slate-850 dark:text-slate-100 truncate">{bp.label}</p>
+                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 block uppercase">
+                            {bp.segment} • {bp.confidence} Confidence
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium mb-3 min-h-[30px] line-clamp-2">
+                        {bp.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-auto">
+                        {bp.summaryBadges.map((badge, bidx) => (
+                          <Badge key={bidx} className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350 border-none font-semibold text-[8px] px-1.5 py-0.5">
+                            {badge}
+                          </Badge>
+                        ))}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Inline Template State Badge Banner */}
+            {appliedTemplateId && !hideBadge && (() => {
+              const activeTemplate = BUSINESS_PRESETS.find(t => t.id === appliedTemplateId);
+              if (!activeTemplate) return null;
+              return (
+                <div className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200 ${
+                  isCustomized
+                    ? 'bg-amber-500/[0.03] border-amber-500/25 dark:bg-amber-950/[0.03] dark:border-amber-500/15'
+                    : 'bg-teal-500/[0.03] border-teal-500/25 dark:bg-teal-950/[0.03] dark:border-teal-500/15'
+                }`}>
+                  <div className="flex items-center gap-2.5">
+                    <div className={`p-1.5 rounded-xl ${
+                      isCustomized ? 'bg-amber-500/10 text-amber-600' : 'bg-teal-500/10 text-teal-600'
+                    }`}>
+                      {isCustomized ? <Info className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        {isCustomized ? (
+                          <>Customized from <strong className="text-amber-600 dark:text-amber-400 font-extrabold">{activeTemplate.label}</strong></>
+                        ) : (
+                          <>Template applied: <strong className="text-teal-650 dark:text-teal-400 font-extrabold">{activeTemplate.label}</strong></>
+                        )}
+                      </p>
+                      <p className="text-[10px] text-slate-550 dark:text-slate-450 mt-0.5">
+                        {isCustomized 
+                          ? 'You have modified the default values of this template.'
+                          : 'Recommended starting values are applied. You can customize them below.'
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const mappedQty = mapTemplateToEstimator(activeTemplate);
+                        setQuantities(mappedQty);
+                        setBackupHours(activeTemplate.suggestedBackupHours);
+                        setIsCustomized(false);
+                        toast.success(`Reset loads to "${activeTemplate.label}" defaults!`);
+                      }}
+                      className="px-2.5 py-1.5 text-[10px] font-black text-teal-700 dark:text-teal-400 hover:bg-teal-500/10 rounded-xl transition-all cursor-pointer border border-teal-500/20 dark:border-teal-500/10 bg-white dark:bg-slate-900"
+                    >
+                      Reset to Template
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const clearedQty: Record<string, number> = {};
+                        APPLIANCE_PRESETS.forEach(p => {
+                          clearedQty[p.id] = 0;
+                        });
+                        setQuantities(clearedQty);
+                        setAppliedTemplateId(null);
+                        setIsCustomized(false);
+                        toast.info('Template cleared.');
+                      }}
+                      className="px-2.5 py-1.5 text-[10px] font-black text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer border border-rose-500/20 dark:border-rose-500/10 bg-white dark:bg-slate-900"
+                    >
+                      Clear Template
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHideBadge(true)}
+                      className="px-2.5 py-1.5 text-[10px] font-black text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer bg-transparent border-0"
+                    >
+                      Keep editing
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
             <Card className="border-slate-200 dark:border-slate-850 shadow-md">
               <CardHeader className="bg-slate-100/50 dark:bg-slate-900/30 border-b border-slate-200/60 dark:border-slate-850 py-5">
                 <CardTitle className="text-base font-extrabold flex items-center gap-2">
@@ -526,6 +670,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 space-y-5">
+
                 {/* Essentials Grid */}
                 <div className="space-y-3">
                   <h3 className="text-xs font-black text-slate-450 dark:text-slate-500 uppercase tracking-wider">
@@ -594,6 +739,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                     checked={showHeavyLoads}
                     onCheckedChange={(checked) => {
                       setShowHeavyLoads(checked);
+                      setSelectedPreset('');
                       if (!checked) {
                         setQuantities((prev) => {
                           const next = { ...prev };
@@ -744,10 +890,10 @@ Could we connect to discuss a formal quote and installation assessment?`;
                     max={24}
                     step={1}
                     onValueChange={(val) => {
-                      if (Array.isArray(val)) {
-                        setBackupHours(val[0]);
-                      } else if (typeof val === 'number') {
-                        setBackupHours(val);
+                      const nextVal = Array.isArray(val) ? val[0] : val;
+                      setBackupHours(nextVal);
+                      if (appliedTemplateId) {
+                        setIsCustomized(true);
                       }
                     }}
                     className="py-2"
@@ -1194,7 +1340,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
       {/* ═══ Footer ═══ */}
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-16 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-slate-500">
-          <p>© {new Date().getFullYear()} SolarPro — Transparent Sizing Sizer for Clients</p>
+          <p>© <CopyrightYear /> SolarPro — Transparent Sizing Sizer for Clients</p>
           <Link href="/" className="text-teal-600 hover:underline font-bold">
             Installer Workspace
           </Link>
@@ -1358,6 +1504,118 @@ Could we connect to discuss a formal quote and installation assessment?`;
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template Confirmation Dialog */}
+      <Dialog open={!!pendingTemplate} onOpenChange={(open) => !open && setPendingTemplate(null)}>
+        <DialogContent className="max-w-md border-none rounded-3xl p-6 shadow-2xl bg-white dark:bg-slate-900 overflow-hidden">
+          <DialogHeader className="space-y-3">
+            <div className="flex justify-center mb-1">
+              <div className="p-3 bg-teal-500/10 rounded-2xl border border-teal-500/20 text-teal-600 dark:text-teal-400">
+                <Sparkles className="w-6 h-6 animate-pulse" />
+              </div>
+            </div>
+            <DialogTitle className="text-lg font-black text-center text-slate-850 dark:text-white leading-snug">
+              Apply Template: {pendingTemplate?.label}?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-center text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+              This will replace your current Step 1 appliances and hours with recommended defaults for a typical {pendingTemplate?.label.toLowerCase()}.
+            </DialogDescription>
+          </DialogHeader>
+
+          {pendingTemplate && (
+            <div className="my-4 space-y-4">
+              {/* Recommended Backup Hours */}
+              <div className="p-3.5 bg-teal-500/[0.03] dark:bg-teal-500/[0.01] border border-teal-500/10 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Recommended Backup</p>
+                    <p className="text-[10px] text-slate-400">Suggested runtime expectation</p>
+                  </div>
+                </div>
+                <Badge className="bg-teal-100 dark:bg-teal-950 text-teal-850 dark:text-teal-400 border-none font-bold text-xs">
+                  {pendingTemplate.suggestedBackupHours} Hours
+                </Badge>
+              </div>
+
+              {/* Typical Runtime Pattern */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 rounded-2xl space-y-2">
+                <p className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Typical Runtime Pattern
+                </p>
+                <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 text-slate-700 dark:text-slate-350">
+                  {pendingTemplate.appliances.map((app, idx) => {
+                    const preset = APPLIANCE_PRESETS.find(p => p.id === app.applianceKey);
+                    if (!preset) return null;
+                    return (
+                      <div key={idx} className="flex justify-between items-center text-[11px] font-semibold border-b border-slate-100 dark:border-slate-800/40 pb-1.5 last:border-0 last:pb-0">
+                        <span className="flex items-center gap-1.5 truncate">
+                          <span>{preset.icon}</span>
+                          <span className="truncate">{preset.name}</span>
+                        </span>
+                        <span className="font-extrabold shrink-0 text-slate-650 dark:text-slate-300">
+                          Qty: {app.quantity} ({app.runtimeHours}h)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Warning/Caution */}
+              {pendingTemplate.warning && (
+                <div className="p-3.5 bg-amber-500/[0.04] dark:bg-amber-500/[0.01] border border-amber-500/20 rounded-2xl flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-550 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider">Caution Note</p>
+                    <p className="text-[10px] text-amber-700 dark:text-amber-450 leading-relaxed font-semibold mt-0.5">
+                      {pendingTemplate.warning}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="grid grid-cols-2 gap-2 mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPendingTemplate(null)}
+              className="w-full text-slate-600 dark:text-slate-350 font-extrabold rounded-2xl h-11 text-xs border-slate-250 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (pendingTemplate) {
+                  const mappedQty = mapTemplateToEstimator(pendingTemplate);
+                  setQuantities(mappedQty);
+                  setBackupHours(pendingTemplate.suggestedBackupHours);
+                  setAppliedTemplateId(pendingTemplate.id);
+                  setIsCustomized(false);
+                  setHideBadge(false);
+                  
+                  // Auto-expand heavy loads if template has them
+                  const hasHeavy = pendingTemplate.appliances.some(
+                    (app) => ['deep_freezer', 'inverter_ac', 'standard_ac', 'water_pump', 'microwave'].includes(app.applianceKey) && app.quantity > 0
+                  );
+                  if (hasHeavy) {
+                    setShowHeavyLoads(true);
+                  }
+
+                  toast.success(`Applied "${pendingTemplate.label}" template!`);
+                }
+                setPendingTemplate(null);
+              }}
+              className="w-full bg-teal-650 hover:bg-teal-700 text-white font-extrabold rounded-2xl h-11 text-xs border-none cursor-pointer"
+            >
+              Apply Template
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

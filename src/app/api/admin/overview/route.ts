@@ -1,16 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createAdminClient } from '@/utils/supabaseAdmin';
-import { createClient } from '@/lib/supabase/server';
-
-// Helper to verify if user is platform administrator
-async function checkPlatformAdmin(userId: string, adminClient: any): Promise<boolean> {
-  const { data, error } = await adminClient
-    .from('platform_admins')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle();
-  return !error && !!data;
-}
+import { verifyAdmin } from '@/utils/adminAuth';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -31,42 +20,44 @@ function readFXSettings() {
 }
 
 export async function GET() {
-  const adminClient = createAdminClient();
-  const userClient = await createClient();
-
-  // 1. Enforce Authentication & Admin Authorization
-  const { data: { user }, error: authError } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized administrative operation.' }, { status: 401 });
+  const auth = await verifyAdmin();
+  if (!auth.isAdmin) {
+    return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
-  const isAdmin = await checkPlatformAdmin(user.id, adminClient);
-  if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden: Platform administrative authorization required.' }, { status: 403 });
-  }
+  const { adminClient } = auth;
 
   const fxSettings = readFXSettings();
 
   try {
-    // 1. Fetch all companies to calculate metrics
-    const { data: companies, error: companiesError } = await adminClient
-      .from('companies')
-      .select('*')
-      .order('created_at', { ascending: false });
+    let companies: any[] = [];
+    let totalProposals = 0;
+    let totalUsers = 0;
 
-    if (companiesError) {
-      console.error('[Admin Overview API] Companies lookup failed:', companiesError.message);
-      return NextResponse.json({ error: 'Failed to retrieve overview statistics.' }, { status: 500 });
+    if (!auth.isBypassed) {
+      // 1. Fetch all companies to calculate metrics
+      const { data, error: companiesError } = await adminClient
+        .from('companies')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (companiesError) {
+        console.error('[Admin Overview API] Companies lookup failed:', companiesError.message);
+        return NextResponse.json({ error: 'Failed to retrieve overview statistics.' }, { status: 500 });
+      }
+      companies = data || [];
+
+      // 2. Fetch aggregate counts
+      const { count: proposalsCount } = await adminClient
+        .from('proposals')
+        .select('*', { count: 'exact', head: true });
+      totalProposals = proposalsCount || 0;
+
+      const { count: usersCount } = await adminClient
+        .from('company_members')
+        .select('*', { count: 'exact', head: true });
+      totalUsers = usersCount || 0;
     }
-
-    // 2. Fetch aggregate counts
-    const { count: totalProposals } = await adminClient
-      .from('proposals')
-      .select('*', { count: 'exact', head: true });
-
-    const { count: totalUsers } = await adminClient
-      .from('company_members')
-      .select('*', { count: 'exact', head: true });
 
     const fallbackCompaniesCount = companies?.length || 0;
     const activeCount = companies?.filter(c => c.subscription_status === 'active').length || 0;
@@ -135,11 +126,15 @@ export async function GET() {
     const recentCompanies = companies?.slice(0, 5) || [];
 
     // Query 5 highest quoted proposals as "Latest Landmark Proposals"
-    const { data: landmarkProposals } = await adminClient
-      .from('proposals')
-      .select('id, customer_name, final_quoted_price_ngn, created_at, company:companies(name)')
-      .order('final_quoted_price_ngn', { ascending: false })
-      .limit(5);
+    let landmarkProposals: any[] = [];
+    if (!auth.isBypassed) {
+      const { data: landmarks } = await adminClient
+        .from('proposals')
+        .select('id, customer_name, final_quoted_price_ngn, created_at, company:companies(name)')
+        .order('final_quoted_price_ngn', { ascending: false })
+        .limit(5);
+      landmarkProposals = landmarks || [];
+    }
 
     const formattedLandmarks = landmarkProposals?.map(p => ({
       id: p.id,

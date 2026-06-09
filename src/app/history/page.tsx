@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { CopyrightYear } from '@/components/ui/CopyrightYear';
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
@@ -539,7 +540,7 @@ export default function HistoryPage() {
       {/* Footer */}
       <footer className="border-t py-6 bg-muted/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} SolarPro — Built for Nigerian Installers</p>
+          <p>© <CopyrightYear /> SolarPro — Built for Nigerian Installers</p>
           <p className="flex items-center gap-1.5">
             <span className="inline-block size-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Offline-ready PWA
