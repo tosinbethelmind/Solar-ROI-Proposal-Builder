@@ -151,7 +151,7 @@ export default function ROICalculator() {
               </div>
 
               <div className="pt-2 text-[10px] text-slate-500 dark:text-slate-400 leading-normal font-semibold">
-                * Based on a baseline {baseCloseRate}% close rate without automated proposals.
+                * Based on a baseline {baseCloseRate}% close rate. Disclaimer: This is an illustrative scenario representing potential savings and closing metrics; actual installer results may vary.
               </div>
             </div>
           </div>

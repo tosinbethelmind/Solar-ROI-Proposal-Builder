@@ -184,38 +184,49 @@ export default function SolarProHomepage() {
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 bg-teal-500/10 text-teal-650 dark:text-teal-400 border border-teal-500/20 text-[10px] font-black uppercase tracking-wider py-1.5 px-3.5 rounded-full">
                 <img src="/assets/nerc-badge.svg" alt="NERC Logo" className="w-6 h-6" />
-                <span>NERC-certified solar installer workspace</span>
+                <span>Built for NERC-certified solar installers in Nigeria.</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-slate-50 leading-tight">
-                Win More Solar Clients.<br />
-                Quote in 3 Minutes.<br />
-                <span className="text-teal-600 dark:text-teal-400">Get Paid Faster.</span>
+                Quote Nigerian solar projects in 3 minutes
               </h1>
               
               <p className="text-slate-500 dark:text-slate-400 text-base leading-relaxed font-medium max-w-lg">
-                SolarPro gives Nigerian solar installers professional branded proposals, live Naira ROI calculators, and offline field tools — so you never lose a hot lead to a slow quote again.
+                Stop losing hot WhatsApp leads to slow manual quotes. Build professional Naira proposals with built‑in Band A tariffs, diesel savings, and offline load sizing.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/estimator" className="w-full sm:w-auto">
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Badge variant="secondary" className="bg-teal-500/10 text-teal-650 dark:text-teal-400 border border-teal-500/20 text-[10px] font-extrabold py-1 px-3 rounded-full">
+                  ⚡ 3-minute proposals
+                </Badge>
+                <Badge variant="secondary" className="bg-teal-500/10 text-teal-650 dark:text-teal-400 border border-teal-500/20 text-[10px] font-extrabold py-1 px-3 rounded-full">
+                  ₦ Naira-based ROI
+                </Badge>
+                <Badge variant="secondary" className="bg-teal-500/10 text-teal-650 dark:text-teal-400 border border-teal-500/20 text-[10px] font-extrabold py-1 px-3 rounded-full">
+                  📶 Works 100% offline
+                </Badge>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Link href="/workspace" className="w-full sm:w-auto">
                   <Button size="lg" className="w-full bg-[#00C896] hover:bg-[#00b386] text-white font-black text-sm px-8 h-12 rounded-[10px] shadow-lg hover:shadow-[0_0_20px_rgba(0,200,150,0.4)] hover:scale-[1.03] transition-all duration-200 border-none">
-                    → Start Free — No Credit Card
+                    Open free installer workspace
                   </Button>
                 </Link>
-                <Button 
-                  onClick={() => openDemoModal('professional')}
-                  size="lg" 
-                  variant="outline"
-                  className="w-full sm:w-auto text-sm font-bold border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900 h-12 rounded-[10px]"
-                >
-                  📅 Request Live Demo
-                </Button>
+                <Link href="/estimator" className="w-full sm:w-auto">
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="w-full sm:w-auto text-sm font-bold border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900 h-12 rounded-[10px]"
+                  >
+                    Estimate homeowner savings
+                  </Button>
+                </Link>
               </div>
 
               <div className="space-y-2">
-                <p className="text-[13px] text-[#9CA3AF] font-medium flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-450 stroke-[3]" /> Trusted by 500+ Nigerian Installers
+                <p className="text-[13px] text-slate-550 dark:text-slate-400 font-semibold flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-emerald-500 stroke-[3]" /> Trusted by certified solar installers in Lagos · Abuja · Port Harcourt
                 </p>
               </div>
             </div>
