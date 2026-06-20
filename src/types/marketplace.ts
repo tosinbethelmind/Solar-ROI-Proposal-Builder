@@ -1,4 +1,4 @@
-// TypeScript Interfaces for SolarPro Installer Marketplace
+// TypeScript Interfaces for SolarQuotePro Installer Marketplace
 
 export interface InstallerProfile {
   id: string;

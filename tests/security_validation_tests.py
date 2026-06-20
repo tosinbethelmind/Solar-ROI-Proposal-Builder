@@ -1,5 +1,5 @@
 """
-SolarPro Administrative & Multi-Tenant Security Validation Tests
+SolarQuotePro Administrative & Multi-Tenant Security Validation Tests
 ================================================================
 Verifies that:
 1. Unauthenticated requests to all /api/admin/* endpoints are blocked with 401.
@@ -16,7 +16,7 @@ import urllib.error
 os.environ["PYTHONIOENCODING"] = "utf-8"
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-BASE = "http://localhost:3000"
+BASE = "https://solar-roi-proposal-builder.vercel.app"
 RESULTS = []
 
 def record(name, passed, detail=""):
@@ -72,13 +72,51 @@ def test_unauthorized_endpoints():
         except Exception as e:
             record(name, False, f"Unexpected error: {str(e)}")
 
+def test_settings_boundaries():
+    print("\n--- TEST GROUP 2: Platform Settings Boundary Checks ---")
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Cookie": "bypass_auth=solar-quotepro-e2e-secret-key-2026"
+    }
+
+    test_cases = [
+        ({"dieselPrice": 50}, 400, "Diesel price below boundary (50 < 100)"),
+        ({"dieselPrice": 15000}, 400, "Diesel price above boundary (15000 > 10000)"),
+        ({"petrolPrice": 50}, 400, "Petrol price below boundary (50 < 100)"),
+        ({"petrolPrice": 15000}, 400, "Petrol price above boundary (15000 > 10000)"),
+        ({"gridTariff": 5}, 400, "Grid tariff below boundary (5 < 10)"),
+        ({"gridTariff": 1500}, 400, "Grid tariff above boundary (1500 > 1000)"),
+        ({"vatTaxRate": -1}, 400, "VAT rate below boundary (-1 < 0)"),
+        ({"vatTaxRate": 55}, 400, "VAT rate above boundary (55 > 50)"),
+        ({"dieselPrice": 1400, "petrolPrice": 1100, "gridTariff": 209.5, "vatTaxRate": 7.5}, 200, "Valid boundary values")
+    ]
+
+    for payload, expected_status, desc in test_cases:
+        name = f"Settings POST: {desc}"
+        try:
+            req = urllib.request.Request(
+                f"{BASE}/api/admin/settings",
+                method="POST",
+                headers=headers,
+                data=json.dumps(payload).encode("utf-8")
+            )
+            with urllib.request.urlopen(req, timeout=60) as response:
+                status = response.status
+                record(name, status == expected_status, f"Returned status {status}, expected {expected_status}")
+        except urllib.error.HTTPError as e:
+            record(name, e.code == expected_status, f"Returned status {e.code}, expected {expected_status}")
+        except Exception as e:
+            record(name, False, f"Unexpected error: {str(e)}")
+
 def main():
     print("=" * 70)
-    print("  SolarPro -- Administrative & Multi-Tenant Security Verification")
+    print("  SolarQuotePro -- Administrative & Multi-Tenant Security Verification")
     print("=" * 70)
 
     try:
         test_unauthorized_endpoints()
+        test_settings_boundaries()
     except Exception as e:
         print(f"\n!! FATAL ERROR: {e}")
 

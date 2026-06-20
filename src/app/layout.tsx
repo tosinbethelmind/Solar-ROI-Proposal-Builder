@@ -17,14 +17,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SolarPro — Proposal Builder for Nigerian Installers",
+  title: "SolarQuotePro — Proposal Builder for Nigerian Installers",
   description:
     "Offline-first PWA that auto-sizes inverters, batteries, and solar panels for Nigerian homes and businesses, then generates branded PDF proposals with ROI calculations.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "SolarPro",
+    title: "SolarQuotePro",
   },
 };
 

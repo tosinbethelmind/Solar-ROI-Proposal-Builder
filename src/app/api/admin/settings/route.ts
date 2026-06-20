@@ -20,7 +20,7 @@ function readPlatformSettings() {
     petrolPrice: 1100,
     gridTariff: 209.5,
     vatTaxRate: 7.5,
-    lastUpdatedBy: 'admin@solarpro.com',
+    lastUpdatedBy: 'admin@solarquotepro.com',
     lastUpdatedAt: new Date().toISOString()
   };
 }
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
       settings.vatTaxRate = parsedVat;
     }
 
-    settings.lastUpdatedBy = updatedBy || user?.email || 'admin@solarpro.com';
+    settings.lastUpdatedBy = updatedBy || user?.email || 'admin@solarquotepro.com';
     settings.lastUpdatedAt = new Date().toISOString();
 
     const success = writePlatformSettings(settings);

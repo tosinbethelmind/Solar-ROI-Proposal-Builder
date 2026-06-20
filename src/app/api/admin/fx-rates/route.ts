@@ -21,11 +21,11 @@ function readFXSettings() {
   return {
     customRate: 1600,
     isOverrideActive: true,
-    lastUpdatedBy: 'admin@solarpro.com',
+    lastUpdatedBy: 'admin@solarquotepro.com',
     lastUpdatedAt: new Date().toISOString(),
     history: [
-      { rate: 1600, updatedBy: 'admin@solarpro.com', updatedAt: new Date(Date.now() - 86400000).toISOString(), note: 'Aligned with black market Parallel rate' },
-      { rate: 1580, updatedBy: 'admin@solarpro.com', updatedAt: new Date(Date.now() - 604800000).toISOString(), note: 'Official exchange adjustment' }
+      { rate: 1600, updatedBy: 'admin@solarquotepro.com', updatedAt: new Date(Date.now() - 86400000).toISOString(), note: 'Aligned with black market Parallel rate' },
+      { rate: 1580, updatedBy: 'admin@solarquotepro.com', updatedAt: new Date(Date.now() - 604800000).toISOString(), note: 'Official exchange adjustment' }
     ]
   };
 }
@@ -147,14 +147,14 @@ export async function POST(request: Request) {
     // Create new history entry
     const newHistoryEntry = {
       rate: inputRate,
-      updatedBy: user?.email || 'admin@solarpro.com',
+      updatedBy: user?.email || 'admin@solarquotepro.com',
       updatedAt: new Date().toISOString(),
       note: note || 'Manual administrative override'
     };
 
     settings.customRate = inputRate;
     settings.isOverrideActive = isOverrideActive !== undefined ? isOverrideActive : true;
-    settings.lastUpdatedBy = user?.email || 'admin@solarpro.com';
+    settings.lastUpdatedBy = user?.email || 'admin@solarquotepro.com';
     settings.lastUpdatedAt = new Date().toISOString();
     
     if (!settings.history) settings.history = [];

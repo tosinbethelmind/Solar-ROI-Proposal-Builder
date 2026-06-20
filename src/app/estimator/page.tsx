@@ -110,8 +110,8 @@ export default function HomeownerEstimatorPage() {
   React.useEffect(() => {
     const fetchFxRate = async () => {
       if (typeof window === 'undefined') return;
-      const cachedRate = localStorage.getItem('solarpro_usd_ngn_rate');
-      const cachedTime = localStorage.getItem('solarpro_usd_ngn_timestamp');
+      const cachedRate = localStorage.getItem('solarquotepro_usd_ngn_rate');
+      const cachedTime = localStorage.getItem('solarquotepro_usd_ngn_timestamp');
       
       if (cachedRate && cachedTime) {
         const age = Date.now() - parseInt(cachedTime, 10);
@@ -129,8 +129,8 @@ export default function HomeownerEstimatorPage() {
           const rate = data.rates?.NGN;
           if (rate && typeof rate === 'number') {
             setUsdToNgnRate(rate);
-            localStorage.setItem('solarpro_usd_ngn_rate', rate.toString());
-            localStorage.setItem('solarpro_usd_ngn_timestamp', Date.now().toString());
+            localStorage.setItem('solarquotepro_usd_ngn_rate', rate.toString());
+            localStorage.setItem('solarquotepro_usd_ngn_timestamp', Date.now().toString());
             setFxFetchedTime(new Date().toLocaleTimeString());
           }
         }
@@ -357,7 +357,7 @@ export default function HomeownerEstimatorPage() {
     const maxUSD = targetCostMax / usdToNgnRate;
     const savingsMoUSD = solarReplacedSavings / usdToNgnRate;
     
-    const text = `Hello! I just used the *SolarPro Sizing Estimator* to calculate my solar needs for my property in ${activeCity.name}:
+    const text = `Hello! I just used the *SolarQuotePro Sizing Estimator* to calculate my solar needs for my property in ${activeCity.name}:
     
 - *Running Load:* ${runningLoad} W
 - *Sized Recommendation:* ${recommendation.title} (${recommendation.kva})
@@ -383,7 +383,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
             <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
             </div>
-            <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarPro</span>
+            <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarQuotePro</span>
             <Badge className="bg-teal-500/10 text-teal-650 dark:bg-teal-950/40 dark:text-teal-400 border border-teal-500/20 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold shrink-0">Client Mode</Badge>
           </Link>
 
@@ -826,6 +826,44 @@ Could we connect to discuss a formal quote and installation assessment?`;
               >
                 Next Step <ArrowRight className="w-3.5 h-3.5" />
               </Button>
+            </div>
+            {/* Why Use the SolarQuotePro Sizer? info section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-slate-200 dark:border-slate-800">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <h4 className="font-extrabold text-xs text-slate-850 dark:text-slate-200">Independent Sizing</h4>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                  Installers often oversize solar systems to charge you more, or undersize systems resulting in quick battery degradation. We calculate your exact, unbiased capacity requirements.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                  <h4 className="font-extrabold text-xs text-slate-850 dark:text-slate-200">Real ROI &amp; Payback</h4>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                  We use live parallel-market USD/NGN exchange rates and local NERC tariff bands for DISCOs (Lagos, Abuja, PH) to map out your real fuel replacement ROI.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-650 dark:text-indigo-400">
+                    <CheckCircle className="w-4 h-4" />
+                  </div>
+                  <h4 className="font-extrabold text-xs text-slate-850 dark:text-slate-200">Lagos Anti-Scam Guide</h4>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                  Get our premium Lagos Solar Buyer protection guide showing how to identify counterfeit batteries, check panel capacity, and screen certified installers.
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -1340,7 +1378,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
       {/* ═══ Footer ═══ */}
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-16 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-slate-500">
-          <p>© <CopyrightYear /> SolarPro — Transparent Sizing Sizer for Clients</p>
+          <p>© <CopyrightYear /> SolarQuotePro — Transparent Sizing Sizer for Clients</p>
           <Link href="/" className="text-teal-600 hover:underline font-bold">
             Installer Workspace
           </Link>
@@ -1502,6 +1540,21 @@ Could we connect to discuss a formal quote and installation assessment?`;
               >
                 {leadLoading ? 'Securing Roadmap...' : 'Get Sizing & ₦120k Bundle via Email 📩'}
               </Button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('solar_lead_captured', 'true');
+                  }
+                  setLeadModalOpen(false);
+                  setStep(3);
+                  toast.success('Test preview unlocked! (No email captured)');
+                }}
+                className="w-full py-2.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-[10px] font-extrabold transition-all border border-dashed border-slate-300 dark:border-slate-850 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900/30 cursor-pointer"
+              >
+                Just Testing? Skip &amp; Preview Sizing Report →
+              </button>
             </div>
           </form>
         </DialogContent>

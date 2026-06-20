@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "bypass_auth",
+      "value": "solar-quotepro-e2e-secret-key-2026",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sb-access-token",
+      "value": "mock-access-token",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sb-refresh-token",
+      "value": "mock-refresh-token",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "sb-pnsrjsyiygxdcxkpgbzx-auth-token",
+          "value": "{\"access_token\":\"mock-access-token\",\"token_type\":\"bearer\",\"expires_in\":3600,\"refresh_token\":\"mock-refresh-token\",\"user\":{\"id\":\"dev-installer-id\",\"email\":\"installer@solarquotepro.com\",\"role\":\"authenticated\",\"aud\":\"authenticated\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{\"company_name\":\"Lagos Installer Co\"},\"created_at\":\"2026-06-20T14:36:26.072Z\",\"updated_at\":\"2026-06-20T14:36:26.072Z\"}}"
+        }
+      ]
+    }
+  ]
+}

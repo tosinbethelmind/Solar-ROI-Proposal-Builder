@@ -7,13 +7,13 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
-  importScripts: ['/sw-custom.js'],
+  importScripts: ['/sw.js'],
 });
 
 const nextConfig: NextConfig = {
   turbopack: {},
-  outputFileTracingRoot: process.cwd(),
-  cacheComponents: true,
+  // outputFileTracingRoot: process.cwd(),
+  // cacheComponents: true,
   async rewrites() {
     return [
       {
@@ -24,5 +24,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;
 

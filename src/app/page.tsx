@@ -1,7 +1,7 @@
 'use client';
 
-import SolarProHomepage from '@/pages/homepage';
+import SolarQuoteProHomepage from '@/pages/homepage';
 
 export default function Page() {
-  return <SolarProHomepage />;
+  return <SolarQuoteProHomepage />;
 }

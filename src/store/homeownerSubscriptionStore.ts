@@ -114,7 +114,7 @@ export const useHomeownerSubscriptionStore = create<HomeownerSubscriptionState>(
       }
     }),
     {
-      name: 'solarpro-homeowner-subscription-store',
+      name: 'solarquotepro-homeowner-subscription-store',
     }
   )
 );

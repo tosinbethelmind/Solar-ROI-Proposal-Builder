@@ -3,7 +3,7 @@ export const TESTIMONIALS = [
   {
     initials: 'EA', name: 'Emeka Adeyemi', company: 'Lekki Clean Energy Ltd', location: 'Lagos',
     badge: 'Solo Installer — Starter Plan',
-    quote: 'Before SolarPro I was sending handwritten quotes. Now I send a branded PDF in 3 minutes. I closed 4 deals in my first week.',
+    quote: 'Before SolarQuotePro I was sending handwritten quotes. Now I send a branded PDF in 3 minutes. I closed 4 deals in my first week.',
   },
   {
     initials: 'CO', name: 'Chidi Okonkwo', company: 'Greenfield Solar NG', location: 'Abuja',

@@ -272,7 +272,7 @@ export default function InstallerListingDashboard() {
                       <div className="flex gap-2">
                         {/* WhatsApp template trigger */}
                         <a 
-                          href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(lead.name)},%20this%20is%20${encodeURIComponent(installer.business_name)}%20from%20SolarPro.`}
+                          href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(lead.name)},%20this%20is%20${encodeURIComponent(installer.business_name)}%20from%20SolarQuotePro.`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1"

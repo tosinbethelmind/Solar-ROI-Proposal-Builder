@@ -278,7 +278,7 @@ export default function SupplierPartnersAdmin() {
       return;
     }
 
-    const message = `Hi ${supplier?.contact_person || supplier?.company_name},\n\nWe have a new customer referral for quote from SolarPro:\n\n- Sizing: ${r.system_size || 'N/A'}\n- Component Request: ${r.equipment_summary || 'N/A'}\n- Installation Location: ${r.location || 'Lagos'}\n- Referral ID: ${r.id.substring(0, 8)}\n\nPlease review inventory and send our rep a wholesale quote. Thanks!`;
+    const message = `Hi ${supplier?.contact_person || supplier?.company_name},\n\nWe have a new customer referral for quote from SolarQuotePro:\n\n- Sizing: ${r.system_size || 'N/A'}\n- Component Request: ${r.equipment_summary || 'N/A'}\n- Installation Location: ${r.location || 'Lagos'}\n- Referral ID: ${r.id.substring(0, 8)}\n\nPlease review inventory and send our rep a wholesale quote. Thanks!`;
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/${phoneNum.replace(/\+/g, '')}?text=${encoded}`, '_blank');
   };

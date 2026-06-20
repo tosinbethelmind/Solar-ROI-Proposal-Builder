@@ -1,17 +1,17 @@
 {
   "total": 30,
-  "passed": 30,
-  "failed": 0,
+  "passed": 27,
+  "failed": 3,
   "results": [
     {
       "test": "Homepage loads",
       "status": "PASS",
-      "detail": "Title: SolarPro \u2014 Proposal Builder for Nigerian Installers"
+      "detail": "Title: SolarQuotePro \u2014 Proposal Builder for Nigerian Installers"
     },
     {
       "test": "Homepage has hero H1",
       "status": "PASS",
-      "detail": "H1: Win More Solar Clients.\nQuote in 3 Minutes.\nGet Paid Faster."
+      "detail": "H1: Quote Nigerian solar projects in 3 minutes"
     },
     {
       "test": "Homepage nav links present",
@@ -45,23 +45,23 @@
     },
     {
       "test": "Navigated to Step 3 Hardware Selection (Tiers Page)",
-      "status": "PASS",
-      "detail": ""
+      "status": "FAIL",
+      "detail": "Locator.click: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator(\"button:has-text('Next: System Preferences'),"
     },
     {
       "test": "Tier selector elements present",
       "status": "PASS",
-      "detail": "Found 2 tier elements. BudgetPkg: True, StandardPkg: True, PremiumPkg: True"
+      "detail": "Found 1 tier elements. BudgetPkg: False, StandardPkg: False, PremiumPkg: False"
     },
     {
       "test": "Tier buttons are interactive",
-      "status": "PASS",
-      "detail": "3 tier buttons found and clickable"
+      "status": "FAIL",
+      "detail": "Locator.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"button:has-text('Select Economy'), button:ha"
     },
     {
       "test": "Navigated to Step 4 Pricing & ROI",
-      "status": "PASS",
-      "detail": "Landed on ROI step: True"
+      "status": "FAIL",
+      "detail": "Locator.click: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator(\"button:has-text('Continue to ROI'), button:h"
     },
     {
       "test": "Test proposals seeded in localStorage",

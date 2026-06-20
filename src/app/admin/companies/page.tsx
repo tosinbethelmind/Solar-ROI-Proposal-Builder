@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import * as React from 'react';
 import { 
   Search, 
@@ -57,6 +59,8 @@ export default function AdminCompanies() {
   const [search, setSearch] = React.useState('');
   const [planFilter, setPlanFilter] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState('');
+  const [startDate, setStartDate] = React.useState(''); // ISO string YYYY-MM-DD
+  const [endDate, setEndDate] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(1);
   
@@ -75,7 +79,7 @@ export default function AdminCompanies() {
   const fetchCompanies = React.useCallback(async () => {
     setLoading(true);
     try {
-      const url = `/api/admin/companies?search=${encodeURIComponent(search)}&plan=${planFilter}&status=${statusFilter}&page=${page}`;
+      const url = `/api/admin/companies?search=${encodeURIComponent(search)}&plan=${planFilter}&status=${statusFilter}&page=${page}${startDate ? `&start=${encodeURIComponent(startDate)}` : ''}${endDate ? `&end=${encodeURIComponent(endDate)}` : ''}`;
       const res = await fetch(url);
       const data = await res.json();
       if (data.error) {
@@ -267,6 +271,25 @@ export default function AdminCompanies() {
                 <option value="past_due">Past Due</option>
                 <option value="cancelled">Cancelled</option>
               </select>
+            </div>
+
+            {/* Date range filter */}
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+               <input
+                 type="date"
+                 value={startDate}
+                 onChange={(e) => setStartDate(e.target.value)}
+                 className="flex-1 w-full sm:w-auto h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-2 text-xs"
+                 title="Start date"
+               />
+               <span className="text-xs text-slate-500 my-1 sm:my-0 mx-1">–</span>
+               <input
+                 type="date"
+                 value={endDate}
+                 onChange={(e) => setEndDate(e.target.value)}
+                 className="flex-1 w-full sm:w-auto h-10.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-2 text-xs"
+                 title="End date"
+               />
             </div>
           </div>
         </CardContent>

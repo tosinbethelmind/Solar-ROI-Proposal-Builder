@@ -215,7 +215,7 @@ export default function AdminOverview() {
               <ShieldAlert className="h-4 w-4 shrink-0" />
               <span>Operational Command Overview</span>
             </div>
-            <h1 className="text-3xl font-black text-slate-850 dark:text-slate-50 tracking-tight mt-1">SolarPro Dashboard</h1>
+            <h1 className="text-3xl font-black text-slate-850 dark:text-slate-50 tracking-tight mt-1">SolarQuotePro Dashboard</h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1">
               Real-time telemetry, currency index rates, and multi-tenant standing analysis.
             </p>

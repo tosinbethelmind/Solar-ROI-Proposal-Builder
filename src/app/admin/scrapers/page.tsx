@@ -63,7 +63,7 @@ export default function AdminScrapers() {
     whatsappDailyCap: 50,
     whatsappEnabled: false,
     dryRun: true,
-    businessSignature: 'SolarPro Analytics'
+    businessSignature: 'SolarQuotePro Analytics'
   });
   
   const [logs, setLogs] = React.useState<any[]>([]);

@@ -1,4 +1,4 @@
-// Business Load Templates configuration for SolarPro load calculators
+// Business Load Templates configuration for SolarQuotePro load calculators
 
 export interface TemplateAppliance {
   applianceKey: string;

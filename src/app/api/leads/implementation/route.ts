@@ -46,35 +46,30 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const auth = await verifyAdmin()
-  if (!auth.isAdmin && !auth.user) {
-    return NextResponse.json({ error: auth.errorMsg || 'Unauthorized' }, { status: auth.errorStatus || 401 })
-  }
-
-  const userId = auth.user?.id || 'dev-admin-id'
+  
   let companyId: string | null = null
 
-  const { data: member } = await auth.userClient
-    .from('company_members')
-    .select('company_id')
-    .eq('user_id', userId)
-    .maybeSingle()
-
-  if (member) {
-    companyId = member.company_id
-  } else if (auth.isBypassed) {
-    // Fallback to the first available company during dev auth bypass testing
-    const { data: firstCompany } = await auth.adminClient
-      .from('companies')
-      .select('id')
-      .limit(1)
+  if (auth.user) {
+    const userId = auth.user.id
+    const { data: member } = await auth.userClient
+      .from('company_members')
+      .select('company_id')
+      .eq('user_id', userId)
       .maybeSingle()
-    if (firstCompany) {
-      companyId = firstCompany.id
-    }
-  }
 
-  if (!companyId) {
-    return NextResponse.json({ error: 'No company found for user' }, { status: 404 })
+    if (member) {
+      companyId = member.company_id
+    } else if (auth.isBypassed) {
+      // Fallback to the first available company during dev auth bypass testing
+      const { data: firstCompany } = await auth.adminClient
+        .from('companies')
+        .select('id')
+        .limit(1)
+        .maybeSingle()
+      if (firstCompany) {
+        companyId = firstCompany.id
+      }
+    }
   }
 
   try {

@@ -1,11 +1,46 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { isE2EBypassed } from '@/utils/e2eBypass'
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  if (await isE2EBypassed()) {
+    return NextResponse.json({
+      data: {
+        id: id || 'e2e-mock-proposal-id',
+        customer_name: 'Lagos Heights Apartments',
+        customer_email: 'manager@lagosheights.com',
+        customer_phone: '08011122233',
+        backup_hours: 6,
+        peak_sun_hours: 4.2,
+        selected_tier: 'standard',
+        final_quoted_price_ngn: 4500000,
+        calculations_snapshot: {
+          inverterKva: 5,
+          batteryConfigString: '4x 200Ah Lithium',
+          panelCount: 8,
+          panelUnitWp: 450,
+          essentialDailyWh: 2400,
+          totalDailyWh: 4500,
+          systemVoltage: 48,
+          batteryTotalUnits: 4,
+          peakSurgeWatts: 4200,
+          branding: {
+            primaryColor: '#01696f',
+            secondaryColor: '#01414a',
+            logoUrl: '',
+            tagline: 'Reliable Clean Power for Nigeria'
+          },
+          paymentPlan: { selectedPlan: 'outright', downPaymentPercent: 20, includeInProposal: true }
+        },
+        created_at: new Date().toISOString()
+      }
+    })
+  }
+
   const supabase = await createClient()
   
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -33,6 +68,29 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  if (await isE2EBypassed()) {
+    try {
+      const body = await request.json()
+      const { proposal, calculations, status } = body
+      const mockUpdated: Record<string, any> = {
+        id,
+        customer_name: proposal?.customer_name || 'Lagos Heights Apartments',
+        customer_email: proposal?.customer_email || 'manager@lagosheights.com',
+        customer_phone: proposal?.customer_phone || '08011122233',
+        backup_hours: proposal?.backup_hours || 6,
+        peak_sun_hours: proposal?.peak_sun_hours || 4.2,
+        selected_tier: proposal?.selected_tier || 'standard',
+        final_quoted_price_ngn: proposal?.final_quoted_price_ngn || 4500000,
+        status: status || 'draft',
+        calculations_snapshot: calculations || null,
+        created_at: new Date().toISOString()
+      }
+      return NextResponse.json({ data: mockUpdated })
+    } catch {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    }
+  }
+
   const supabase = await createClient()
   
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -115,6 +173,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  if (await isE2EBypassed()) {
+    return NextResponse.json({ success: true })
+  }
+
   const supabase = await createClient()
   
   const { data: { user }, error: authError } = await supabase.auth.getUser()

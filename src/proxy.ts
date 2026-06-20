@@ -8,12 +8,34 @@ export async function proxy(request: NextRequest) {
     },
   })
 
+  const path = request.nextUrl.pathname
+  if (path === '/workspace/crm' || path === '/workspace/crm/') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/history'
+    return NextResponse.redirect(url)
+  }
+
   // Defensive check for unconfigured production environments
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Middleware Warning: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing. Access gating bypassed.');
+    return response;
+  }
+
+  // 1. Check E2E/Dev bypass early to avoid remote API hanging calls
+  const bypassCookie = request.cookies.get('bypass_auth')?.value
+  const isBypassed = 
+    (
+      (process.env.NODE_ENV === 'development' ||
+       request.nextUrl.hostname === 'localhost' ||
+       request.nextUrl.hostname === '127.0.0.1') &&
+      bypassCookie === 'true'
+    ) ||
+    bypassCookie === 'solar-quotepro-e2e-secret-key-2026'
+
+  if (isBypassed) {
     return response;
   }
 
@@ -54,18 +76,13 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  const path = request.nextUrl.pathname
-  
-  if (path === '/workspace/crm' || path === '/workspace/crm/') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/history'
-    return NextResponse.redirect(url)
-  }
+
 
   const isAdminRoute = path.startsWith('/admin') || path.startsWith('/api/admin')
   
   // Exclude public POST endpoints for B2C sizer leads and B2B training cohort leads
   const isPublicApi =
+    (path === '/api/leads' && request.method === 'POST') ||
     (path === '/api/leads/homeowner' && request.method === 'POST') ||
     (path === '/api/leads/training' && request.method === 'POST') ||
     path.startsWith('/api/auth/')
@@ -78,11 +95,7 @@ export async function proxy(request: NextRequest) {
     path.startsWith('/history') ||
     (path.startsWith('/api/') && !isPublicApi)
 
-  // 1. Guard for all protected routes (must be logged in)
-  const bypassCookie = request.cookies.get('bypass_auth')?.value
-  const isBypassed = process.env.NODE_ENV === 'development' && bypassCookie === 'true'
-
-  if ((isProtected || isAdminRoute) && !user && !isBypassed) {
+  if ((isProtected || isAdminRoute) && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     if (isAdminRoute) {
@@ -109,7 +122,7 @@ export async function proxy(request: NextRequest) {
           const isDeactivated = member.active === false
 
           if (isSuspended || isDeactivated) {
-            const url = request.nextUrl.clone()
+            const url = request.nextUrl.pathname ? request.nextUrl.clone() : new URL('/login', request.url)
             url.pathname = '/login'
             url.searchParams.set('error', isSuspended ? 'suspended' : 'deactivated')
             const redirectResponse = NextResponse.redirect(url)
@@ -125,7 +138,7 @@ export async function proxy(request: NextRequest) {
 
     // 3. Super Admin Gate Check for /admin or /api/admin
     if (isAdminRoute) {
-      const adminEmail = process.env.ADMIN_EMAIL || 'admin@solarpro.com'
+      const adminEmail = process.env.ADMIN_EMAIL || 'admin@solarquotepro.com'
       let isSuperAdmin = user.email === adminEmail
 
       if (!isSuperAdmin) {

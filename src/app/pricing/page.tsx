@@ -160,7 +160,7 @@ const listingPlans: PricingPlan[] = [
   },
   {
     id: 'list-verified',
-    name: 'SolarPro Verified',
+    name: 'SolarQuotePro Verified',
     category: 'listing',
     bestFor: 'Established companies seeking maximum trust',
     priceMonthly: 30000,
@@ -170,7 +170,7 @@ const listingPlans: PricingPlan[] = [
     highlighted: true,
     features: [
       'Everything in Basic Listing',
-      'Official SolarPro Verified Badge',
+      'Official SolarQuotePro Verified Badge',
       'Premium search placement weight',
       'Priority visibility for lead-routing',
       'Eligible for direct quote routing'
@@ -212,7 +212,7 @@ const bundlePlans: PricingPlan[] = [
     highlighted: true,
     features: [
       'Professional Proposal SaaS Plan',
-      'SolarPro Verified Directory Listing',
+      'SolarQuotePro Verified Directory Listing',
       'Full load sizing + ROI generator tool',
       'Verified Badge + Priority lead routing',
       'Save ₦15,000/month combined!'
@@ -276,7 +276,7 @@ const FAQS = [
   },
   {
     q: 'Can I list my business without subscribing to the proposal tool?',
-    a: 'Yes. You can register a Free Listing, Basic Listing, or SolarPro Verified listing without paying for the advanced proposal wizard tool.'
+    a: 'Yes. You can register a Free Listing, Basic Listing, or SolarQuotePro Verified listing without paying for the advanced proposal wizard tool.'
   },
   {
     q: 'Can I subscribe to both together?',
@@ -284,15 +284,15 @@ const FAQS = [
   },
   {
     q: 'What do bundle packages include?',
-    a: 'Bundles pair a premium Proposal Workspace tier (Starter or Professional) with a premium Directory visibility tier (Basic or SolarPro Verified), saving you up to ₦15,000 every single month.'
+    a: 'Bundles pair a premium Proposal Workspace tier (Starter or Professional) with a premium Directory visibility tier (Basic or SolarQuotePro Verified), saving you up to ₦15,000 every single month.'
   },
   {
     q: 'Can I pay by bank transfer?',
     a: 'Yes, we support local bank transfers to our GTBank account for Nigerian installers, alongside automated online card processing via Paystack.'
   },
   {
-    q: 'Is setup required before I can use SolarPro?',
-    a: 'No. Setup and custom catalog configurations are completely optional. SolarPro is ready to use immediately out of the box with standard defaults.'
+    q: 'Is setup required before I can use SolarQuotePro?',
+    a: 'No. Setup and custom catalog configurations are completely optional. SolarQuotePro is ready to use immediately out of the box with standard defaults.'
   }
 ];
 
@@ -393,7 +393,7 @@ export default function PricingPage() {
     setManualLoading(true);
     setTimeout(() => {
       setManualLoading(false);
-      alert('📥 Bank transfer receipt submitted to SolarPro verification team! Your account will be upgraded within 1-2 hours after verification.');
+      alert('📥 Bank transfer receipt submitted to SolarQuotePro verification team! Your account will be upgraded within 1-2 hours after verification.');
       
       const mappedSaaSTier = (manualPlan.startsWith('list-') || manualPlan.startsWith('bundle-')) ? 'pro' : manualPlan;
       setSubscription(mappedSaaSTier as SubscriptionTier, manualCycle as BillingCycle, false);
@@ -837,7 +837,7 @@ export default function PricingPage() {
               <p className="font-extrabold uppercase tracking-wider text-[9px] text-teal-655 dark:text-teal-400">GTBANK PAYMENT INSTRUCTIONS</p>
               <div className="space-y-1 text-slate-655 dark:text-slate-350">
                 <p>Bank Name: <strong className="text-slate-800 dark:text-slate-200">Guaranty Trust Bank (GTBank)</strong></p>
-                <p>Account Name: <strong className="text-slate-800 dark:text-slate-200">SolarPro Technologies Ltd</strong></p>
+                <p>Account Name: <strong className="text-slate-800 dark:text-slate-200">SolarQuotePro Technologies Ltd</strong></p>
                 <p>Account Number: <strong className="text-slate-800 dark:text-slate-200">1029384756</strong></p>
               </div>
               <div className="p-3 bg-teal-500/5 border border-teal-500/10 rounded-xl text-[10px] text-slate-500 leading-relaxed font-semibold">
@@ -858,7 +858,7 @@ export default function PricingPage() {
                   <option value="pro">Professional Proposal (₦45,000/mo)</option>
                   <option value="enterprise">Enterprise Proposal (₦120,000/mo)</option>
                   <option value="list-basic">Basic Directory Listing (₦12,500/mo)</option>
-                  <option value="list-verified">SolarPro Verified Listing (₦30,000/mo)</option>
+                  <option value="list-verified">SolarQuotePro Verified Listing (₦30,000/mo)</option>
                   <option value="bundle-growth">Growth Combined Bundle (₦27,000/mo)</option>
                   <option value="bundle-verified-growth">Verified Combined Bundle (₦60,000/mo)</option>
                 </select>
@@ -1035,7 +1035,7 @@ export default function PricingPage() {
               </p>
               <div className="pt-2">
                 <a 
-                  href="https://assets.solarpro.ng/templates/Solar_Proposal_Sizer_v2.xlsx" 
+                  href="https://assets.solarquotepro.ng/templates/Solar_Proposal_Sizer_v2.xlsx" 
                   download
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                   onClick={(e) => {

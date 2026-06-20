@@ -728,7 +728,7 @@ export const useMarketplaceStore = create<MarketplaceState>()(
       }
     }),
     {
-      name: 'solarpro-marketplace-store'
+      name: 'solarquotepro-marketplace-store'
     }
   )
 );

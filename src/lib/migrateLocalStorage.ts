@@ -3,7 +3,7 @@ import { SavedProposal } from '@/store/historyStore'
 
 /**
  * Migrates local-only proposals (stored in localStorage) to the Supabase database.
- * Matches keys starting with 'solarpro_proposal_' and updates local 'synced' state.
+ * Matches keys starting with 'solarquotepro_proposal_' and updates local 'synced' state.
  */
 export async function migrateLocalStorageData() {
   if (typeof window === 'undefined') return { success: false, migrated: 0 }
@@ -14,7 +14,7 @@ export async function migrateLocalStorageData() {
 
   // 2. Fetch all keys in localStorage
   const keys = Object.keys(localStorage)
-  const proposalKeys = keys.filter(key => key.startsWith('solarpro_proposal_'))
+  const proposalKeys = keys.filter(key => key.startsWith('solarquotepro_proposal_'))
 
   if (proposalKeys.length === 0) return { success: true, migrated: 0 }
 

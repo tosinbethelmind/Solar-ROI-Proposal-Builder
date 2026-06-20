@@ -1,4 +1,4 @@
--- PostgreSQL Schema for SolarPro Installer Marketplace
+-- PostgreSQL Schema for SolarQuotePro Installer Marketplace
 
 -- 1. Installer Profiles
 CREATE TABLE IF NOT EXISTS installer_profiles (

@@ -314,7 +314,7 @@ export default function InteractiveProposalClient({ token }: InteractiveProposal
             {logoSrc ? (
               <img src={logoSrc} alt="Company Logo" className="h-10 w-auto object-contain max-w-[140px]" />
             ) : (
-              <span className="font-black text-xl tracking-wider text-emerald-400">SOLARPRO</span>
+              <span className="font-black text-xl tracking-wider text-emerald-400">SOLARQUOTEPRO</span>
             )}
           </div>
           <div className="flex items-center gap-2">

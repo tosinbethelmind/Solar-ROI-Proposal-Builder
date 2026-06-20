@@ -99,7 +99,7 @@ export default function AdminContentEditor() {
       description: '',
       date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
       readTime: '5 min read',
-      author: 'SolarPro Editor',
+      author: 'SolarQuotePro Editor',
       category: 'Solar ROI',
       pillar: 'ROI Math',
       image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=800&auto=format&fit=crop',

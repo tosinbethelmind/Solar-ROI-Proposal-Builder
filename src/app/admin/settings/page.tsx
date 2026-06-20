@@ -38,7 +38,7 @@ export default function AdminSettings() {
   const [petrolPrice, setPetrolPrice] = React.useState('');
   const [gridTariff, setGridTariff] = React.useState('');
   const [vatTaxRate, setVatTaxRate] = React.useState('');
-  const [adminEmail, setAdminEmail] = React.useState('admin@solarpro.com');
+  const [adminEmail, setAdminEmail] = React.useState('admin@solarquotepro.com');
 
   const fetchSettings = React.useCallback(async () => {
     try {

@@ -86,7 +86,7 @@ export const useHistoryStore = create<HistoryStore>()(
         
         if (typeof window !== 'undefined') {
           try {
-            localStorage.setItem(`solarpro_proposal_${id}`, JSON.stringify(newProposal));
+            localStorage.setItem(`solarquotepro_proposal_${id}`, JSON.stringify(newProposal));
           } catch (e) {
             console.error('Failed to write proposal to key-based localStorage:', e);
           }
@@ -120,7 +120,7 @@ export const useHistoryStore = create<HistoryStore>()(
         
         if (typeof window !== 'undefined') {
           try {
-            localStorage.setItem(`solarpro_proposal_${newId}`, JSON.stringify(duplicate));
+            localStorage.setItem(`solarquotepro_proposal_${newId}`, JSON.stringify(duplicate));
           } catch (e) {
             console.error('Failed to write duplicated proposal to localStorage:', e);
           }
@@ -135,7 +135,7 @@ export const useHistoryStore = create<HistoryStore>()(
         }));
         if (typeof window !== 'undefined') {
           try {
-            localStorage.removeItem(`solarpro_proposal_${id}`);
+            localStorage.removeItem(`solarquotepro_proposal_${id}`);
           } catch (e) {
             console.error('Failed to remove proposal from localStorage:', e);
           }
@@ -158,7 +158,7 @@ export const useHistoryStore = create<HistoryStore>()(
         }));
         if (typeof window !== 'undefined') {
           try {
-            localStorage.setItem(`solarpro_proposal_${proposal.id}`, JSON.stringify(proposal));
+            localStorage.setItem(`solarquotepro_proposal_${proposal.id}`, JSON.stringify(proposal));
           } catch (e) {
             console.error('Failed to write overwritten proposal to localStorage:', e);
           }
@@ -176,7 +176,7 @@ export const useHistoryStore = create<HistoryStore>()(
               };
               if (typeof window !== 'undefined') {
                 try {
-                  localStorage.setItem(`solarpro_proposal_${id}`, JSON.stringify(newProp));
+                  localStorage.setItem(`solarquotepro_proposal_${id}`, JSON.stringify(newProp));
                 } catch (e) {
                   console.error('Failed to update pipeline status in localStorage:', e);
                 }

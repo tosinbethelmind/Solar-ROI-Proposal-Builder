@@ -91,7 +91,7 @@ export default function BlogHubPage() {
             <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 shadow-sm group-hover:shadow-md transition-shadow">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
             </div>
-            <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarPro</span>
+            <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarQuotePro</span>
             <Badge className="bg-teal-500/10 text-teal-650 dark:bg-teal-950/40 dark:text-teal-400 border border-teal-500/20 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold shrink-0">Insights</Badge>
           </Link>
           <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export default function BlogHubPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-12">
         {/* Hero Title */}
         <section className="text-center">
-          <h1 className="text-4xl font-extrabold mb-4">SolarPro Insights Hub</h1>
+          <h1 className="text-4xl font-extrabold mb-4">SolarQuotePro Insights Hub</h1>
           <p className="text-lg text-slate-600 dark:text-slate-400">
             Stay ahead with data‑driven solar calculations, industry updates, and actionable guides.
           </p>
@@ -205,7 +205,7 @@ export default function BlogHubPage() {
         </section>
       </main>
       <footer className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-        © <CopyrightYear /> SolarPro Insights. All rights reserved.
+        © <CopyrightYear /> SolarQuotePro Insights. All rights reserved.
       </footer>
     </div>
   );

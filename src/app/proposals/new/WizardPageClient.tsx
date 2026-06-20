@@ -124,6 +124,14 @@ function NewProposalPageInner() {
     return appMode === 'simple' ? 'quick' : 'wizard';
   });
 
+  React.useEffect(() => {
+    const t = searchParams?.get('type');
+    if (t === 'quick' || t === 'wizard') {
+      setFlowType(t);
+    }
+  }, [searchParams]);
+
+
   // Quick Proposal Inputs
   const [quickName, setQuickName] = React.useState('');
   const [quickPhone, setQuickPhone] = React.useState('');
@@ -142,7 +150,7 @@ function NewProposalPageInner() {
 
     let loadedItem: any = null;
     try {
-      const stored = localStorage.getItem(`solarpro_proposal_${loadId}`);
+      const stored = localStorage.getItem(`solarquotepro_proposal_${loadId}`);
       if (stored) {
         loadedItem = JSON.parse(stored);
       }
@@ -239,7 +247,7 @@ function NewProposalPageInner() {
     reset(); // clear existing state first so there's no layering
     updateProposal({
       customer_name: 'Demo Client',
-      customer_email: 'demo@solarpro.ng',
+      customer_email: 'demo@solarquotepro.ng',
       customer_phone: '08012345678',
       backup_hours: 8,
       peak_sun_hours: 4.2,

@@ -9,7 +9,7 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn()
 }))
 
-describe('SolarPro SaaS Security & RLS Leak Audit', () => {
+describe('SolarQuotePro SaaS Security & RLS Leak Audit', () => {
   
   describe('Automated Migration-Time RLS Checks (Static Analysis)', () => {
     it('verifies that every database table created in migrations has RLS enabled', () => {

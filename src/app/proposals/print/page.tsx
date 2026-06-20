@@ -5,7 +5,8 @@ import { useWizardStore, ProposalState, SizingResult } from '@/store/wizardStore
 import { useHistoryStore } from '@/store/historyStore';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { fetchUSDNGNRate } from '@/utils/exchangeRate';
 
 export interface PrintProposalData extends Partial<ProposalState> {
@@ -21,7 +22,7 @@ export interface PrintProposalData extends Partial<ProposalState> {
 }
 
 const generateProposalSignature = (id: string, cost: number, fx: number) => {
-  const raw = `${id}:${cost}:${fx}:solarpro_verification_key_2026`;
+  const raw = `${id}:${cost}:${fx}:solarquotepro_verification_key_2026`;
   let hash = 0;
   for (let i = 0; i < raw.length; i++) {
     const char = raw.charCodeAt(i);
@@ -43,41 +44,16 @@ const getLogoSrc = (logoUrl?: string) => {
   return logoUrl;
 };
 
-export default function PrintProposalPage() {
+function PrintProposalContent() {
   const { proposal: storeProposal, calculations: storeCalculations } = useWizardStore();
   const { savedProposals } = useHistoryStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams ? searchParams.get('id') : null;
 
-  // Helper to resolve initial values client-side to prevent cascading setState renders
-  const getInitialValues = () => {
-    if (typeof window === 'undefined') {
-      return { initialProposal: null, initialCalculations: null, initialLoading: true };
-    }
-
-    const searchParams = new URLSearchParams(window.location.search);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return { initialProposal: storeProposal, initialCalculations: storeCalculations, initialLoading: false };
-    }
-
-    const localProp = savedProposals.find(p => p.id === id);
-    if (localProp) {
-      return {
-        initialProposal: { ...localProp.proposal, id: localProp.id, client_token: localProp.client_token },
-        initialCalculations: localProp.calculations,
-        initialLoading: false
-      };
-    }
-
-    return { initialProposal: null, initialCalculations: null, initialLoading: true };
-  };
-
-  const { initialProposal, initialCalculations, initialLoading } = getInitialValues();
-
-  const [proposal, setProposal] = React.useState<PrintProposalData | null>(initialProposal || null);
-  const [calculations, setCalculations] = React.useState<SizingResult | null>(initialCalculations || null);
-  const [loading, setLoading] = React.useState<boolean>(initialLoading);
+  const [proposal, setProposal] = React.useState<PrintProposalData | null>(null);
+  const [calculations, setCalculations] = React.useState<SizingResult | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(true);
 
   const [fxRate, setFxRate] = React.useState<number | null>(null);
   const [fxTimestamp, setFxTimestamp] = React.useState<string | null>(null);
@@ -89,7 +65,7 @@ export default function PrintProposalPage() {
         setFxRate(fetchedRate);
         
         // Try getting timestamp from localStorage, or use current time if not set
-        const TIME_KEY = 'solarpro_fx_rate_timestamp';
+        const TIME_KEY = 'solarquotepro_fx_rate_timestamp';
         const storedTime = typeof window !== 'undefined' ? localStorage.getItem(TIME_KEY) : null;
         if (storedTime) {
           setFxTimestamp(new Date(parseInt(storedTime, 10)).toISOString());
@@ -104,14 +80,12 @@ export default function PrintProposalPage() {
   }, []);
 
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const searchParams = new URLSearchParams(window.location.search);
-    const id = searchParams.get('id');
-
-    if (!id) return;
-
-    // If already loaded via constructor initial values, bypass
-    if (proposal && proposal.id === id) return;
+    if (!id) {
+      setProposal(storeProposal);
+      setCalculations(storeCalculations || null);
+      setLoading(false);
+      return;
+    }
 
     // Try finding in local history store first (offline-first!)
     const localProp = savedProposals.find(p => p.id === id);
@@ -181,7 +155,7 @@ export default function PrintProposalPage() {
     };
 
     fetchRemote();
-  }, [storeProposal, storeCalculations, savedProposals, proposal]);
+  }, [id, savedProposals, storeProposal, storeCalculations]);
 
   if (loading) {
     return (
@@ -391,7 +365,7 @@ export default function PrintProposalPage() {
                 {generateProposalSignature(proposal.id || 'SP-TEMP', proposal.final_quoted_price_ngn || 0, displayRate)}
               </p>
               <p className="text-[10px] text-slate-500">
-                Secured via SolarPro Multi-Tenant Verification Ledger. Scan QR code to verify database authenticity.
+                Secured via SolarQuotePro Multi-Tenant Verification Ledger. Scan QR code to verify database authenticity.
               </p>
             </div>
             {/* Mock QR Code in SVG */}
@@ -741,5 +715,24 @@ export default function PrintProposalPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function PrintPageLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+      <div className="text-center space-y-4">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600 mx-auto"></div>
+        <p className="text-sm text-slate-500 font-medium animate-pulse">Loading Proposal Details...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function PrintProposalPage() {
+  return (
+    <Suspense fallback={<PrintPageLoading />}>
+      <PrintProposalContent />
+    </Suspense>
   );
 }

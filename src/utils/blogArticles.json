@@ -49,8 +49,8 @@
         "answer": "Gel batteries typically last 1.5 to 3 years (about 500 to 800 cycles at 50% depth of discharge) under Nigerian heat conditions. LiFePO4 Lithium batteries last 8 to 12 years (3,000 to 5,000 cycles at 80% depth of discharge), making lithium far more cost-effective despite the higher initial purchase price."
       },
       {
-        "question": "Does SolarPro handle installation directly?",
-        "answer": "SolarPro is an engineering workspace and design modeler utilized by certified solar installers across Nigeria. We connect homeowners with NERC-certified solar professionals who use our software to generate accurate physical survey assessments and transparent proposals."
+        "question": "Does SolarQuotePro handle installation directly?",
+        "answer": "SolarQuotePro is an engineering workspace and design modeler utilized by certified solar installers across Nigeria. We connect homeowners with NERC-certified solar professionals who use our software to generate accurate physical survey assessments and transparent proposals."
       }
     ],
     "widgetType": "roi-calculator",
@@ -252,7 +252,7 @@
         "title": "The 3-Minute Sizing Script that Converts Leads",
         "content": [
           "Do not bore your customers with details about polycrystalline cells or MPPT charge algorithms. Instead, speak in terms of household utility: \"This 5kVA system is designed to keep your double-door freezer running continuously so food never spoils, while powering all fans, lighting, and your home office. During the day, it runs your main living room AC completely off the sun.\"",
-          "Using SolarPro's real-time Naira calculator on-site allows you to show them their exact grid and fuel savings curves right on your screen, which makes the investment feel tangible and secure."
+          "Using SolarQuotePro's real-time Naira calculator on-site allows you to show them their exact grid and fuel savings curves right on your screen, which makes the investment feel tangible and secure."
         ]
       }
     ],
@@ -274,19 +274,19 @@
   {
     "slug": "case-study-acme-solar-lagos",
     "title": "Case Study: How Acme Solar Grew Revenue by 300% in 12 Months",
-    "description": "A detailed breakdown of how a small Lagos-based installation team scaled from 5 to 40+ proposals monthly, resolved tenant-landlord friction, and closed a ₦5M deal using SolarPro.",
+    "description": "A detailed breakdown of how a small Lagos-based installation team scaled from 5 to 40+ proposals monthly, resolved tenant-landlord friction, and closed a ₦5M deal using SolarQuotePro.",
     "date": "May 28, 2026",
     "readTime": "5 min read",
     "author": "SolarExpress Admin",
     "category": "Case Studies",
     "pillar": "Installer Growth",
     "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=800&auto=format&fit=crop",
-    "answerFirst": "Acme Solar achieved a 300% revenue growth by standardizing their proposal pipeline on SolarPro. By replacing manual excel bills with automated Naira ROI charts, Lagos safety compliance permits, and one-click WhatsApp PDF sharing, they increased client trust and shortened the sales cycle from 18 days to under 48 hours.",
+    "answerFirst": "Acme Solar achieved a 300% revenue growth by standardizing their proposal pipeline on SolarQuotePro. By replacing manual excel bills with automated Naira ROI charts, Lagos safety compliance permits, and one-click WhatsApp PDF sharing, they increased client trust and shortened the sales cycle from 18 days to under 48 hours.",
     "summaryPoints": [
       "Acme Solar automated site surveys, producing professional quotes in under 3 minutes.",
       "Landlord addendums helped secure approvals for Lekki-based rental tenants.",
       "Sharing interactive Web links via WhatsApp increased client engagement by 4x.",
-      "Closed their largest ₦5,000,000 residential project within one week of upgrading to SolarPro Pro."
+      "Closed their largest ₦5,000,000 residential project within one week of upgrading to SolarQuotePro Pro."
     ],
     "sections": [
       {
@@ -297,9 +297,9 @@
         ]
       },
       {
-        "title": "The Transformation: Going Pro with SolarPro",
+        "title": "The Transformation: Going Pro with SolarQuotePro",
         "content": [
-          "Acme Solar adopted SolarPro's Professional plan, enabling their team to run complete load calculations and size solar arrays directly on-site using their mobile phones—even offline. They could configure standard hardware packages, add custom markup margins, and generate a branded proposal link in under 3 minutes.",
+          "Acme Solar adopted SolarQuotePro's Professional plan, enabling their team to run complete load calculations and size solar arrays directly on-site using their mobile phones—even offline. They could configure standard hardware packages, add custom markup margins, and generate a branded proposal link in under 3 minutes.",
           "By immediately sharing this proposal link over WhatsApp with the client, they kept momentum high. The inclusion of LSEB compliance permits and Landlord Addendums resolved structural and property disputes instantly, doubling their close rate to over 45%."
         ]
       }
@@ -313,7 +313,7 @@
     "widgetType": "roi-calculator",
     "schema": {
       "headline": "Case Study: How Acme Solar Grew Revenue by 300% in 12 Months",
-      "description": "A real-world case study analyzing the operational efficiency and revenue growth of a Lagos-based solar installation firm using SolarPro.",
+      "description": "A real-world case study analyzing the operational efficiency and revenue growth of a Lagos-based solar installation firm using SolarQuotePro.",
       "faqList": [
         { "q": "What plan did Acme Solar use to scale?", "a": "They upgraded from Starter to the Professional plan to unlock team features and advanced ROI charts." }
       ]

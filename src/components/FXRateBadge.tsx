@@ -23,8 +23,8 @@ export function FXRateBadge() {
       
       if (data && data.rates && data.rates.NGN) {
         const liveRate = data.rates.NGN;
-        localStorage.setItem('solarpro_last_fx_rate', liveRate.toString());
-        localStorage.setItem('solarpro_fx_rate_timestamp', Date.now().toString());
+        localStorage.setItem('solarquotepro_last_fx_rate', liveRate.toString());
+        localStorage.setItem('solarquotepro_fx_rate_timestamp', Date.now().toString());
         
         setRate(liveRate);
         setIsEstimated(false);
@@ -54,8 +54,8 @@ export function FXRateBadge() {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       // Synchronously read local cache on mount
-      const cachedRateStr = localStorage.getItem('solarpro_last_fx_rate');
-      const cachedTimeStr = localStorage.getItem('solarpro_fx_rate_timestamp');
+      const cachedRateStr = localStorage.getItem('solarquotepro_last_fx_rate');
+      const cachedTimeStr = localStorage.getItem('solarquotepro_fx_rate_timestamp');
       
       let initialRate: number | null = null;
       let isCachedValid = false;

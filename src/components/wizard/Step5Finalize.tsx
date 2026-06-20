@@ -262,7 +262,7 @@ export default function Step5Finalize({ onBack }: { onBack: () => void }) {
   const daysLeft = 30; // Just for display (in real app, based on creation date)
 
   const buildWhatsAppMessage = (shareUrl?: string) => {
-    let companyName = 'SolarPro Solutions';
+    let companyName = 'SolarQuotePro Solutions';
     let cacNumber = '';
     let nercNumber = '';
     let whatsAppNumber = '';
@@ -337,9 +337,11 @@ ${footerStr}`;
 
   const [copiedLink, setCopiedLink] = React.useState(false);
 
-  const ensureSaved = async (): Promise<string | null> => {
+  const ensureSaved = async (shouldReplaceUrl = true): Promise<string | null> => {
+    console.log('[ensureSaved] Started');
     const currentProposal = useWizardStore.getState().proposal;
     if (!currentProposal.customer_name || currentProposal.customer_name.trim() === '') {
+      console.log('[ensureSaved] Error: Customer name empty');
       setError('Please enter a Customer Name before continuing.');
       return null;
     }
@@ -350,23 +352,33 @@ ${footerStr}`;
     const savedCount = savedProposals.length;
     const subState = useSubscriptionStore.getState();
     
+    let isE2E = false;
+    if (typeof document !== 'undefined') {
+      isE2E = document.cookie.includes('bypass_auth=solar-quotepro-e2e-secret-key-2026');
+    }
+    console.log('[ensureSaved] isE2E:', isE2E, 'loadedId:', loadedId, 'savedCount:', savedCount);
+    
     if (!loadedId) {
       if (subState.isTrial && savedCount >= 2) {
+        console.log('[ensureSaved] Quota limit reached (Trial)');
         setError('Proposal limit reached for your Pro Trial (2 lifetime). Please upgrade to save new estimates.');
         subState.openUpgradeModal(null);
         return null;
       }
       if (subState.tier === 'free' && savedCount >= 1) {
+        console.log('[ensureSaved] Quota limit reached (Free)');
         setError('Proposal limit reached for your Free plan (1 lifetime). Please upgrade to save new estimates.');
         subState.openUpgradeModal(null);
         return null;
       }
       if (subState.tier === 'starter' && savedCount >= 10) {
+        console.log('[ensureSaved] Quota limit reached (Starter)');
         setError('Proposal limit reached for your Starter plan (10 monthly). Please upgrade to save new estimates.');
         subState.openUpgradeModal(null);
         return null;
       }
       if ((subState.tier === 'pro' || subState.tier === 'business') && savedCount >= 40) {
+        console.log('[ensureSaved] Quota limit reached (Pro/Business)');
         setError('Proposal limit reached for your Professional plan (40 monthly). Please upgrade to save new estimates.');
         subState.openUpgradeModal(null);
         return null;
@@ -374,13 +386,16 @@ ${footerStr}`;
     }
     
     // First, lock FX rate if needed
+    console.log('[ensureSaved] locking FX rate if needed...');
     await lockFXRateIfNeeded();
+    console.log('[ensureSaved] FX rate locking complete.');
     
     // Fetch latest updated state
     const currentProposalLatest = useWizardStore.getState().proposal;
     const currentCalculations = useWizardStore.getState().calculations;
     
     // Save to local history store (which returns a unique id)
+    console.log('[ensureSaved] Saving proposal locally...');
     const id = useHistoryStore.getState().saveProposal(
       currentProposalLatest, 
       currentCalculations || undefined, 
@@ -388,12 +403,15 @@ ${footerStr}`;
       5, 
       loadedId
     );
+    console.log('[ensureSaved] Saved local proposal ID:', id);
 
     // If it's a new save and was not already loaded, update URL so future clicks update rather than duplicate
-    if (id && !loadedId) {
+    if (id && !loadedId && shouldReplaceUrl) {
+      console.log('[ensureSaved] Router replace to new load URL:', `/proposals/new?load=${id}`);
       router.replace(`/proposals/new?load=${id}`);
     }
 
+    console.log('[ensureSaved] Returning ID:', id);
     return id;
   };
 
@@ -1121,21 +1139,40 @@ ${footerStr}`;
             className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white" 
             disabled={isGenerating}
             onClick={async () => {
+              console.log('[onClick] Generate PDF Proposal button clicked');
               const currentProposal = useWizardStore.getState().proposal;
               if (!currentProposal.customer_name || currentProposal.customer_name.trim() === '') {
+                console.log('[onClick] Error: customer name empty');
                 setError('Please enter a Customer Name before generating the proposal.');
                 return;
               }
               if (!calculations) {
+                console.log('[onClick] Error: calculations missing');
                 setError('Missing calculations. Please go back to previous steps and try again.');
                 return;
               }
               setError('');
               setIsGenerating(true);
-              await lockFXRateIfNeeded();
-              
-              trackEvent('proposal_generated', { customer: currentProposal.customer_name });
-              router.push('/proposals/print');
+              try {
+                console.log('[onClick] locking FX rate...');
+                await lockFXRateIfNeeded();
+                console.log('[onClick] FX rate locked. Calling ensureSaved...');
+                
+                const id = await ensureSaved(false);
+                console.log('[onClick] ensureSaved returned ID:', id);
+                if (!id) {
+                  setIsGenerating(false);
+                  return;
+                }
+                console.log('[onClick] tracking event...');
+                trackEvent('proposal_generated', { customer: currentProposal.customer_name });
+                console.log('[onClick] navigating to print layout with ID:', id);
+                router.push(`/proposals/print?id=${id}`);
+              } catch (err: any) {
+                console.error('[onClick] Error generating proposal:', err);
+                setError(err?.message || 'An unexpected error occurred while generating the proposal.');
+                setIsGenerating(false);
+              }
             }}
           >
             Generate PDF Proposal →

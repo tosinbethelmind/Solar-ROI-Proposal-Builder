@@ -26,8 +26,106 @@ const TABS = [
   }
 ];
 
+const NARRATION_CUES = [
+  { time: 1.0, text: "Welcome to SolarQuotePro! Let's calculate the perfect hybrid solar system size for your home." },
+  { time: 6.5, text: "First, let's select our home appliances. We will add a Smart TV and Sound System to our daily loads." },
+  { time: 13.5, text: "Now, we toggle the heavy loads switch to show larger power appliances, like deep freezers and air conditioners." },
+  { time: 20.0, text: "Next, let's add one deep freezer to our sizing configuration." },
+  { time: 25.5, text: "We are ready to proceed to the next step, where we configure our power usage and generator expenses." },
+  { time: 31.5, text: "Here, we will enter our current monthly generator fuel spend. Let's set it to 150,000 Naira to evaluate generator displacement ROI." },
+  { time: 39.5, text: "Now we click Calculate Recommendations to evaluate the options. This brings up the lead capture form." },
+  { time: 46.0, text: "Let's fill out our contact email to receive a detailed PDF proposal and claim a 120,000 Naira discount bundle." },
+  { time: 52.5, text: "We submit the details to generate our instant solar savings audit report." },
+  { time: 59.0, text: "Success! We can see our customized hybrid solar recommendation report. Let's scroll down to view our estimated energy offset and carbon metrics." },
+  { time: 70.0, text: "Now, let's transition to the Installer Workspace. Installers use their secure dashboard to manage client proposals and monitor pipeline metrics." },
+  { time: 80.5, text: "Here is the simple mode workspace. We can easily toggle to Pro Mode to reveal live KPI stats like average system size, quoted revenue, and active plans." },
+  { time: 92.0, text: "Now, we will build a comprehensive, high-fidelity solar proposal using the 5-step installer wizard." },
+  { time: 99.5, text: "In Step 1, we compile the client's energy profile. Let's add an LED TV and a fridge-freezer to our system." },
+  { time: 106.0, text: "Step 2 allows us to specify current energy pricing parameters. We'll set petrol to 1,250 Naira, diesel to 1,750 Naira, and monthly legacy bills to calculate utility displacement." },
+  { time: 116.0, text: "In Step 3, we select the hardware tier. We'll proceed with the Economy solar package which automatically compiles the Bill of Materials." },
+  { time: 124.5, text: "In Step 4, we configure installer margins, transport logistics, and taxes. Let's set our installation labor to 90,000, logistics to 30,000, and profit margin to 20 percent." },
+  { time: 136.0, text: "We will check the VAT option to apply the standard seven point five percent VAT." },
+  { time: 142.5, text: "Finally, in Step 5, we input client details and customize the installer branding tagline. Let's name the client Lagos Heights Apartments." },
+  { time: 150.0, text: "Let's expand the installer branding section and add our customized company slogan: Reliable Clean Power for Nigeria." },
+  { time: 159.0, text: "Now, let's generate the official PDF proposal for the client." },
+  { time: 165.5, text: "The high-fidelity solar proposal has been generated! Let's scroll down to inspect the clean layout, standard equipment BOM, and payback calculations." },
+  { time: 176.5, text: "Let's check the CRM and proposal history log to see all our saved proposal drafts." },
+  { time: 182.5, text: "Here we can see our saved Lagos Heights proposal, its status, and action logs." },
+  { time: 188.5, text: "Now, let's check the pricing plans available for solar installers on our platform." },
+  { time: 194.5, text: "Installers can choose between Free, Starter, Pro, or Enterprise plans depending on their sizing volume and lead outreach needs." },
+  { time: 202.5, text: "Next, we transition to the Admin Console to view system telemetry and lead engagement analytics." },
+  { time: 209.5, text: "The Admin Dashboard displays key operational statistics, monthly recurring revenue, platform signups, and service health logs." },
+  { time: 218.0, text: "Let's navigate to the Companies manager to view and authorize active installer companies." },
+  { time: 225.0, text: "Here we can review and manage subscriptions, edit member limits, or toggle suspended status for partner firms." },
+  { time: 233.0, text: "We also have a built-in scraper engine to identify commercial prospects on Google Maps and Jiji who need solar installations." },
+  { time: 240.0, text: "Administrators can initiate localized scrapers to populate the installer sales pipelines automatically." },
+  { time: 247.0, text: "Finally, let's inspect the lead database and check the AI Sales Outreach Copilot." },
+  { time: 254.0, text: "We can click on our captured lead to open the AI sales outreach workspace." },
+  { time: 261.0, text: "The AI Copilot has generated a personalized WhatsApp pitch using the customer's solar payback calculation." },
+  { time: 268.5, text: "Let's toggle to the Email tab to view the generated email campaign pitch." },
+  { time: 274.5, text: "And finally, we view the Call Outreach tab to inspect the interactive cold-call phone script." },
+  { time: 280.5, text: "This completes the end-to-end walkthrough of the SolarQuotePro platform. Thank you!" }
+];
+
 export default function VideoDemo() {
   const [activeTab, setActiveTab] = React.useState('calculator');
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const videoRef = React.useRef(null);
+  const lastCueIndexRef = React.useRef(-1);
+
+  const handlePlayClick = () => {
+    if (videoRef.current) {
+      videoRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
+  const handleSeeking = () => {
+    lastCueIndexRef.current = -1;
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    lastCueIndexRef.current = -1;
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
+  const handleTimeUpdate = (e) => {
+    const time = e.currentTarget.currentTime;
+    
+    // Find matching cue index
+    const cueIndex = NARRATION_CUES.findIndex((c, i) => 
+      time >= c.time && (i === NARRATION_CUES.length - 1 || time < NARRATION_CUES[i + 1].time)
+    );
+    
+    if (cueIndex !== -1 && cueIndex !== lastCueIndexRef.current) {
+      lastCueIndexRef.current = cueIndex;
+      const cue = NARRATION_CUES[cueIndex];
+      
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(cue.text);
+        utterance.rate = 1.05;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  };
 
   return (
     <section className="py-16 bg-slate-950 text-white relative overflow-hidden border-t border-slate-900 video-demo">
@@ -39,7 +137,7 @@ export default function VideoDemo() {
             💻 See the Tool in Action
           </span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight">
-            Watch SolarPro in Action
+            Watch SolarQuotePro in Action
           </h2>
           <p className="text-slate-400 text-xs sm:text-sm font-medium max-w-lg mx-auto">
             Take a 60-second interactive tour of the proposal builder and Naira ROI modeler.
@@ -50,20 +148,31 @@ export default function VideoDemo() {
         <div className="max-w-4xl mx-auto mb-16 bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative group video-placeholder">
           <div className="aspect-video w-full bg-slate-955 relative flex items-center justify-center">
             <video 
-              poster="/assets/video-thumbnail.jpg" 
-              className="w-full h-full object-cover opacity-60"
+              ref={videoRef}
+              poster="/assets/video-thumbnail.png" 
+              className={`w-full h-full object-cover transition-opacity duration-300 ${isPlaying ? 'opacity-100' : 'opacity-60'}`}
               controls
               preload="none"
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onTimeUpdate={handleTimeUpdate}
+              onSeeking={handleSeeking}
+              onEnded={handleEnded}
             >
-              <source src="/assets/solarpro-demo.mp4" type="video/mp4" />
+              <source src="/assets/solarquotepro-demo.webm" type="video/webm" />
               Your browser does not support the video tag.
             </video>
             
-            <button className="absolute inset-0 flex items-center justify-center bg-slate-950/40 group-hover:bg-slate-950/20 transition-all duration-300 play-btn">
-              <span className="flex items-center justify-center size-16 rounded-full bg-teal-500 text-white shadow-xl shadow-teal-500/35 hover:scale-110 transition-transform duration-300">
-                <Play className="w-8 h-8 fill-current translate-x-0.5" />
-              </span>
-            </button>
+            {!isPlaying && (
+              <button 
+                onClick={handlePlayClick}
+                className="absolute inset-0 flex items-center justify-center bg-slate-950/40 group-hover:bg-slate-950/20 transition-all duration-300 play-btn"
+              >
+                <span className="flex items-center justify-center size-16 rounded-full bg-teal-500 text-white shadow-xl shadow-teal-500/35 hover:scale-110 transition-transform duration-300">
+                  <Play className="w-8 h-8 fill-current translate-x-0.5" />
+                </span>
+              </button>
+            )}
           </div>
           <p className="p-4 bg-slate-950/80 border-t border-slate-850 text-center text-xs text-slate-400 font-bold">
             See: Calculator demo → Workspace walkthrough → PDF export → WhatsApp share
@@ -107,7 +216,7 @@ export default function VideoDemo() {
               <span className="w-3 h-3 rounded-full bg-emerald-500 block" />
             </div>
             <div className="mx-auto max-w-[280px] sm:max-w-md w-full bg-slate-900 rounded-lg py-1 px-3 text-[10px] text-slate-500 font-bold text-center border border-slate-800/80 truncate">
-              https://solar-pro.app/workspace/proposal-builder
+              https://solar-quotepro.app/workspace/proposal-builder
             </div>
           </div>
 
@@ -241,7 +350,7 @@ export default function VideoDemo() {
                       <div className="bg-slate-950 border border-slate-850 p-2.5 rounded-xl text-left flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-rose-500/15 text-rose-500 flex items-center justify-center font-black text-xs shrink-0">PDF</div>
                         <div className="truncate">
-                          <div className="text-[10px] font-bold text-white truncate">SolarPro_5kVA_Proposal.pdf</div>
+                          <div className="text-[10px] font-bold text-white truncate">SolarQuotePro_5kVA_Proposal.pdf</div>
                           <div className="text-[8px] text-slate-500 font-semibold">1.4 MB &bull; Naira ROI &amp; Specs</div>
                         </div>
                       </div>

@@ -25,11 +25,11 @@ export function PlanROILabel({ planId }) {
 export default function ROICalculator() {
   const [avgDealSize, setAvgDealSize] = React.useState(2500000); // ₦2.5M
   const [proposalsPerMonth, setProposalsPerMonth] = React.useState(15);
-  const [closeRateWithSolarPro, setCloseRateWithSolarPro] = React.useState(35); // 35%
+  const [closeRateWithSolarQuotePro, setCloseRateWithSolarQuotePro] = React.useState(35); // 35%
 
-  const baseCloseRate = 15; // 15% without SolarPro
+  const baseCloseRate = 15; // 15% without SolarQuotePro
   const baselineDeals = Math.round(proposalsPerMonth * (baseCloseRate / 100));
-  const newDeals = Math.round(proposalsPerMonth * (closeRateWithSolarPro / 100));
+  const newDeals = Math.round(proposalsPerMonth * (closeRateWithSolarQuotePro / 100));
   
   const additionalDeals = Math.max(0, newDeals - baselineDeals);
   const monthlyRevenueGain = additionalDeals * avgDealSize;
@@ -107,9 +107,9 @@ export default function ROICalculator() {
               {/* Slider 3: Close Rate */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs font-bold">
-                  <span className="text-slate-700 dark:text-slate-350">🎯 Target Close Rate (with SolarPro):</span>
+                  <span className="text-slate-700 dark:text-slate-350">🎯 Target Close Rate (with SolarQuotePro):</span>
                   <span className="text-teal-650 dark:text-teal-400 font-extrabold text-sm">
-                    {closeRateWithSolarPro}%
+                    {closeRateWithSolarQuotePro}%
                   </span>
                 </div>
                 <input 
@@ -117,8 +117,8 @@ export default function ROICalculator() {
                   min="16" 
                   max="60" 
                   step="1"
-                  value={closeRateWithSolarPro}
-                  onChange={(e) => setCloseRateWithSolarPro(Number(e.target.value))}
+                  value={closeRateWithSolarQuotePro}
+                  onChange={(e) => setCloseRateWithSolarQuotePro(Number(e.target.value))}
                   className="w-full h-1.5 bg-slate-250 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-600"
                 />
                 <div className="flex justify-between text-[9px] font-bold text-slate-400">
@@ -146,7 +146,7 @@ export default function ROICalculator() {
               </div>
 
               <div className="border-t border-teal-500/20 pt-3 flex items-center justify-between text-xs font-bold">
-                <span className="text-slate-655 dark:text-slate-350">SolarPro Cost ROI Multiplier:</span>
+                <span className="text-slate-655 dark:text-slate-350">SolarQuotePro Cost ROI Multiplier:</span>
                 <span className="text-emerald-650 dark:text-emerald-400 font-black text-sm">{roiMultiplier}x ROI</span>
               </div>
 

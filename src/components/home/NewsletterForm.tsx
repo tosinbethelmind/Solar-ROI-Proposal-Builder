@@ -29,7 +29,7 @@ export function NewsletterForm() {
     <div className="border-t border-slate-200 dark:border-slate-800 py-10 mb-10">
       <div className="max-w-2xl mx-auto text-center space-y-4">
         <p className="text-base font-black text-slate-800 dark:text-slate-100">📬 Get Weekly Solar ROI Insights</p>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Join 800+ Nigerian installers reading SolarPro every Thursday.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Join 800+ Nigerian installers reading SolarQuotePro every Thursday.</p>
         {done ? (
           <p className="text-teal-600 font-bold text-sm">✅ You&apos;re subscribed!</p>
         ) : (

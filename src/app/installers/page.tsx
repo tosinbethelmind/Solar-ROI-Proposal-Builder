@@ -113,7 +113,7 @@ export default function InstallersDirectoryPage() {
             <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/></svg>
             </div>
-            <span className="font-black text-slate-850 dark:text-slate-200 text-sm tracking-tight">SolarPro</span>
+            <span className="font-black text-slate-850 dark:text-slate-200 text-sm tracking-tight">SolarQuotePro</span>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -135,7 +135,7 @@ export default function InstallersDirectoryPage() {
             🇳🇬 Nigeria Solar Partner Directory
           </Badge>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-            Find SolarPro Verified Solar Installers
+            Find SolarQuotePro Verified Solar Installers
           </h1>
           <p className="text-xs sm:text-sm text-slate-350 max-w-lg mx-auto leading-relaxed">
             Discover premium, vetted solar professionals in Lagos and major urban markets. Request custom site estimates, compare battery configurations, and enjoy seamless local warranty setups.
@@ -296,7 +296,7 @@ export default function InstallersDirectoryPage() {
                             ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white' 
                             : 'bg-emerald-500/10 text-emerald-650'
                         }`}>
-                          🛡️ SolarPro Verified
+                          🛡️ SolarQuotePro Verified
                         </Badge>
                       ) : (
                         <Badge className="bg-slate-100 text-slate-500 border-none text-[8px] font-black uppercase">

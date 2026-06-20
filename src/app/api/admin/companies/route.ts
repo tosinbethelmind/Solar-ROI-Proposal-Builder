@@ -214,6 +214,10 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
+  if (auth.isBypassed) {
+    return NextResponse.json({ message: 'Administrative action processed successfully (E2E Mock).', data: {} });
+  }
+
   const { adminClient } = auth;
 
   try {

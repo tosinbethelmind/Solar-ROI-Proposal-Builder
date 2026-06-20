@@ -46,7 +46,7 @@ export default function AdminFXRates() {
   const [newRate, setNewRate] = React.useState('');
   const [overrideActive, setOverrideActive] = React.useState(true);
   const [note, setNote] = React.useState('');
-  const [adminEmail, setAdminEmail] = React.useState('admin@solarpro.com');
+  const [adminEmail, setAdminEmail] = React.useState('admin@solarquotepro.com');
 
   const fetchFXData = React.useCallback(async (showToast = false) => {
     if (showToast) setIsRefreshing(true);

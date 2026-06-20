@@ -32,8 +32,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import LeadStatusSelect from '@/components/LeadStatusSelect';
 
 interface HomeownerLead {
+  status?: string;
   id: string;
   name: string;
   phone: string;
@@ -153,7 +155,7 @@ export default function AdminLeads() {
     setGeneratedScript('');
     
     try {
-      const promptText = `You are a professional solar engineer & sales consultant in Nigeria for SolarPro. 
+      const promptText = `You are a professional solar engineer & sales consultant in Nigeria for SolarQuotePro. 
       Generate a customized outreach script for a homeowner lead with these details:
       - Name: ${selectedLead.name}
       - Phone: ${selectedLead.phone}
@@ -213,7 +215,7 @@ export default function AdminLeads() {
       cleanPhone = cleanPhone.substring(1);
     }
 
-    const text = generatedScript || `Hello ${selectedLead.name}, following up on your SolarPro sizing report...`;
+    const text = generatedScript || `Hello ${selectedLead.name}, following up on your SolarQuotePro sizing report...`;
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -226,7 +228,7 @@ export default function AdminLeads() {
       cleanPhone = cleanPhone.substring(1);
     }
     
-    const message = `Hello ${lead.name},\n\nThis is the SolarPro Admin Team following up on your solar sizing report. We calculated that you could save up to ${formatNaira(lead.monthly_savings_ngn)}/mo on fuel by deploying a custom ${lead.kva_recommended || 'solar'} solution.\n\nLet's schedule a free engineering inspection call to review your property?`;
+    const message = `Hello ${lead.name},\n\nThis is the SolarQuotePro Admin Team following up on your solar sizing report. We calculated that you could save up to ${formatNaira(lead.monthly_savings_ngn)}/mo on fuel by deploying a custom ${lead.kva_recommended || 'solar'} solution.\n\nLet's schedule a free engineering inspection call to review your property?`;
     
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -256,7 +258,7 @@ export default function AdminLeads() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `solarpro_B2C_homeowner_leads_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `solarquotepro_B2C_homeowner_leads_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -660,6 +662,7 @@ export default function AdminLeads() {
                   <th className="px-6 py-4">Contact Info</th>
                   <th className="px-6 py-4">Building Location</th>
                   <th className="px-6 py-4">Calculated Load Profile</th>
+                    <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Monthly Spend / Savings</th>
                   <th className="px-6 py-4">Captured Date</th>
                   <th className="px-6 py-4 text-right">Outreach Shortcuts</th>
@@ -734,6 +737,9 @@ export default function AdminLeads() {
                           </span>
                         )}
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <LeadStatusSelect leadId={lead.id} currentStatus={lead.status ?? 'new'} />
                     </td>
 
                     {/* Fuel spend & Savings */}

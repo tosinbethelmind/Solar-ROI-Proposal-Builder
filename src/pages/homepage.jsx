@@ -31,7 +31,7 @@ import ComparePlans from '@/components/ComparePlans';
 import ROICalculator, { PlanROILabel } from '@/components/ROICalculator';
 import VideoDemo from '@/components/VideoDemo';
 
-export default function SolarProHomepage() {
+export default function SolarQuoteProHomepage() {
   const [dieselSpend, setDieselSpend] = React.useState(150000);
   const [gridSpend, setGridSpend] = React.useState(80000);
   const [pricingCycle, setPricingCycle] = React.useState('monthly');
@@ -51,9 +51,37 @@ export default function SolarProHomepage() {
   const estimatedSavings = Math.round((dieselSpend * 0.85) + (gridSpend * 0.72));
   const paybackMonths = dieselSpend > 300000 || gridSpend > 150000 ? 18 : 24;
 
-  const handleDemoSubmit = (e) => {
+  const [demoLoading, setDemoLoading] = React.useState(false);
+  const [demoError, setDemoError] = React.useState('');
+
+  const handleDemoSubmit = async (e) => {
     e.preventDefault();
-    setDemoSubmitted(true);
+    setDemoLoading(true);
+    setDemoError('');
+    try {
+      const response = await fetch('/api/leads/implementation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contact_name: demoFormData.name,
+          phone: demoFormData.phone,
+          email: demoFormData.email,
+          current_workflow: `Company: ${demoFormData.company}`,
+          desired_package: selectedPlanForDemo
+        })
+      });
+      if (response.ok) {
+        setDemoSubmitted(true);
+      } else {
+        const data = await response.json();
+        setDemoError(data.error || 'Submission failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Failed to submit demo request:', err);
+      setDemoError('Network error. Please try again.');
+    } finally {
+      setDemoLoading(false);
+    }
   };
 
   const openDemoModal = (plan) => {
@@ -82,7 +110,7 @@ export default function SolarProHomepage() {
         "@type": "WebApplication",
         "@id": "https://solar-roi-proposal-builder.vercel.app/#webapp",
         "url": "https://solar-roi-proposal-builder.vercel.app/",
-        "name": "SolarPro Proposal Builder",
+        "name": "SolarQuotePro Proposal Builder",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "All",
         "description": "Nigeria's leading proposal builder and Naira ROI modeler for residential solar installers.",
@@ -106,10 +134,10 @@ export default function SolarProHomepage() {
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Does SolarPro support offline calculations?",
+            "name": "Does SolarQuotePro support offline calculations?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, SolarPro is built as a PWA and supports 100% offline capacity sizing and bill of materials generation during rural field visits."
+              "text": "Yes, SolarQuotePro is built as a PWA and supports 100% offline capacity sizing and bill of materials generation during rural field visits."
             }
           },
           {
@@ -136,7 +164,7 @@ export default function SolarProHomepage() {
 
       {/* A1 — Announcement bar */}
       <div className="bg-[#F59E0B] text-[#0A0F1E] py-2 px-4 text-center font-bold text-xs flex flex-wrap items-center justify-center gap-2 z-50 relative">
-        <span>⚡ Band A tariffs hit ₦225/kWh this month. Nigerian installers using SolarPro are quoting 3× faster.</span>
+        <span>⚡ Band A tariffs hit ₦225/kWh this month. Nigerian installers using SolarQuotePro are quoting 3× faster.</span>
         <Link href="/estimator" className="underline font-black whitespace-nowrap hover:opacity-75">→ Estimate My Savings</Link>
       </div>
 
@@ -147,10 +175,10 @@ export default function SolarProHomepage() {
             <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
             </div>
-            <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-200">SolarPro</span>
+            <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-200">SolarQuotePro</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600 dark:text-slate-400">
-            <Link href="#why-solarpro" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Why SolarPro</Link>
+            <Link href="#why-solarquotepro" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Why SolarQuotePro</Link>
             <Link href="#pricing-tiers" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors text-teal-605 dark:text-teal-400 font-extrabold">Pricing Plans</Link>
             <Link href="#storm-safety" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Safety Standard</Link>
             <Link href="#blog-section" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Energy Insights</Link>
@@ -406,7 +434,7 @@ export default function SolarProHomepage() {
       </section>
 
       {/* Core Benefits */}
-      <section id="why-solarpro" className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-10">
+      <section id="why-solarquotepro" className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-10">
         <div className="text-center space-y-3">
           <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">Core Benefits</Badge>
           <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-50">Everything You Need to Close Solar Deals Faster</h2>
@@ -608,7 +636,7 @@ export default function SolarProHomepage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div className="space-y-3">
             <Badge className="bg-teal-500/10 text-teal-650 border border-teal-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">Data &amp; math</Badge>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-850 dark:text-slate-50">From the SolarPro Blog</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-850 dark:text-slate-50">From the SolarQuotePro Blog</h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md font-medium">
               Read transparent financial breakdowns, safety permits, and regulatory checklists prepared by our engineering insights team.
             </p>
@@ -708,7 +736,7 @@ export default function SolarProHomepage() {
               Lagos Structural Safety &amp; Wind Permitting Standard
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
-              Lekki, Victoria Island, and coastal Lagos experience severe wind shear during thunderstorms. To safeguard properties and void warranties, SolarPro enforces structural roof guidelines.
+              Lekki, Victoria Island, and coastal Lagos experience severe wind shear during thunderstorms. To safeguard properties and void warranties, SolarQuotePro enforces structural roof guidelines.
             </p>
 
             <div className="space-y-4">
@@ -735,7 +763,7 @@ export default function SolarProHomepage() {
               <ShieldCheck className="w-5 h-5 text-teal-400" /> Installer Compliance checklist
             </h3>
             <p className="text-[11px] text-slate-300 leading-relaxed font-semibold">
-              Every proposal generated through SolarPro includes a dedicated safety permit annex highlighting these regulatory compliance requirements for Lagos State grid integrations.
+              Every proposal generated through SolarQuotePro includes a dedicated safety permit annex highlighting these regulatory compliance requirements for Lagos State grid integrations.
             </p>
             <div className="h-px bg-white/10" />
             <div className="space-y-3">
@@ -773,7 +801,7 @@ export default function SolarProHomepage() {
           <Badge className="bg-emerald-500/10 text-emerald-655 border border-emerald-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">Operational suite</Badge>
           <h2 className="text-2xl sm:text-4xl font-black text-slate-850 dark:text-slate-550">Robust Proposal Engineering</h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto font-medium">
-            SolarPro is packed with advanced operational triggers that turn standard field surveys into professional, high-converting customer documents.
+            SolarQuotePro is packed with advanced operational triggers that turn standard field surveys into professional, high-converting customer documents.
           </p>
         </div>
 
@@ -812,7 +840,7 @@ export default function SolarProHomepage() {
                 <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
                 </div>
-                <span className="font-black text-slate-800 dark:text-slate-200">SolarPro</span>
+                <span className="font-black text-slate-800 dark:text-slate-200">SolarQuotePro</span>
               </div>
               <p className="text-[11px] leading-relaxed max-w-xs">
                 Nigeria&apos;s leading progressive engineering modeler for residential solar installers and transparent homeowner self-sizing.
@@ -856,7 +884,7 @@ export default function SolarProHomepage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 border-t border-slate-100 dark:border-slate-850 mt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400">
-          <p>© <CopyrightYear /> SolarPro. Dedicated to stable Nigerian electricity.</p>
+          <p>© <CopyrightYear /> SolarQuotePro. Dedicated to stable Nigerian electricity.</p>
           <div className="flex gap-4 mt-2 sm:mt-0">
             <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
             <Link href="/terms" className="hover:underline">Terms of Service</Link>
@@ -939,8 +967,18 @@ export default function SolarProHomepage() {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-teal-650 hover:bg-teal-700 text-white font-black text-xs py-2.5 rounded-xl border-none shadow-md mt-4 h-10">
-                  Submit Request ➔
+                {demoError && (
+                  <p className="text-[10px] text-rose-500 font-extrabold text-center mt-1">
+                    ⚠️ {demoError}
+                  </p>
+                )}
+
+                <Button 
+                  type="submit" 
+                  disabled={demoLoading}
+                  className="w-full bg-teal-650 hover:bg-teal-700 text-white font-black text-xs py-2.5 rounded-xl border-none shadow-md mt-4 h-10 cursor-pointer disabled:opacity-50"
+                >
+                  {demoLoading ? 'Submitting...' : 'Submit Request ➔'}
                 </Button>
               </form>
             ) : (

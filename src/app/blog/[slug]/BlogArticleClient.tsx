@@ -444,7 +444,7 @@ export default function BlogArticleClient({ slug }: BlogArticleClientProps) {
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-16 bg-white dark:bg-slate-900 py-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-slate-500">
           <div className="flex items-center gap-3">
-            <span className="font-extrabold text-slate-700 dark:text-slate-350">SolarPro Insights</span>
+            <span className="font-extrabold text-slate-700 dark:text-slate-350">SolarQuotePro Insights</span>
             <span>·</span>
             <Link href="/" className="hover:text-slate-650">Home</Link>
             <span>·</span>
@@ -452,7 +452,7 @@ export default function BlogArticleClient({ slug }: BlogArticleClientProps) {
             <span>·</span>
             <Link href="/estimator" className="hover:text-slate-650">Sizer</Link>
           </div>
-          <p>© <CopyrightYear /> SolarPro. Licensed installers in all Lagos DisCos.</p>
+          <p>© <CopyrightYear /> SolarQuotePro. Licensed installers in all Lagos DisCos.</p>
         </div>
       </footer>
     </div>

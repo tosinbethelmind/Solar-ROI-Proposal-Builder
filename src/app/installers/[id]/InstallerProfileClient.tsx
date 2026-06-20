@@ -119,7 +119,7 @@ export default function InstallerProfileClient({ id }: InstallerProfileClientPro
                         ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-sm' 
                         : 'bg-emerald-500/10 text-emerald-655'
                     }`}>
-                      🛡️ SolarPro Verified
+                      🛡️ SolarQuotePro Verified
                     </Badge>
                   ) : (
                     <Badge className="bg-slate-100 text-slate-500 border-none text-[8px] font-black uppercase">
@@ -229,7 +229,7 @@ export default function InstallerProfileClient({ id }: InstallerProfileClientPro
               <ShieldCheck className="w-5 h-5 text-teal-400" /> Permitting Trust Annex
             </h3>
             <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
-              This installer adheres strictly to local regulatory structures and SolarPro premium wind permitted specifications.
+              This installer adheres strictly to local regulatory structures and SolarQuotePro premium wind permitted specifications.
             </p>
             <div className="h-px bg-white/10" />
             <div className="space-y-3">

@@ -11,3 +11,27 @@ export function createAdminClient() {
     }
   });
 }
+
+// Helper to upsert tariff data into Supabase
+export async function upsertTariffData(tableName: string, data: any[]) {
+  const supabase = createAdminClient();
+  const { error } = await supabase.from(tableName).upsert(data, {
+    onConflict: 'utility_name,source_file'
+  });
+  if (error) {
+    console.error('Supabase upsert error:', error);
+    throw error;
+  }
+  return true;
+}
+
+// Helper to update lead status
+export async function updateLeadStatus(leadId: string, newStatus: string) {
+  const supabase = createAdminClient();
+  const { error } = await supabase.from('leads').update({ status: newStatus }).eq('id', leadId);
+  if (error) {
+    console.error('Failed to update lead status:', error);
+    throw error;
+  }
+  return true;
+}

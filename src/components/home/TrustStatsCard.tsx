@@ -10,7 +10,7 @@ const STATS = [
 ];
 
 const CHIPS = [
-  { initials: 'EA', quote: 'Closed 4 deals in one week using SolarPro proposals', author: 'Emeka A., Lagos Installer' },
+  { initials: 'EA', quote: 'Closed 4 deals in one week using SolarQuotePro proposals', author: 'Emeka A., Lagos Installer' },
   { initials: 'NF', quote: 'Calculated my savings in 2 minutes, no tech knowledge needed', author: 'Ngozi F., Homeowner, Abuja' },
 ];
 

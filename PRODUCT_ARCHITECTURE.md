@@ -1,6 +1,6 @@
-# SolarPro Product Architecture & Progressive Disclosure Blueprint
+# SolarQuotePro Product Architecture & Progressive Disclosure Blueprint
 
-This document defines the architectural restructuring of **SolarPro** to transition from a single-entry web wizard into a highly converting, three-layered progressive experience. 
+This document defines the architectural restructuring of **SolarQuotePro** to transition from a single-entry web wizard into a highly converting, three-layered progressive experience. 
 
 The goal is to present a highly polished **public website** first, provide a zero-friction **Start Simple** lane for overwhelmed users, and keep the **full installer web app** as a deeper, optional operational suite.
 
@@ -8,7 +8,7 @@ The goal is to present a highly polished **public website** first, provide a zer
 
 ## 1. Executive Recommendation
 
-To maximize lead conversion, build instant credibility with Nigerian property owners, and prevent installer overwhelm, SolarPro must pivot from "SaaS-First" to **"Value-First"**. 
+To maximize lead conversion, build instant credibility with Nigerian property owners, and prevent installer overwhelm, SolarQuotePro must pivot from "SaaS-First" to **"Value-First"**. 
 
 Instead of landing visitors directly inside a multi-step pricing configuration wizard, the system must deploy **progressive disclosure**:
 
@@ -30,13 +30,13 @@ graph TD
 * **"Start Simple" is the Hero:** Impatient users get a 1-page sizing shortcut with zero profile setups.
 * **Frictionless Homeowner Lane:** Homeowners get an instant, jargon-free ROI estimate that pipes directly into the installer's pipeline.
 * **Pro Workspace is Pull-Not-Push:** Advanced features (CRM, custom pricing models, component databases) are locked behind an explicit "Installer Workspace" dashboard.
-* **Content is the Acquisition Engine:** A high-value blog/insights layer built specifically for Google SEO search intent and AI retrieval engines (GEO/AEO/LLMO) establishes SolarPro as the definitive source for Nigerian solar system mathematics.
+* **Content is the Acquisition Engine:** A high-value blog/insights layer built specifically for Google SEO search intent and AI retrieval engines (GEO/AEO/LLMO) establishes SolarQuotePro as the definitive source for Nigerian solar system mathematics.
 
 ---
 
 ## 2. Product Architecture
 
-SolarPro will be partitioned into three cleanly separated, inter-operating layers within the Next.js App Router, supported by a dynamic, static-rendered content directory:
+SolarQuotePro will be partitioned into three cleanly separated, inter-operating layers within the Next.js App Router, supported by a dynamic, static-rendered content directory:
 
 | Layer / Route | Target User | Complexity | Core Mechanics |
 | :--- | :--- | :--- | :--- |
@@ -66,7 +66,7 @@ The homepage (`/`) will behave like a premium, state-of-the-art product showcase
 └── /workspace (Pro dashboard entry point)
 ```
 
-### Homepage Blog Integrations ("From the SolarPro Blog"):
+### Homepage Blog Integrations ("From the SolarQuotePro Blog"):
 To enhance organic SEO footprint and establish immediate industry competence, the home page includes a dedicated **Local Market Intelligence** bento-grid section featuring:
 * **Primary Featured Spot:** A massive visual link to the *“Generator vs. Hybrid Solar: 2026 Nigeria Fuel Economics Report”*.
 * **Homeowner Lane Guide:** *“How to Calculate Your Lagos Building Solar Load in 3 Minutes”*.
@@ -113,7 +113,7 @@ We optimize technical assets to ensure instant indexing, mobile speed, and local
 
 ## 6. AI Optimization (GEO / AEO / LLMO) Strategy
 
-To guarantee that SolarPro is cited by Perplexity, ChatGPT (GPTBot), Gemini, and Claude when users ask complex solar questions, the articles are formatted as **RAG-friendly answer banks**:
+To guarantee that SolarQuotePro is cited by Perplexity, ChatGPT (GPTBot), Gemini, and Claude when users ask complex solar questions, the articles are formatted as **RAG-friendly answer banks**:
 
 ### GEO Citation Formatting Standards:
 * **Answer-First Writing:** Begin every major section with a bold, concise, direct response (1-2 sentences) before providing in-depth analysis.
@@ -167,7 +167,7 @@ Every article is structurally bound to a conversion pathway using progressive di
 
 ## 9. Internal Link Map & Schema Recommendations
 
-To construct a high-authority semantic mesh across SolarPro, we enforce the following internal linking structure:
+To construct a high-authority semantic mesh across SolarQuotePro, we enforce the following internal linking structure:
 
 ```
   ┌─────────────────────────────────────────────────────────┐
@@ -206,7 +206,7 @@ To construct a high-authority semantic mesh across SolarPro, we enforce the foll
   "@graph": [
     {
       "@type": "TechArticle",
-      "@id": "https://solarpro.ng/blog/generator-vs-solar-roi#article",
+      "@id": "https://solarquotepro.ng/blog/generator-vs-solar-roi#article",
       "headline": "Petrol Generator vs. Hybrid Solar ROI: The 2026 Nigerian Homeowner Financial Calculation",
       "description": "Calculates direct monthly NGN fuel expenses at ₦1,200+/liter compared to hybrid solar payback timelines in Lagos.",
       "datePublished": "2026-05-26T12:00:00+01:00",
@@ -218,13 +218,13 @@ To construct a high-authority semantic mesh across SolarPro, we enforce the foll
       },
       "publisher": {
         "@type": "Organization",
-        "name": "SolarPro",
-        "logo": "https://solarpro.ng/logo.png"
+        "name": "SolarQuotePro",
+        "logo": "https://solarquotepro.ng/logo.png"
       }
     },
     {
       "@type": "FAQPage",
-      "@id": "https://solarpro.ng/blog/generator-vs-solar-roi#faq",
+      "@id": "https://solarquotepro.ng/blog/generator-vs-solar-roi#faq",
       "mainEntity": [
         {
           "@type": "Question",

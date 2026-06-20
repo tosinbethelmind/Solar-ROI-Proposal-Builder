@@ -91,7 +91,7 @@ export default function AdminLayout({
               <Sun className="h-4.5 w-4.5 text-white font-black animate-spin-slow" />
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarPro</span>
+              <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarQuotePro</span>
               <span className="text-[9px] font-bold text-teal-650 dark:text-teal-400 uppercase tracking-widest leading-none mt-0.5">Control Center</span>
             </div>
           </Link>
@@ -160,7 +160,7 @@ export default function AdminLayout({
             <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600">
               <Sun className="h-4.5 w-4.5 text-white" />
             </div>
-            <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarPro Admin</span>
+            <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-50">SolarQuotePro Admin</span>
           </div>
           <button 
             onClick={() => setMobileMenuOpen(false)}

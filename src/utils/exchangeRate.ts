@@ -1,13 +1,19 @@
 export async function fetchUSDNGNRate(): Promise<number> {
-  const CACHE_KEY = 'solarpro_last_fx_rate';
-  const TIME_KEY = 'solarpro_fx_rate_timestamp';
+  const CACHE_KEY = 'solarquotepro_last_fx_rate';
+  const TIME_KEY = 'solarquotepro_fx_rate_timestamp';
   const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours
   const FALLBACK_RATE = 1600;
 
   try {
     // 1. Try to fetch from administrative custom override API endpoint
     try {
-      const response = await fetch('/api/admin/fx-rates', { next: { revalidate: 60 } });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1500);
+      const response = await fetch('/api/admin/fx-rates', { 
+        next: { revalidate: 60 },
+        signal: controller.signal 
+      });
+      clearTimeout(timeoutId);
       if (response.ok) {
         const result = await response.json();
         if (result && result.data && result.data.customRate) {
@@ -34,7 +40,10 @@ export async function fetchUSDNGNRate(): Promise<number> {
       }
     }
 
-    const response = await fetch('https://open.er-api.com/v6/latest/USD');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    const response = await fetch('https://open.er-api.com/v6/latest/USD', { signal: controller.signal });
+    clearTimeout(timeoutId);
     if (!response.ok) throw new Error('Network response was not ok');
     
     const data = await response.json();

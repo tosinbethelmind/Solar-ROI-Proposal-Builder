@@ -71,7 +71,7 @@ export async function GET() {
               id: `fx-${i}-${h.updatedAt}`,
               event: 'Exchange Rate Override',
               details: `Custom USD/NGN exchange rate locked to ₦${h.rate.toLocaleString()}. Note: "${h.note || 'None'}"`,
-              user: h.updatedBy || 'admin@solarpro.com',
+              user: h.updatedBy || 'admin@solarquotepro.com',
               type: 'system',
               timestamp: h.updatedAt
             });
@@ -93,7 +93,7 @@ export async function GET() {
           id: 'mock-sys-1',
           event: 'Edge Gateway Initiated',
           details: 'Secure Super Admin dashboard middle routing gateway compilation validated and deployed successfully.',
-          user: 'admin@solarpro.com',
+          user: 'admin@solarquotepro.com',
           type: 'system' as const,
           timestamp: new Date(now - 3600000).toISOString()
         },

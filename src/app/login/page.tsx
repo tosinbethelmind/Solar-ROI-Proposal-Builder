@@ -180,7 +180,7 @@ function LoginForm() {
           <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 shadow-md">
             <Sun className="h-5 w-5 text-white animate-spin-slow" />
           </div>
-          <span className="font-extrabold text-xl tracking-tight text-slate-850 dark:text-slate-50">SolarPro</span>
+          <span className="font-extrabold text-xl tracking-tight text-slate-850 dark:text-slate-50">SolarQuotePro</span>
         </Link>
         <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
           {usePhoneOtp 
@@ -403,7 +403,7 @@ function LoginForm() {
                   onClick={() => setIsSignUp(!isSignUp)}
                   className="text-xs text-teal-650 dark:text-teal-400 font-extrabold hover:underline cursor-pointer"
                 >
-                  {isSignUp ? 'Already have an installer account? Sign In' : 'New to SolarPro? Register Installer Profile'}
+                  {isSignUp ? 'Already have an installer account? Sign In' : 'New to SolarQuotePro? Register Installer Profile'}
                 </button>
               </div>
             )}
@@ -443,7 +443,7 @@ export default function LoginPage() {
         <div className="max-w-md space-y-8 relative z-10">
           <div className="space-y-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-teal-400 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20">
-              SolarPro Installer Suite
+              SolarQuotePro Installer Suite
             </span>
             <h2 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight">
               What&apos;s waiting inside <span className="text-teal-400">→</span>
@@ -487,7 +487,7 @@ export default function LoginPage() {
           </div>
 
           <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-500 flex justify-between">
-            <span>© <CopyrightYear /> SolarPro NG</span>
+            <span>© <CopyrightYear /> SolarQuotePro NG</span>
             <span>Reliable solar operations</span>
           </div>
         </div>

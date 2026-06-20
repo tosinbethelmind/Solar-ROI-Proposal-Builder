@@ -1,5 +1,5 @@
 """
-SolarPro E2E QA Tests
+SolarQuotePro E2E QA Tests
 =====================
 Tests all 3 bug fixes plus overall navigation and page integrity.
 
@@ -19,8 +19,10 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from playwright.sync_api import sync_playwright
+from urllib.parse import urlparse
 
-BASE = "http://localhost:3000"
+BASE = "https://solar-roi-proposal-builder.vercel.app"
+cookie_domain = urlparse(BASE).hostname
 RESULTS = []
 TIMEOUT = 180000  # 180s to allow Next.js dev server compilation on Windows VMs
 NAV_TIMEOUT = 45000
@@ -77,8 +79,8 @@ def run_tests():
         context.add_cookies([
             {
                 "name": "bypass_auth",
-                "value": "true",
-                "domain": "localhost",
+                "value": "solar-quotepro-e2e-secret-key-2026",
+                "domain": cookie_domain,
                 "path": "/"
             }
         ])
@@ -481,7 +483,7 @@ def run_tests():
 
 def main():
     print("=" * 60)
-    print("  SolarPro -- Comprehensive E2E QA Test Suite")
+    print("  SolarQuotePro -- Comprehensive E2E QA Test Suite")
     print("=" * 60)
 
     try:
