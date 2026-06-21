@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 **Live Production URL:** [https://solar-roi-proposal-builder.vercel.app](https://solar-roi-proposal-builder.vercel.app)
 
-*Note: The platform has been renamed from SolarPro to SolarQuotePro (Proposal Builder for Nigerian Installers). Recent updates include fully responsive layouts for the admin companies date-range filter on mobile.*
+*Note: SolarQuotePro (Proposal Builder for Nigerian Installers) is designed to help installers build and share proposals. Recent updates include fully responsive layouts for the admin companies date-range filter on mobile.*
 
 ## Getting Started
 

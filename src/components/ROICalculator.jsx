@@ -48,7 +48,7 @@ export default function ROICalculator() {
               💰 Installer Revenue Calculator
             </span>
             <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-50">
-              Calculate Your Solar Pro ROI
+              Calculate Your SolarQuotePro ROI
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               See how increasing your proposal speed and close rates translates to extra revenue.
