@@ -1,6 +1,6 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-**Live Production URL:** [https://solar-roi-proposal-builder.vercel.app](https://solar-roi-proposal-builder.vercel.app)
+**Live Production URL:** [https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app](https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app)
 
 *Note: SolarQuotePro (Proposal Builder for Nigerian Installers) is designed to help installers build and share proposals. Recent updates include fully responsive layouts for the admin companies date-range filter on mobile.*
 

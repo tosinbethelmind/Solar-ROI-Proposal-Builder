@@ -290,6 +290,7 @@ function LoginForm() {
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <Input
                       id="email"
+                      name="email"
                       type="email"
                       required
                       placeholder="name@company.com"
@@ -307,7 +308,7 @@ function LoginForm() {
                       <button
                         type="button"
                         onClick={handleForgotPassword}
-                        className="text-xs text-teal-650 dark:text-teal-400 hover:underline font-bold"
+                        className="text-xs text-teal-655 dark:text-teal-400 hover:underline font-bold"
                       >
                         Forgot Password?
                       </button>
@@ -317,6 +318,7 @@ function LoginForm() {
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <Input
                       id="password"
+                      name="password"
                       type="password"
                       required
                       placeholder="••••••••"

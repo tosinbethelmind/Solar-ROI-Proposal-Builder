@@ -108,8 +108,8 @@ export default function SolarQuoteProHomepage() {
     "@graph": [
       {
         "@type": "WebApplication",
-        "@id": "https://solar-roi-proposal-builder.vercel.app/#webapp",
-        "url": "https://solar-roi-proposal-builder.vercel.app/",
+        "@id": "https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app/#webapp",
+        "url": "https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app/",
         "name": "SolarQuotePro Proposal Builder",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "All",
@@ -130,7 +130,7 @@ export default function SolarQuoteProHomepage() {
       },
       {
         "@type": "FAQPage",
-        "@id": "https://solar-roi-proposal-builder.vercel.app/#faq",
+        "@id": "https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app/#faq",
         "mainEntity": [
           {
             "@type": "Question",
@@ -162,14 +162,14 @@ export default function SolarQuoteProHomepage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaJson) }}
       />
 
-      {/* A1 — Announcement bar */}
-      <div className="bg-[#F59E0B] text-[#0A0F1E] py-2 px-4 text-center font-bold text-xs flex flex-wrap items-center justify-center gap-2 z-50 relative">
-        <span>⚡ Band A tariffs hit ₦225/kWh this month. Nigerian installers using SolarQuotePro are quoting 3× faster.</span>
-        <Link href="/estimator" className="underline font-black whitespace-nowrap hover:opacity-75">→ Estimate My Savings</Link>
-      </div>
-
       {/* ═══ Header ═══ */}
       <header className="sticky top-0 z-50 border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-slate-200 dark:border-slate-800">
+        {/* A1 — Announcement bar */}
+        <div className="bg-[#F59E0B] text-[#0A0F1E] py-2 px-4 text-center font-bold text-xs flex flex-wrap items-center justify-center gap-2 z-50 relative">
+          <span>⚡ Band A tariffs hit ₦225/kWh this month. Nigerian installers using SolarQuotePro are quoting 3× faster.</span>
+          <Link href="/estimator" className="underline font-black whitespace-nowrap hover:opacity-75">→ Estimate My Savings</Link>
+        </div>
+
         <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 shadow-sm">
@@ -202,7 +202,8 @@ export default function SolarQuoteProHomepage() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      <main>
+        {/* Hero Section */}
       <section className="relative overflow-hidden py-16 lg:py-24 bg-gradient-to-b from-white via-slate-50/50 to-slate-100 dark:from-slate-950 dark:via-slate-900/30 dark:to-slate-950">
         <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-teal-500/5 to-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
@@ -553,7 +554,7 @@ export default function SolarQuoteProHomepage() {
           </Card>
 
           {/* Plan 3: Professional (Highlighted) */}
-          <Card className="bg-slate-950 border-2 border-teal-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 relative shadow-xl shadow-teal-500/10">
+          <Card className="bg-slate-950 text-slate-100 border-2 border-teal-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 relative shadow-xl shadow-teal-500/10">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-teal-555 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-md z-10 border border-teal-400">
               🔥 MOST POPULAR
             </span>
@@ -569,7 +570,7 @@ export default function SolarQuoteProHomepage() {
               <PlanROILabel planId="pro" />
 
               <div className="h-px bg-slate-900 my-4" />
-              <ul className="space-y-2 text-xs font-medium text-slate-350">
+              <ul className="space-y-2 text-xs font-medium text-slate-300">
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-400 shrink-0" /> 40 proposals / month</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Full load capacity calculator</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Generator fuel ROI charts</li>
@@ -586,7 +587,7 @@ export default function SolarQuoteProHomepage() {
               <Button 
                 onClick={() => openDemoModal('professional')}
                 variant="outline" 
-                className="w-full border-slate-800 text-slate-300 hover:bg-slate-900 text-xs font-bold rounded-xl"
+                className="w-full bg-transparent border-slate-800 text-slate-300 hover:bg-slate-900 text-xs font-bold rounded-xl"
               >
                 Request Live Demo
               </Button>
@@ -830,6 +831,7 @@ export default function SolarQuoteProHomepage() {
           </Link>
         </div>
       </section>
+      </main>
 
       {/* Footer Section */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-12">
@@ -894,7 +896,7 @@ export default function SolarQuoteProHomepage() {
 
       {/* Request Demo & Contact Sales Modal */}
       {showDemoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+        <div role="dialog" aria-modal="true" aria-label="Request Demo Modal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
           <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
             <button 
               onClick={() => setShowDemoModal(false)}
@@ -924,6 +926,7 @@ export default function SolarQuoteProHomepage() {
                       type="text" 
                       required
                       placeholder="Full Name" 
+                      aria-label="Full Name"
                       value={demoFormData.name}
                       onChange={(e) => setDemoFormData({ ...demoFormData, name: e.target.value })}
                       className="w-full bg-slate-100 dark:bg-slate-900 border-none rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none"
@@ -936,6 +939,7 @@ export default function SolarQuoteProHomepage() {
                       type="text" 
                       required
                       placeholder="Company Name" 
+                      aria-label="Company Name"
                       value={demoFormData.company}
                       onChange={(e) => setDemoFormData({ ...demoFormData, company: e.target.value })}
                       className="w-full bg-slate-100 dark:bg-slate-900 border-none rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none"
@@ -948,6 +952,7 @@ export default function SolarQuoteProHomepage() {
                       type="email" 
                       required
                       placeholder="Work Email" 
+                      aria-label="Work Email"
                       value={demoFormData.email}
                       onChange={(e) => setDemoFormData({ ...demoFormData, email: e.target.value })}
                       className="w-full bg-slate-100 dark:bg-slate-900 border-none rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none"
@@ -960,6 +965,7 @@ export default function SolarQuoteProHomepage() {
                       type="tel" 
                       required
                       placeholder="WhatsApp Phone Number" 
+                      aria-label="WhatsApp Phone Number"
                       value={demoFormData.phone}
                       onChange={(e) => setDemoFormData({ ...demoFormData, phone: e.target.value })}
                       className="w-full bg-slate-100 dark:bg-slate-900 border-none rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none"

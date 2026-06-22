@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 // Instruct Playwright to always record video for this specific test
-test.use({ 
-  video: 'on',
-  viewport: { width: 1280, height: 720 }
-});
+// Video recording configuration moved to playwright.config.ts
 
 // Helper to inject a visual cursor into the page
 async function injectCursor(page: any) {

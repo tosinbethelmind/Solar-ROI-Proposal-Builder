@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     const amountKobo = cycle === 'annual' ? planPrices.annual : planPrices.monthly;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://solar-roi-proposal-builder.vercel.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app';
 
     // Verify Paystack Secret Key exists, otherwise perform clean mock checkout
     const secretKey = process.env.PAYSTACK_SECRET_KEY;

@@ -1,15 +1,10 @@
 import * as React from 'react';
 import BlogArticleClient from './BlogArticleClient';
-import { BLOG_ARTICLES } from '@/lib/blog';
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-  return BLOG_ARTICLES.map((article) => ({
-    slug: article.slug,
-  }));
 }
 
 export default function Page({ params }: PageProps) {

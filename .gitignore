@@ -41,3 +41,13 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# test outputs
+/test-results/
+/playwright-report/
+
+# temp/reports
+/lighthouse-report.json
+/output.html
+/vercel_list*.txt
+

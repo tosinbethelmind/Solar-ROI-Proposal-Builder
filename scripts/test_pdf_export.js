@@ -18,7 +18,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('✅ Lead created with id:', lead.id);
 
     // 2️⃣ Request PDF export
-    const pdfRes = await fetch(`https://solar-roi-proposal-builder.vercel.app/api/admin/leads/export-pdf?leadId=${lead.id}`);
+    const pdfRes = await fetch(`https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app/api/admin/leads/export-pdf?leadId=${lead.id}`);
     if (!pdfRes.ok) {
       const txt = await pdfRes.text();
       throw new Error(`PDF request failed: ${pdfRes.status} ${txt}`);

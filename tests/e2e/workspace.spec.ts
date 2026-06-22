@@ -31,7 +31,7 @@ test.describe('Installer Workspace', () => {
     await page.goto('/proposals/new?type=wizard');
     
     // Check that key wizard elements are visible (like search appliances input or Next button)
-    await expect(page.locator('input[placeholder*="Search"]').first()).toBeVisible();
+    await expect(page.getByPlaceholder(/search/i).first()).toBeVisible();
     await expect(page.getByRole('button', { name: /Next/i }).first()).toBeVisible();
   });
 });

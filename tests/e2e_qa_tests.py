@@ -21,7 +21,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 from playwright.sync_api import sync_playwright
 from urllib.parse import urlparse
 
-BASE = "https://solar-roi-proposal-builder.vercel.app"
+BASE = "https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app"
 cookie_domain = urlparse(BASE).hostname
 RESULTS = []
 TIMEOUT = 180000  # 180s to allow Next.js dev server compilation on Windows VMs

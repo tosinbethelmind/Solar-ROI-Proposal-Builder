@@ -166,6 +166,7 @@ export default function VideoDemo() {
             {!isPlaying && (
               <button 
                 onClick={handlePlayClick}
+                aria-label="Play video demo"
                 className="absolute inset-0 flex items-center justify-center bg-slate-950/40 group-hover:bg-slate-950/20 transition-all duration-300 play-btn"
               >
                 <span className="flex items-center justify-center size-16 rounded-full bg-teal-500 text-white shadow-xl shadow-teal-500/35 hover:scale-110 transition-transform duration-300">

@@ -16,7 +16,7 @@ import urllib.error
 os.environ["PYTHONIOENCODING"] = "utf-8"
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-BASE = "https://solar-roi-proposal-builder.vercel.app"
+BASE = "https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app"
 RESULTS = []
 
 def record(name, passed, detail=""):

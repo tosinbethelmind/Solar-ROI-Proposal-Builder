@@ -2,10 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('SolarQuotePro App Walkthrough Demo Video', () => {
   // Instruct Playwright to always record video for this specific test
-  test.use({ 
-    video: 'on',
-    viewport: { width: 1280, height: 720 }
-  });
+// Video recording configuration moved to playwright.config.ts (removed test.use)
 
   test('Walkthrough estimator sizer and admin leads', async ({ page, context }) => {
     // 1. Navigate to self-service sizer page
@@ -17,8 +14,10 @@ test.describe('SolarQuotePro App Walkthrough Demo Video', () => {
     console.log('Adding appliances to Step 1...');
     
     // Add 1 Smart TV & Sound System
-    const tvCard = page.locator('div', { hasText: 'Smart TV & Sound System' }).last();
-    await tvCard.locator('button:has-text("+")').click();
+    // Wait for the Smart TV & Sound System card to be visible
+    await page.waitForSelector('div:has-text("Smart TV & Sound System")');
+    const tvCard = page.locator('div', { hasText: 'Smart TV & Sound System' }).first();
+    await tvCard.locator('button', { hasText: '+' }).click({ timeout: 45000 });
     await page.waitForTimeout(1000);
 
     // Toggle the heavy loads switch to show deep freezer and ACs

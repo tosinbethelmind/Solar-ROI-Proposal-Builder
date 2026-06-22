@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 export function PlanROILabel({ planId }) {
   if (planId === 'pro') {
     return (
-      <div className="mt-3 bg-teal-500/10 border border-teal-500/20 text-teal-650 dark:text-teal-400 p-2.5 rounded-xl text-[10px] font-black text-center uppercase tracking-wider leading-snug">
+      <div className="mt-3 bg-teal-500/10 border border-teal-500/20 text-teal-400 p-2.5 rounded-xl text-[10px] font-black text-center uppercase tracking-wider leading-snug">
         📈 Invest ₦45K/mo, close ₦2M deal = <span className="font-black underline">44x ROI</span>
       </div>
     );

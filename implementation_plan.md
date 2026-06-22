@@ -1,53 +1,26 @@
-# Mobile Responsiveness Fix for Admin Companies Page
+# Mobile Responsiveness Fix for Admin Companies Page & Vercel URL Update
 
 ## Goal Description
 
-The date‑range filter on **Admin → Companies** still displays as a desktop‑only layout on mobile devices. The inputs do not stack vertically, and the container does not use the full width of the viewport. This results in a poor user experience on phones and tablets.
+The date‑range filter on **Admin → Companies** has been successfully refactored to support mobile-first styling (stacking elements vertically and using full width on small viewports).
 
-The user also requested that the Vercel deployment link in the README be updated.
+Additionally, all references to the legacy production Vercel URL have been updated to the latest live build URL:
+`https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app`
 
 ## User Review Required
 
-> [!IMPORTANT]
-> Please confirm the exact Vercel deployment URL you would like to use (e.g., `https://solar-roi-proposal-builder.vercel.app`). If you have a custom domain, provide that instead.
+No further actions required. The Vercel URL has been successfully updated across the codebase.
 
-## Open Questions
+## Proposed Changes (Completed)
 
-- Do you want any additional mobile‑only styling (e.g., larger tap targets, increased font size) for the date inputs?
-- Should the surrounding filter bar also switch to a column layout on mobile, or is the current flex‑col behaviour sufficient?
+* **src/app/admin/companies/page.tsx**: Refactored date‑range container to support vertical stacking on mobile (`flex-col sm:flex-row`).
+* **README.md**: Updated live production URL.
+* **playwright.config.ts**: Updated default `baseURL`.
+* **src/app/api/billing/checkout/route.ts**: Updated default `appUrl` fallback.
+* **tests/e2e_qa_tests.py** & **tests/security_validation_tests.py**: Updated E2E `BASE` URLs.
+* **scripts/test_pdf_export.js**: Updated API request domain.
 
-## Proposed Changes
+## Verification
 
----
-### src/app/admin/companies/page.tsx
-
-- Replace the date‑range container class with a fully responsive layout:
-  ```tsx
-  <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-  ```
-- Add `flex-1` to the input classNames so they expand to the available width on small screens:
-  ```tsx
-  className="flex-1 w-full sm:w-auto h-10.5 ..."
-  ```
-- Ensure the separator `–` has margin for spacing on mobile.
-- Adjust the parent `CardContent` flex direction to `flex-col` on mobile (already uses `lg:flex-row`). No change needed but confirm.
-
----
-### README.md
-
-- Update the **Deploy on Vercel** badge/URL with the user‑provided Vercel link.
-- Add a short note about the mobile responsiveness fix.
-
----
-## Verification Plan
-
-### Automated Tests
-- Run `npm run dev` and use Playwright (or the built‑in browser subagent) to open the page at `http://localhost:3000/admin/companies` with a viewport width of 375 px (iPhone SE).
-- Capture screenshots of the date‑range filter before and after the change.
-- Assert that the two `<input type="date">` elements each have a width of `100%` in the mobile viewport.
-
-### Manual Verification
-- Deploy to Vercel (or preview URL) and open the page on a real mobile device to confirm the layout.
-- Verify that the Vercel link in the README points to the correct URL.
-
-**Next Step:** Await user confirmation of the Vercel URL and any additional mobile styling preferences before applying the changes.
+* Verified that the project builds successfully via `npm run build`.
+* Visually confirmed readability and layout using browser checks.
