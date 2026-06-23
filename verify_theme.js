@@ -18,14 +18,25 @@ const urls = [
 
   for (const url of urls) {
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+    // Scroll to pricing section to capture it in screenshots
+    await page.evaluate(() => {
+      const el = document.getElementById('pricing-tiers');
+      if (el) el.scrollIntoView();
+    });
+    // Wait for scroll animation
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     // Light mode screenshot (default)
     await page.screenshot({ path: path.join(screenshotDir, `${url.replace(/[:\/]/g, '_')}_light.png`) });
+    
     // Toggle theme – look for a button with aria-label or data-theme-toggle
     try {
       const toggle = await page.$('[data-theme-toggle], button[aria-label*="theme"], .theme-toggle');
       if (toggle) {
         await toggle.click();
-        await page.waitForTimeout(1000); // wait for UI update
+        // Wait for UI theme transition
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
     } catch (e) {
       console.error('Theme toggle not found:', e);
