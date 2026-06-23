@@ -46,6 +46,23 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Custom Color Scale for SolarQuotePro UI */
+  --color-slate-150: #eef2f6;
+  --color-slate-250: #dbe3ec;
+  --color-slate-350: #b0c0d0;
+  --color-slate-450: #7d91a5;
+  --color-slate-550: #566a7f;
+  --color-slate-655: #384b5e;
+  --color-slate-755: #203246;
+  --color-slate-850: #121e2c;
+
+  --color-teal-605: #0d9488;
+  --color-teal-650: #0f766e;
+  --color-teal-655: #115e59;
+
+  --color-emerald-450: #10b981;
+  --color-red-655: #991b1b;
 }
 
 :root {
