@@ -9,7 +9,7 @@ const urls = [
 ];
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
   const page = await browser.newPage();
 
   // Ensure screenshots folder exists
@@ -17,7 +17,7 @@ const urls = [
   if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir);
 
   for (const url of urls) {
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
     // Light mode screenshot (default)
     await page.screenshot({ path: path.join(screenshotDir, `${url.replace(/[:\/]/g, '_')}_light.png`) });
     // Toggle theme – look for a button with aria-label or data-theme-toggle
