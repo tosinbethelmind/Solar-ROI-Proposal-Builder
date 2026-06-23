@@ -8,12 +8,4 @@ automation
 scratch
 step5-after-click.png
 step5-before-click.png
-public/assets/solarquotepro-demo.webm
-public/assets/video-thumbnail.png
-*.png
-*.jpg
-*.jpeg
-*.webm
-*.mp4
-*.zip
 *.tsbuildinfo
