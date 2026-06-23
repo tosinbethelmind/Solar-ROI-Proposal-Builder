@@ -269,13 +269,13 @@ export default function SolarQuoteProHomepage() {
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex justify-center items-center p-2 rounded-xl bg-slate-950 border border-slate-850 hover:border-teal-500/20 transition-all duration-300">
+                <div className="flex justify-center items-center p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:border-teal-500/20 transition-all duration-300">
                   <img src="/assets/partner-logos/lseb.svg" alt="LSEB Logo" className="h-8 object-contain" />
                 </div>
-                <div className="flex justify-center items-center p-2 rounded-xl bg-slate-950 border border-slate-850 hover:border-teal-500/20 transition-all duration-300">
+                <div className="flex justify-center items-center p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:border-teal-500/20 transition-all duration-300">
                   <img src="/assets/partner-logos/panel-supplier.svg" alt="Vertex Solar Logo" className="h-8 object-contain" />
                 </div>
-                <div className="flex justify-center items-center p-2 rounded-xl bg-slate-950 border border-slate-850 hover:border-teal-500/20 transition-all duration-300">
+                <div className="flex justify-center items-center p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 hover:border-teal-500/20 transition-all duration-300">
                   <img src="/assets/partner-logos/battery-manufacturer.svg" alt="CellMax Lithium Logo" className="h-8 object-contain" />
                 </div>
               </div>
@@ -301,13 +301,13 @@ export default function SolarQuoteProHomepage() {
       </section>
 
       {/* Marquee Trust Bar */}
-      <div className="bg-[#0F172A] py-4 px-4 overflow-hidden border-b border-slate-800">
-        <p className="text-center text-slate-400 text-xs font-medium mb-3">Trusted by installers across Lagos · Abuja · Port Harcourt · Ibadan · Kano</p>
+      <div className="bg-slate-50 dark:bg-[#0F172A] py-4 px-4 overflow-hidden border-b border-slate-200 dark:border-slate-800">
+        <p className="text-center text-slate-500 dark:text-slate-400 text-xs font-medium mb-3">Trusted by installers across Lagos · Abuja · Port Harcourt · Ibadan · Kano</p>
         <div className="animate-marquee flex whitespace-nowrap gap-8 items-center">
           {[0, 1].map((gi) => (
             <div key={gi} className="flex items-center gap-6 shrink-0" aria-hidden={gi === 1}>
               {['Lekki Clean Energy', 'SunPower Lagos', 'Greenfield Solar NG', 'Abuja Solar Works', 'EkoSolar Tech'].map((n) => (
-                <span key={n} className="text-slate-500 text-xs font-bold border border-slate-700 rounded-lg px-3 py-1 whitespace-nowrap">{n}</span>
+                <span key={n} className="text-slate-600 dark:text-slate-500 text-xs font-bold border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1 whitespace-nowrap">{n}</span>
               ))}
             </div>
           ))}
@@ -710,12 +710,12 @@ export default function SolarQuoteProHomepage() {
             </Link>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-3 flex flex-col justify-center items-center">
-            <p className="text-slate-200 text-xs sm:text-sm font-bold leading-normal">
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 text-center space-y-3 flex flex-col justify-center items-center">
+            <p className="text-slate-850 dark:text-slate-200 text-xs sm:text-sm font-bold leading-normal">
               📋 Download our guide on Lagos permit approvals &amp; landlord agreement formats.
             </p>
             <Link href="/blog/lagos-solar-permitting-compliance-checklist" className="block">
-              <Button variant="outline" className="border-teal-555/40 text-teal-350 hover:bg-slate-800 rounded-xl font-bold text-xs h-10 px-6">
+              <Button variant="outline" className="border-teal-555/40 text-teal-655 dark:text-teal-350 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-bold text-xs h-10 px-6">
                 Download Free Solar ROI Checklist (PDF)
               </Button>
             </Link>
@@ -724,19 +724,19 @@ export default function SolarQuoteProHomepage() {
       </section>
 
       {/* Lagos Safety Standard spotlight */}
-      <section id="storm-safety" className="bg-slate-900 text-white py-16 relative overflow-hidden">
+      <section id="storm-safety" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white py-16 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-teal-550/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-emerald-450/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <div className="space-y-6">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-teal-500/20 text-teal-350 border border-teal-500/30">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-teal-500/10 text-teal-655 dark:text-teal-350 border border-teal-500/30">
               🛠️ Lagos Safety Compliant
             </span>
             <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-snug">
               Lagos Structural Safety &amp; Wind Permitting Standard
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+            <p className="text-xs sm:text-sm text-slate-650 dark:text-slate-350 leading-relaxed font-medium">
               Lekki, Victoria Island, and coastal Lagos experience severe wind shear during thunderstorms. To safeguard properties and void warranties, SolarQuotePro enforces structural roof guidelines.
             </p>
 
@@ -747,26 +747,26 @@ export default function SolarQuoteProHomepage() {
                 { title: "Tenant Ownership Rights", desc: "Our templates include signed Landlord Addendums identifying removable solar assets." }
               ].map((step, idx) => (
                 <div key={idx} className="flex gap-3">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-teal-500/20 text-teal-400 font-bold text-xs uppercase">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-teal-500/10 dark:bg-teal-500/20 text-teal-655 dark:text-teal-400 font-bold text-xs uppercase">
                     {idx + 1}
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-xs text-white">{step.title}</h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{step.desc}</p>
+                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">{step.title}</h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{step.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <Card className="border-teal-500/20 bg-white/5 border-white/5 backdrop-blur-lg text-white shadow-xl rounded-3xl p-6 sm:p-8 space-y-6">
-            <h3 className="font-extrabold text-sm sm:text-base text-teal-300 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-teal-400" /> Installer Compliance checklist
+          <Card className="border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 text-slate-900 dark:text-white shadow-xl rounded-3xl p-6 sm:p-8 space-y-6">
+            <h3 className="font-extrabold text-sm sm:text-base text-teal-655 dark:text-teal-300 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-teal-655 dark:text-teal-400" /> Installer Compliance checklist
             </h3>
-            <p className="text-[11px] text-slate-300 leading-relaxed font-semibold">
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-semibold">
               Every proposal generated through SolarQuotePro includes a dedicated safety permit annex highlighting these regulatory compliance requirements for Lagos State grid integrations.
             </p>
-            <div className="h-px bg-white/10" />
+            <div className="h-px bg-slate-250 dark:bg-white/10" />
             <div className="space-y-3">
               {[
                 "LSEB certification verified for grid-tie hybrid inverters",
@@ -774,7 +774,7 @@ export default function SolarQuoteProHomepage() {
                 "Wind shear deflection angle configured under 15 degrees",
                 "Polyurethane sealant SikaFlex applied to penetrations"
               ].map((text, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-250 leading-relaxed">
+                <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-650 dark:text-slate-250 leading-relaxed">
                   <Check className="w-4 h-4 text-emerald-450 shrink-0 mt-0.5" />
                   <span>{text}</span>
                 </div>
@@ -787,7 +787,7 @@ export default function SolarQuoteProHomepage() {
                 </Button>
               </Link>
               <Link href="/estimator" className="block w-full">
-                <Button variant="outline" className="w-full border-teal-500/30 text-teal-350 hover:bg-teal-950/40 hover:text-white rounded-xl font-bold text-xs py-2 h-10">
+                <Button variant="outline" className="w-full border-teal-500/30 text-teal-655 dark:text-teal-350 hover:bg-teal-500/10 dark:hover:bg-teal-950/40 rounded-xl font-bold text-xs py-2 h-10">
                   🏡 Check Solar Savings Before Booking Installer
                 </Button>
               </Link>
