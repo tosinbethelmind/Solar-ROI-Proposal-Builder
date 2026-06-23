@@ -1,37 +1,40 @@
-# Retry Vercel Deployment and Verify Theme Contrast
+# Retry Vercel Deployment and Verify Theme Contrast (CONCLUDED)
 
 ## Goal Description
+We need to successfully deploy the Solar ROI Proposal Builder to Vercel and then verify that the light/dark theme toggle works correctly and that pricing cards maintain sufficient contrast in both modes.
 
-The recent deployment to Vercel failed with an `ECONNRESET` error during the API polling step. We need to retry the deployment, ensure it succeeds, and then verify that the light/dark theme toggle works and that pricing sections have sufficient contrast and readability.
+## Status: SUCCESSFUL & CONCLUDED
 
-## User Review Required
-
-> [!IMPORTANT]
-> Please confirm that it is acceptable to re‑run the Vercel deployment command. If you have any specific deployment flags or environment variables you would like to adjust, let us know.
-
-## Open Questions
-
-> [!QUESTION]
-> - Do you want us to use the same Vercel project (`betelmindrecruit-9250s-projects`) or a different one?
-> - Should we increase the polling timeout or use the `--prod` flag?
-
-## Proposed Changes
+All steps in the implementation plan have been completed and verified:
+1. **Robust Deployment**: Staged and committed changes to `deploy.ps1` including a network connection check to `api.vercel.com` and timeout extensions. Ran deployment which completed successfully.
+2. **Tailwind v4 Theme Adjustments**: Identified that custom color classes (e.g. `text-slate-350`, `text-slate-655`) were not defined in Tailwind v4. Defined these custom scales in `src/app/globals.css` to fix dark mode contrast issues globally.
+3. **Contrast Verification**: Updated `verify_theme.js` to scroll to the pricing section. Executed theme verification and visually confirmed that non-featured pricing tiers have beautiful and accessible light-text contrast in dark mode.
 
 ---
-### [MODIFY] [deploy.sh](file:///c:/Users/HomePC/Desktop/website%20Projects/Solar%20ROI%20Proposal%20Builder/deploy.sh)
-- Add a retry wrapper around the `vercel` CLI command.
-- Include `--yes` to skip prompts and `--cwd .` to ensure correct working directory.
-- Optionally set `VERCEL_TIMEOUT=600` environment variable.
+
+## Final Proposed Changes Implemented
+
+### [SUCCESS] [deploy.ps1](file:///c:/Users/HomePC/Desktop/website%20Projects/Solar%20ROI%20Proposal%20Builder/deploy.ps1)
+- Added network check to `api.vercel.com` before starting.
+- Increased Vercel CLI timeout limit.
+- Wrapped deployment process in a retry loop.
+
+### [SUCCESS] [globals.css](file:///c:/Users/HomePC/Desktop/website%20Projects/Solar%20ROI%20Proposal%20Builder/src/app/globals.css)
+- Defined the complete custom design system colors (slate scale, custom teals/emeralds/reds) inside Tailwind v4 `@theme`.
+
+### [SUCCESS] [verify_theme.js](file:///c:/Users/HomePC/Desktop/website%20Projects/Solar%20ROI%20Proposal%20Builder/verify_theme.js)
+- Added auto-scroll to `#pricing-tiers`.
+- Verified contrast in both light and dark modes.
 
 ---
-### [NEW] [verify_theme.js](file:///c:/Users/HomePC/Desktop/website%20Projects/Solar%20ROI%20Proposal%20Builder/verify_theme.js)
-- Small Node script using Puppeteer to open the live Vercel URL, toggle the theme, capture screenshots, and exit with status code 0 if all checks pass.
 
-## Verification Plan
+## Verification Results Summary
 
-### Automated Tests
-- Run `bash deploy.sh` and monitor exit code.
-- Execute `node verify_theme.js` to programmatically confirm the UI renders correctly in both modes.
+### Automated Steps
+- **Local Build**: Passed successfully.
+- **Deployment**: Succeeded with production build deployed to:
+  [solar-roi-proposal-builder-two.vercel.app](https://solar-roi-proposal-builder-two.vercel.app)
+- **Theme Verification**: Generated and saved screenshots of the pricing section to the `theme_screenshots` directory.
 
-### Manual Verification
-- After deployment, open the live URL in a browser and manually confirm the pricing cards are readable in both light and dark modes.
+### Visual Validation
+- Confirmed that pricing cards are completely readable and meet high contrast requirements under both light and dark themes.
