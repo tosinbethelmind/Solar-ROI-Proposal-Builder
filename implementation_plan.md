@@ -1,26 +1,37 @@
-# Mobile Responsiveness Fix for Admin Companies Page & Vercel URL Update
+# Retry Vercel Deployment and Verify Theme Contrast
 
 ## Goal Description
 
-The date‑range filter on **Admin → Companies** has been successfully refactored to support mobile-first styling (stacking elements vertically and using full width on small viewports).
-
-Additionally, all references to the legacy production Vercel URL have been updated to the latest live build URL:
-`https://solar-roi-proposal-builder-betelmindrecruit-9250s-projects.vercel.app`
+The recent deployment to Vercel failed with an `ECONNRESET` error during the API polling step. We need to retry the deployment, ensure it succeeds, and then verify that the light/dark theme toggle works and that pricing sections have sufficient contrast and readability.
 
 ## User Review Required
 
-No further actions required. The Vercel URL has been successfully updated across the codebase.
+> [!IMPORTANT]
+> Please confirm that it is acceptable to re‑run the Vercel deployment command. If you have any specific deployment flags or environment variables you would like to adjust, let us know.
 
-## Proposed Changes (Completed)
+## Open Questions
 
-* **src/app/admin/companies/page.tsx**: Refactored date‑range container to support vertical stacking on mobile (`flex-col sm:flex-row`).
-* **README.md**: Updated live production URL.
-* **playwright.config.ts**: Updated default `baseURL`.
-* **src/app/api/billing/checkout/route.ts**: Updated default `appUrl` fallback.
-* **tests/e2e_qa_tests.py** & **tests/security_validation_tests.py**: Updated E2E `BASE` URLs.
-* **scripts/test_pdf_export.js**: Updated API request domain.
+> [!QUESTION]
+> - Do you want us to use the same Vercel project (`betelmindrecruit-9250s-projects`) or a different one?
+> - Should we increase the polling timeout or use the `--prod` flag?
 
-## Verification
+## Proposed Changes
 
-* Verified that the project builds successfully via `npm run build`.
-* Visually confirmed readability and layout using browser checks.
+---
+### [MODIFY] [deploy.sh](file:///c:/Users/HomePC/Desktop/website%20Projects/Solar%20ROI%20Proposal%20Builder/deploy.sh)
+- Add a retry wrapper around the `vercel` CLI command.
+- Include `--yes` to skip prompts and `--cwd .` to ensure correct working directory.
+- Optionally set `VERCEL_TIMEOUT=600` environment variable.
+
+---
+### [NEW] [verify_theme.js](file:///c:/Users/HomePC/Desktop/website%20Projects/Solar%20ROI%20Proposal%20Builder/verify_theme.js)
+- Small Node script using Puppeteer to open the live Vercel URL, toggle the theme, capture screenshots, and exit with status code 0 if all checks pass.
+
+## Verification Plan
+
+### Automated Tests
+- Run `bash deploy.sh` and monitor exit code.
+- Execute `node verify_theme.js` to programmatically confirm the UI renders correctly in both modes.
+
+### Manual Verification
+- After deployment, open the live URL in a browser and manually confirm the pricing cards are readable in both light and dark modes.
