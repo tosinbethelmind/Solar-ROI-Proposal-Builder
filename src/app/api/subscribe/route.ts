@@ -1,8 +1,17 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
+import { rateLimit } from '@/utils/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    const headersList = await headers();
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0] || headersList.get('x-real-ip') || '127.0.0.1';
+
+    if (!await rateLimit(ip, 5, 60000)) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { email } = body;
 

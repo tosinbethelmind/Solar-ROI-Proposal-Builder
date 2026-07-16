@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { verifyAdmin } from '@/utils/adminAuth'
 import { isE2EBypassed } from '@/utils/e2eBypass'
+import { headers } from 'next/headers'
+import { rateLimit } from '@/utils/rateLimit'
 
 // GET all homeowner leads (Restricted to platform admins)
 export async function GET() {
@@ -43,28 +45,56 @@ export async function GET() {
 
 // POST public B2C homeowner lead submission (Anonymous)
 export async function POST(request: Request) {
-  const supabase = await createClient()
-
   try {
-    const body = await request.json()
-    const { name, phone, email, location, running_load_w, kva_recommended, monthly_savings_ngn, monthly_fuel_spend } = body
+    const headersList = await headers()
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0] || headersList.get('x-real-ip') || '127.0.0.1'
 
-    if (!name || !phone) {
-      return NextResponse.json({ error: 'Name and Phone number are required' }, { status: 400 })
+    if (!await rateLimit(ip, 5, 60000)) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
     }
+
+    const supabase = await createClient()
+    const body = await request.json()
+    const {
+      name,
+      phone,
+      email,
+      location,
+      running_load_w,
+      kva_recommended,
+      monthly_savings_ngn,
+      monthly_fuel_spend,
+      full_name,
+      whatsapp,
+      city_disco,
+      estimated_system_size
+    } = body
+
+    if ((!name || !phone) && (!full_name || !whatsapp)) {
+      return NextResponse.json({ error: 'Name and Phone or Full Name and WhatsApp are required' }, { status: 400 })
+    }
+
+    const resolvedName = name || full_name
+    const resolvedPhone = phone || whatsapp
+    const resolvedFullName = full_name || name
+    const resolvedWhatsApp = whatsapp || phone
 
     if (await isE2EBypassed()) {
       return NextResponse.json({
         data: {
           id: 'e2e-mock-lead-id-2',
-          name,
-          phone,
+          name: resolvedName,
+          phone: resolvedPhone,
           email: email || null,
           location: location || null,
           running_load_w: running_load_w ? parseInt(running_load_w, 10) : null,
           kva_recommended: kva_recommended || null,
           monthly_savings_ngn: monthly_savings_ngn ? parseFloat(monthly_savings_ngn) : null,
           monthly_fuel_spend: monthly_fuel_spend ? parseFloat(monthly_fuel_spend) : null,
+          full_name: resolvedFullName,
+          whatsapp: resolvedWhatsApp,
+          city_disco: city_disco || null,
+          estimated_system_size: estimated_system_size || null,
           created_at: new Date().toISOString()
         }
       })
@@ -73,14 +103,18 @@ export async function POST(request: Request) {
     const { data: lead, error: insertError } = await supabase
       .from('homeowner_leads')
       .insert({
-        name,
-        phone,
+        name: resolvedName,
+        phone: resolvedPhone,
         email: email || null,
         location: location || null,
         running_load_w: running_load_w ? parseInt(running_load_w, 10) : null,
         kva_recommended: kva_recommended || null,
         monthly_savings_ngn: monthly_savings_ngn ? parseFloat(monthly_savings_ngn) : null,
-        monthly_fuel_spend: monthly_fuel_spend ? parseFloat(monthly_fuel_spend) : null
+        monthly_fuel_spend: monthly_fuel_spend ? parseFloat(monthly_fuel_spend) : null,
+        full_name: resolvedFullName,
+        whatsapp: resolvedWhatsApp,
+        city_disco: city_disco || null,
+        estimated_system_size: estimated_system_size || null
       })
       .select('*')
       .single()

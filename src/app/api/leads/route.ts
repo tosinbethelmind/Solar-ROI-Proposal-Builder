@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { isE2EBypassed } from '@/utils/e2eBypass'
+import { headers } from 'next/headers'
+import { rateLimit } from '@/utils/rateLimit'
 
 // POST public B2C homeowner lead submission (Email-only capture)
 export async function POST(request: Request) {
-  const supabase = await createClient()
-
   try {
+    const headersList = await headers()
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0] || headersList.get('x-real-ip') || '127.0.0.1'
+
+    if (!await rateLimit(ip, 5, 60000)) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+    }
+
+    const supabase = await createClient()
     const body = await request.json()
     const { email, location, running_load_w, kva_recommended, monthly_savings_ngn, monthly_fuel_spend } = body
 
