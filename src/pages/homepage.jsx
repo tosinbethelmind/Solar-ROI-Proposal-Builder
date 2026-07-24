@@ -97,6 +97,7 @@ export default function SolarQuoteProHomepage() {
   // Pricing calculations
   const getPrice = (tier, cycle) => {
     const prices = {
+      payg: { monthly: '₦1,500', annual: '₦1,500' },
       free: { monthly: '₦0', annual: '₦0' },
       starter: { monthly: '₦15,000', annual: '₦12,000' },
       professional: { monthly: '₦35,000', annual: '₦28,000' },
@@ -514,7 +515,35 @@ export default function SolarQuoteProHomepage() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 items-stretch">
+          {/* Plan 0: Pay-Per-Proposal */}
+          <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Freelancers</span>
+                <Badge className="bg-teal-500/10 text-teal-600 dark:text-teal-400 text-[8px] uppercase font-black border border-teal-500/20">Pay As You Go</Badge>
+              </div>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Pay-Per-Proposal</h3>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-black text-slate-900 dark:text-white">₦1,500</span>
+                <span className="text-xs text-slate-400 font-bold">/proposal</span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Buy proposal credits on demand with zero monthly commitment.</p>
+              <div className="h-px bg-slate-100 dark:bg-slate-800 my-4" />
+              <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-350">
+                <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-500 shrink-0" /> ₦1,500 per proposal PDF</li>
+                <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-500 shrink-0" /> Tokens never expire</li>
+                <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-500 shrink-0" /> Watermark-free exports</li>
+                <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-500 shrink-0" /> Direct WhatsApp sharing</li>
+              </ul>
+            </div>
+            <Link href="/pricing#payment-section" className="mt-8">
+              <Button className="w-full bg-teal-650 hover:bg-teal-700 text-white rounded-xl text-xs font-black">
+                Buy Tokens (₦1,500)
+              </Button>
+            </Link>
+          </Card>
+
           {/* Plan 1: Free */}
           <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300">
             <div className="space-y-4">
