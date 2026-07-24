@@ -237,7 +237,9 @@ export default function InstallerProfileClient({ id }: InstallerProfileClientPro
                 "Lagos wind permitting deflection compliance certified",
                 "Waterproof SikaPolyurethane purlin mount sealants only",
                 "Gel / Lithium lifecycle warranty validation checked",
-                "CAC Business Registration details verified in file"
+                installer.cac_number 
+                  ? `CAC Registration [${installer.cac_number}] verified in file`
+                  : "CAC Business Registration details verified in file"
               ].map((text, idx) => (
                 <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-200 leading-relaxed">
                   <CheckCircle className="w-4 h-4 text-emerald-450 shrink-0 mt-0.5" />

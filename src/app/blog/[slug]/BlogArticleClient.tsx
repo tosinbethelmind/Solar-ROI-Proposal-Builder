@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { BLOG_ARTICLES } from '@/lib/blog';
 import { CopyrightYear } from '@/components/ui/CopyrightYear';
+import { LegalNotice } from '@/components/ui/LegalNotice';
 import { 
   ArrowLeft, 
   Clock, 
@@ -88,29 +89,84 @@ export default function BlogArticleClient({ slug }: BlogArticleClientProps) {
     return count;
   }, [checks]);
 
-  // Load JSON-LD FAQ Schema
+  // Load JSON-LD Multi-Entity @graph Schema for Google and AI Search Engines (GEO)
   React.useEffect(() => {
     if (!article) return;
+    
+    let isoDate = article.date;
+    try {
+      const parsedDate = new Date(article.date);
+      if (!isNaN(parsedDate.getTime())) {
+        isoDate = parsedDate.toISOString().split('T')[0];
+      }
+    } catch (e) {}
+
     const schemaScript = document.createElement('script');
     schemaScript.type = 'application/ld+json';
     schemaScript.innerHTML = JSON.stringify({
       '@context': 'https://schema.org',
-      '@type': 'TechArticle',
-      'headline': article.schema.headline,
-      'description': article.schema.description,
-      'author': {
-        '@type': 'Person',
-        'name': article.author
-      },
-      'datePublished': article.date,
-      'mainEntity': article.schema.faqList.map(faq => ({
-        '@type': 'Question',
-        'name': faq.q,
-        'acceptedAnswer': {
-          '@type': 'Answer',
-          'text': faq.a
+      '@graph': [
+        {
+          '@type': 'TechArticle',
+          '@id': `${window.location.origin}/blog/${article.slug}#article`,
+          'headline': article.schema?.headline || article.title,
+          'description': article.schema?.description || article.description,
+          'image': article.image,
+          'datePublished': isoDate,
+          'author': {
+            '@type': 'Person',
+            'name': article.author
+          },
+          'publisher': {
+            '@type': 'Organization',
+            'name': 'SolarQuotePro',
+            'logo': {
+              '@type': 'ImageObject',
+              'url': `${window.location.origin}/icon-192x192.png`
+            }
+          },
+          'mainEntityOfPage': {
+            '@type': 'WebPage',
+            '@id': `${window.location.origin}/blog/${article.slug}`
+          }
+        },
+        {
+          '@type': 'FAQPage',
+          '@id': `${window.location.origin}/blog/${article.slug}#faq`,
+          'mainEntity': article.faqs.map(faq => ({
+            '@type': 'Question',
+            'name': faq.question,
+            'acceptedAnswer': {
+              '@type': 'Answer',
+              'text': faq.answer
+            }
+          }))
+        },
+        {
+          '@type': 'BreadcrumbList',
+          '@id': `${window.location.origin}/blog/${article.slug}#breadcrumb`,
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Home',
+              'item': window.location.origin
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'Insights Hub',
+              'item': `${window.location.origin}/blog`
+            },
+            {
+              '@type': 'ListItem',
+              'position': 3,
+              'name': article.title,
+              'item': `${window.location.origin}/blog/${article.slug}`
+            }
+          ]
         }
-      }))
+      ]
     });
     document.head.appendChild(schemaScript);
     return () => {
@@ -405,6 +461,26 @@ export default function BlogArticleClient({ slug }: BlogArticleClientProps) {
                   {complianceScore}%
                 </div>
               </div>
+
+              {/* Dynamic conversion asset download block */}
+              {complianceScore >= 75 && (
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                  <div className="text-center sm:text-left space-y-0.5">
+                    <p className="text-xs font-bold text-emerald-400 flex items-center justify-center sm:justify-start gap-1">
+                      ✓ Compliance Threshold Reached
+                    </p>
+                    <p className="text-[10px] text-slate-350">
+                      Download the official printable Landlord Solar Consent Addendum PDF to secure tenancy rights.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => window.open('/estimator/landlord-consent?city=lagos', '_blank')}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] h-8 rounded-lg shrink-0 px-4 cursor-pointer"
+                  >
+                    Download Addendum PDF ⬇️
+                  </Button>
+                </div>
+              )}
             </Card>
           )}
         </section>
@@ -452,7 +528,10 @@ export default function BlogArticleClient({ slug }: BlogArticleClientProps) {
             <span>·</span>
             <Link href="/estimator" className="hover:text-slate-650">Sizer</Link>
           </div>
-          <p>© <CopyrightYear /> SolarQuotePro. Licensed installers in all Lagos DisCos.</p>
+          <div>
+            <p>© <CopyrightYear /> SolarQuotePro. Licensed installers in all Lagos DisCos.</p>
+            <LegalNotice />
+          </div>
         </div>
       </footer>
     </div>

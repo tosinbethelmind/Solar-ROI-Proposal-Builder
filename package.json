@@ -2,7 +2,6 @@
   "name": "solar-roi",
   "version": "0.1.0",
   "private": true,
-
   "scripts": {
     "dev": "npx next dev --webpack",
     "build": "npx next build --webpack",
@@ -26,6 +25,7 @@
     "next-pwa": "^5.6.0",
     "next-themes": "^0.4.6",
     "pdfmake": "^0.3.11",
+    "pg": "^8.22.0",
     "posthog-js": "^1.375.0",
     "react": "19.2.4",
     "react-countup": "^6.5.3",
@@ -53,9 +53,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "node-fetch": "^2.7.0",
+    "puppeteer": "^22.8.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.6",
-    "puppeteer": "^22.8.0"
+    "vitest": "^4.1.6"
   }
 }

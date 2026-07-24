@@ -26,10 +26,12 @@ import {
 import { BLOG_ARTICLES } from '@/lib/blog';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { CopyrightYear } from '@/components/ui/CopyrightYear';
+import { LegalNotice } from '@/components/ui/LegalNotice';
 import Testimonials from '@/components/Testimonials';
 import ComparePlans from '@/components/ComparePlans';
 import ROICalculator, { PlanROILabel } from '@/components/ROICalculator';
 import VideoDemo from '@/components/VideoDemo';
+import EnterpriseModal from '@/components/EnterpriseModal';
 
 export default function SolarQuoteProHomepage() {
   const [dieselSpend, setDieselSpend] = React.useState(150000);
@@ -37,6 +39,7 @@ export default function SolarQuoteProHomepage() {
   const [pricingCycle, setPricingCycle] = React.useState('monthly');
   
   // Modal states
+  const [enterpriseModalOpen, setEnterpriseModalOpen] = React.useState(false);
   const [showDemoModal, setShowDemoModal] = React.useState(false);
   const [selectedPlanForDemo, setSelectedPlanForDemo] = React.useState('professional');
   const [demoFormData, setDemoFormData] = React.useState({
@@ -95,9 +98,9 @@ export default function SolarQuoteProHomepage() {
   const getPrice = (tier, cycle) => {
     const prices = {
       free: { monthly: '₦0', annual: '₦0' },
-      starter: { monthly: '₦18,000', annual: '₦14,400' },
-      professional: { monthly: '₦45,000', annual: '₦36,000' },
-      enterprise: { monthly: '₦120,000', annual: '₦96,000' }
+      starter: { monthly: '₦15,000', annual: '₦12,000' },
+      professional: { monthly: '₦35,000', annual: '₦28,000' },
+      enterprise: { monthly: '₦95,000', annual: '₦76,000' }
     };
     return prices[tier][cycle];
   };
@@ -118,13 +121,13 @@ export default function SolarQuoteProHomepage() {
           "@type": "AggregateOffer",
           "priceCurrency": "NGN",
           "lowPrice": "0",
-          "highPrice": "120000",
+          "highPrice": "95000",
           "offerCount": "4",
           "offers": [
-            { "@type": "Offer", "name": "Free Plan", "price": "0", "priceCurrency": "NGN" },
-            { "@type": "Offer", "name": "Starter Plan", "price": "18000", "priceCurrency": "NGN" },
-            { "@type": "Offer", "name": "Professional Plan", "price": "45000", "priceCurrency": "NGN" },
-            { "@type": "Offer", "name": "Enterprise Plan", "price": "120000", "priceCurrency": "NGN" }
+            { "@type": "Offer", "name": "Free Starter Plan", "price": "0", "priceCurrency": "NGN" },
+            { "@type": "Offer", "name": "Starter Plan", "price": "15000", "priceCurrency": "NGN" },
+            { "@type": "Offer", "name": "Professional Plan", "price": "35000", "priceCurrency": "NGN" },
+            { "@type": "Offer", "name": "Enterprise Plan", "price": "95000", "priceCurrency": "NGN" }
           ]
         }
       },
@@ -182,9 +185,17 @@ export default function SolarQuoteProHomepage() {
             <Link href="#pricing-tiers" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors text-teal-605 dark:text-teal-400 font-extrabold">Pricing Plans</Link>
             <Link href="#storm-safety" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Safety Standard</Link>
             <Link href="#blog-section" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Energy Insights</Link>
+            <Link href="/walkthroughs" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors text-emerald-600 dark:text-emerald-450 font-extrabold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Walkthrough Academy
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
+            <Link href="/walkthroughs">
+              <Button variant="ghost" size="sm" className="text-xs font-bold text-teal-650 hover:bg-teal-500/10 dark:text-teal-450">
+                Academy
+              </Button>
+            </Link>
             <Link href="/blog">
               <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-655 hover:bg-slate-150 dark:text-slate-350">
                 Insights
@@ -508,7 +519,7 @@ export default function SolarQuoteProHomepage() {
           <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300">
             <div className="space-y-4">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Homeowners</span>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Free Plan</h3>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Free Starter Plan</h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-black text-slate-900 dark:text-white">{getPrice('free', pricingCycle)}</span>
                 <span className="text-xs text-slate-400 font-bold">/month</span>
@@ -516,7 +527,7 @@ export default function SolarQuoteProHomepage() {
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Great for calculating fuel offsets and load sizes for your own house.</p>
               <div className="h-px bg-slate-100 dark:bg-slate-800 my-4" />
               <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-350">
-                <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-500 shrink-0" /> 1 proposal / month</li>
+                <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-500 shrink-0" /> 2 proposals / month</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-500 shrink-0" /> Standard PDF (Watermarked)</li>
                 <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-teal-500 shrink-0" /> Offline sizer cache</li>
               </ul>
@@ -532,7 +543,7 @@ export default function SolarQuoteProHomepage() {
           <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300">
             <div className="space-y-4">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Solo Installers</span>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Starter</h3>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Starter Plan</h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-black text-slate-900 dark:text-white">{getPrice('starter', pricingCycle)}</span>
                 <span className="text-xs text-slate-400 font-bold">/month</span>
@@ -598,7 +609,7 @@ export default function SolarQuoteProHomepage() {
           <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:-translate-y-1 transition-all duration-300">
             <div className="space-y-4">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">EPC Firms</span>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Enterprise</h3>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Enterprise Plan</h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-black text-slate-900 dark:text-white">{getPrice('enterprise', pricingCycle)}</span>
                 <span className="text-xs text-slate-400 font-bold">/month</span>
@@ -617,7 +628,7 @@ export default function SolarQuoteProHomepage() {
               </ul>
             </div>
             <Button 
-              onClick={() => openDemoModal('enterprise')}
+              onClick={() => setEnterpriseModalOpen(true)}
               className="mt-8 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-950 font-black text-xs rounded-xl"
             >
               Contact Sales
@@ -886,7 +897,10 @@ export default function SolarQuoteProHomepage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 border-t border-slate-100 dark:border-slate-850 mt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400">
-          <p>© <CopyrightYear /> SolarQuotePro. Dedicated to stable Nigerian electricity.</p>
+          <div>
+            <p>© <CopyrightYear /> SolarQuotePro. Dedicated to stable Nigerian electricity.</p>
+            <LegalNotice />
+          </div>
           <div className="flex gap-4 mt-2 sm:mt-0">
             <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
             <Link href="/terms" className="hover:underline">Terms of Service</Link>
@@ -1009,6 +1023,7 @@ export default function SolarQuoteProHomepage() {
           </div>
         </div>
       )}
+      <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
     </div>
   );
 }

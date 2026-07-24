@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { Switch } from '@/components/ui/switch';
 import { useHomeownerSubscriptionStore } from '@/store/homeownerSubscriptionStore';
 import { CopyrightYear } from '@/components/ui/CopyrightYear';
+import { LegalNotice } from '@/components/ui/LegalNotice';
 import { REGION_PROFILES, formatCurrency, convertCost, type RegionCode, type RegionProfile } from '@/lib/regionConfig';
 import { NIGERIAN_CITIES, getCityById, type NigerianCity } from '@/lib/nigerianCities';
 import {
@@ -38,6 +39,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { BUSINESS_PRESETS, mapTemplateToEstimator, type BusinessLoadTemplate } from '@/lib/businessPresets';
+import { fetchUSDNGNRate } from '@/utils/exchangeRate';
+import { useMarketplaceStore } from '@/store/marketplaceStore';
 
 /* ─── Presets for Non-Installers ───────────────────────────────── */
 interface AppliancePreset {
@@ -89,56 +92,79 @@ export default function HomeownerEstimatorPage() {
   // Live FX Rate States
   const [usdToNgnRate, setUsdToNgnRate] = React.useState<number>(1500);
   const [fxFetchedTime, setFxFetchedTime] = React.useState<string>('');
+  const [fxSource, setFxSource] = React.useState<string>('Live Interbank Rate • open.er-api.com');
+  const [fxLoading, setFxLoading] = React.useState<boolean>(true);
 
   React.useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
   }, []);
 
-  React.useEffect(() => {
-    if (step === 3 && mounted) {
-      const isLeadCaptured = typeof window !== 'undefined' && localStorage.getItem('solar_lead_captured') === 'true';
-      const isPaid = homeownerSub.tier !== 'free';
-      if (!isPaid && !isLeadCaptured) {
-        setStep(2);
-        setLeadModalOpen(true);
-      }
-    }
-  }, [step, homeownerSub.tier, mounted]);
+  const [gateFullName, setGateFullName] = React.useState('');
+  const [gateWhatsApp, setGateWhatsApp] = React.useState('');
+  const [gateLoading, setGateLoading] = React.useState(false);
+  const [leadCaptured, setLeadCaptured] = React.useState(false);
 
-  // Fetch FX Rate and Cache for 10 minutes
   React.useEffect(() => {
-    const fetchFxRate = async () => {
-      if (typeof window === 'undefined') return;
-      const cachedRate = localStorage.getItem('solarquotepro_usd_ngn_rate');
-      const cachedTime = localStorage.getItem('solarquotepro_usd_ngn_timestamp');
-      
-      if (cachedRate && cachedTime) {
-        const age = Date.now() - parseInt(cachedTime, 10);
-        if (age < 10 * 60 * 1000) { // 10 minutes
-          setUsdToNgnRate(parseFloat(cachedRate));
-          setFxFetchedTime(new Date(parseInt(cachedTime, 10)).toLocaleTimeString());
-          return;
+    if (typeof window !== 'undefined') {
+      const captured = localStorage.getItem('solar_lead_captured') === 'true';
+      setLeadCaptured(captured);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const city = params.get('city');
+      const nepa = params.get('nepa');
+      const backup = params.get('backup');
+      const fuel = params.get('fuel');
+      const spend = params.get('spend');
+      const qStr = params.get('quantities');
+
+      if (city) setCityId(city);
+      if (nepa) setNepaHours(parseInt(nepa, 10));
+      if (backup) setBackupHours(parseInt(backup, 10));
+      if (fuel) setFuelType(fuel as 'petrol' | 'diesel' | 'none');
+      if (spend) setMonthlySpend(spend);
+      if (qStr) {
+        try {
+          const parsed = JSON.parse(qStr);
+          setQuantities(prev => ({ ...prev, ...parsed }));
+        } catch (e) {
+          console.error('Failed to parse quantities from query parameters', e);
         }
       }
+    }
+  }, []);
 
+  // Fetch FX Rate and Cache — non-blocking; renders skeleton pill until resolved
+  React.useEffect(() => {
+    let cancelled = false;
+    const fetchFxRate = async () => {
       try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
-        if (res.ok) {
-          const data = await res.json();
-          const rate = data.rates?.NGN;
-          if (rate && typeof rate === 'number') {
-            setUsdToNgnRate(rate);
-            localStorage.setItem('solarquotepro_usd_ngn_rate', rate.toString());
-            localStorage.setItem('solarquotepro_usd_ngn_timestamp', Date.now().toString());
+        const rate = await fetchUSDNGNRate();
+        if (cancelled) return;
+        setUsdToNgnRate(rate);
+        
+        if (typeof window !== 'undefined') {
+          const cachedTime = localStorage.getItem('solarquotepro_fx_rate_timestamp');
+          const source = localStorage.getItem('solarquotepro_fx_source') || 'Live Interbank Rate • open.er-api.com';
+          setFxSource(source);
+          if (cachedTime) {
+            setFxFetchedTime(new Date(parseInt(cachedTime, 10)).toLocaleTimeString());
+          } else {
             setFxFetchedTime(new Date().toLocaleTimeString());
           }
         }
       } catch (e) {
         console.error('Failed to fetch live FX rate:', e);
+      } finally {
+        if (!cancelled) setFxLoading(false);
       }
     };
     fetchFxRate();
+    return () => { cancelled = true; };
   }, []);
 
   /* ── State variables ── */
@@ -339,25 +365,125 @@ export default function HomeownerEstimatorPage() {
         }
         setLeadModalOpen(false);
         setStep(3);
-        toast.success('Roadmap and Anti-Scam Guide unlocked successfully!');
+        setLeadCaptured(true);
+        toast.success('Your report is ready! Let\'s proceed.');
       } else {
         const err = await response.json();
-        toast.error(err.error || 'Submission failed.');
+        toast.error(err.error || 'Submission failed. Please try again.');
       }
     } catch (e) {
-      console.error('Error submitting lead:', e);
+      console.error('Error submitting homeowner lead:', e);
       toast.error('Connection error. Please try again.');
     } finally {
-      setLeadLoading(false);
+      setGateLoading(false);
     }
   };
 
-  const handleWhatsAppShare = () => {
+  const handleGateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!gateFullName.trim() || !gateWhatsApp.trim()) {
+      toast.error('Please enter your name and WhatsApp number.');
+      return;
+    }
+    setGateLoading(true);
+    try {
+      const response = await fetch('/api/leads/homeowner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: gateFullName,
+          whatsapp: gateWhatsApp,
+          city_disco: `${activeCity.name} (${activeCity.disco})`,
+          estimated_system_size: recommendation.kva,
+          monthly_fuel_spend: currentFuelSpendNaira,
+          estimated_monthly_savings: solarReplacedSavings,
+          running_load_w: runningLoad,
+          kva_recommended: recommendation.kva,
+          location: activeCity.name
+        })
+      });
+
+      if (response.ok) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('solar_lead_captured', 'true');
+        }
+
+        // ── Installer Routing: Sync lead into marketplace store ──
+        // Normalise city ID to a state + city string pair so it matches
+        // the mock service-area index in marketplaceStore.
+        const cityNormalisationMap: Record<string, { state: string; city: string }> = {
+          'lagos':         { state: 'Lagos', city: 'Lekki' },
+          'lagos-ikeja':   { state: 'Lagos', city: 'Ikeja' },
+          'abuja':         { state: 'Abuja', city: 'Maitama' },
+          'port-harcourt': { state: 'Rivers', city: 'Port Harcourt' },
+          'kano':          { state: 'Kano',  city: 'Kano' },
+          'ibadan':        { state: 'Oyo',   city: 'Ibadan' },
+          'enugu':         { state: 'Enugu', city: 'Enugu' },
+          'benin':         { state: 'Edo',   city: 'Benin City' },
+          'jos':           { state: 'Plateau', city: 'Jos' },
+          'kaduna':        { state: 'Kaduna', city: 'Kaduna' },
+          'yola':          { state: 'Adamawa', city: 'Yola' },
+        };
+        const normalised = cityNormalisationMap[cityId] ?? { state: activeCity.state, city: activeCity.name };
+
+        useMarketplaceStore.getState().submitLead({
+          name:              gateFullName,
+          phone:             gateWhatsApp,
+          email:             '',
+          state:             normalised.state,
+          city:              normalised.city,
+          property_type:     'residential',
+          monthly_spend:     currentFuelSpendNaira,
+          power_source:      fuelType === 'none' ? 'grid' : fuelType === 'diesel' ? 'generator' : 'mixed',
+          interest_type:     'backup_power',
+          budget_range:      `₦${(recommendation.costMin / 1_000_000).toFixed(1)}M – ₦${(recommendation.costMax / 1_000_000).toFixed(1)}M`,
+          preferred_contact: 'WhatsApp',
+          timeline:          'Immediate',
+          note:              `System: ${recommendation.title} (${recommendation.kva}). Payback: ${paybackPeriodYears.toFixed(1)} yrs. Fuel savings: ₦${solarReplacedSavings.toLocaleString()}/mo.`,
+          request_source:    'estimator',
+        });
+
+        setLeadCaptured(true);
+        toast.success('Your report is ready! Matched installers are shown below.');
+      } else {
+        const err = await response.json();
+        toast.error(err.error || 'Failed to submit. Please try again.');
+      }
+    } catch (err) {
+      console.error('[Estimator Gate Submit] Error:', err);
+      toast.error('Connection error. Please try again.');
+    } finally {
+      setGateLoading(false);
+    }
+  };
+
+  const handleGateSkip = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('solar_lead_captured', 'true');
+    }
+    setLeadCaptured(true);
+    toast.success('Viewing report preview.');
+  };
+
+  const getShareUrl = () => {
+    if (typeof window === 'undefined') return '';
+    const params = new URLSearchParams();
+    params.set('city', cityId);
+    params.set('nepa', nepaHours.toString());
+    params.set('backup', backupHours.toString());
+    params.set('fuel', fuelType);
+    params.set('spend', monthlySpend);
+    params.set('quantities', JSON.stringify(quantities));
+    return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  };
+
+  const handleShareToInstaller = async () => {
+    const shareUrl = getShareUrl();
     const minUSD = targetCostMin / usdToNgnRate;
     const maxUSD = targetCostMax / usdToNgnRate;
     const savingsMoUSD = solarReplacedSavings / usdToNgnRate;
-    
-    const text = `Hello! I just used the *SolarQuotePro Sizing Estimator* to calculate my solar needs for my property in ${activeCity.name}:
+
+    const textMessage = `Hello! I just used the *SolarQuotePro Sizing Estimator* to calculate my solar needs for my property in ${activeCity.name}:
     
 - *Running Load:* ${runningLoad} W
 - *Sized Recommendation:* ${recommendation.title} (${recommendation.kva})
@@ -369,10 +495,26 @@ export default function HomeownerEstimatorPage() {
 - *Estimated Fuel Savings:* ${formatCurrency(solarReplacedSavings, region)}/month (~$${savingsMoUSD.toFixed(0)} USD/mo)
 - *Payback Period:* ${paybackPeriodYears.toFixed(1)} years
 
-Could we connect to discuss a formal quote and installation assessment?`;
+View my configuration and calculate sizing details here: ${shareUrl}`;
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'SolarQuotePro Sizing Report',
+          text: textMessage,
+          url: shareUrl
+        });
+        toast.success('Report shared successfully!');
+      } catch (err) {
+        console.log('navigator.share failed or cancelled, falling back to WhatsApp', err);
+        window.open(`https://wa.me/?text=${encodeURIComponent(textMessage)}`, '_blank');
+      }
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(textMessage)}`, '_blank');
+    }
   };
+
+  const handleWhatsAppShare = handleShareToInstaller;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -391,9 +533,9 @@ Could we connect to discuss a formal quote and installation assessment?`;
             {mounted && homeownerSub.tier === 'free' && (
               <Badge 
                 onClick={homeownerSub.openUpgradeModal} 
-                className="cursor-pointer bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold py-1"
+                className="cursor-pointer bg-teal-500/10 hover:bg-teal-500/20 text-teal-650 dark:text-teal-400 border border-teal-500/20 text-[10px] font-bold py-1"
               >
-                ⚡ {homeownerSub.estimationsUsedThisMonth >= 1 ? '0 Free Left (Upgrade)' : '1 Free Estimation Left'}
+                🏡 Unlimited Free Estimations
               </Badge>
             )}
 
@@ -476,16 +618,25 @@ Could we connect to discuss a formal quote and installation assessment?`;
               </select>
             </div>
 
-            {/* Live FX Rate Ticker Pill (B4) */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 rounded-full text-[10px] font-bold shadow-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
-              </span>
-              <span>USD/NGN Rate: ₦{usdToNgnRate.toFixed(2)}</span>
-              <span className="text-slate-400 dark:text-slate-500">•</span>
-              <span className="text-[9px] text-slate-500">Live open.er-api.com {fxFetchedTime ? `(Updated ${fxFetchedTime})` : ''}</span>
-            </div>
+            {/* Live FX Rate Ticker Pill (B4) — skeleton shown while fetching */}
+            {fxLoading ? (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-200/60 dark:bg-slate-800/60 border border-slate-300/40 dark:border-slate-700/40 rounded-full text-[10px] font-bold shadow-sm animate-pulse">
+                <span className="relative flex h-2 w-2">
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
+                </span>
+                <span className="text-slate-500 dark:text-slate-400">Fetching rate…</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 rounded-full text-[10px] font-bold shadow-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                </span>
+                <span>USD/NGN Rate: ₦{usdToNgnRate.toFixed(2)}</span>
+                <span className="text-slate-400 dark:text-slate-500">•</span>
+                <span className="text-[9px] text-slate-500">{fxSource} {fxFetchedTime ? `(Updated ${fxFetchedTime})` : ''}</span>
+              </div>
+            )}
           </div>
         </section>
 
@@ -1010,10 +1161,9 @@ Could we connect to discuss a formal quote and installation assessment?`;
               <Button
                 className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-bold flex items-center gap-1 text-xs px-5 h-9 border-none cursor-pointer"
                 onClick={() => {
-                  const isLeadCaptured = typeof window !== 'undefined' && localStorage.getItem('solar_lead_captured') === 'true';
+                  const isLC = typeof window !== 'undefined' && localStorage.getItem('solar_lead_captured') === 'true';
                   const isPaid = homeownerSub.tier !== 'free';
-                  
-                  if (isPaid || isLeadCaptured) {
+                  if (isPaid || isLC || leadCaptured) {
                     setStep(3);
                   } else {
                     setLeadModalOpen(true);
@@ -1029,9 +1179,70 @@ Could we connect to discuss a formal quote and installation assessment?`;
         {/* ═══ Step 3: Recommendations ═══ */}
         {step === 3 && (
           <div className="space-y-6 animate-in fade-in duration-300">
-            
-            {/* Sizing result hero card */}
-            <Card className="relative overflow-hidden border-teal-500/25 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-950 text-white shadow-xl rounded-3xl p-6 sm:p-8">
+            {homeownerSub.tier === 'free' && !leadCaptured ? (
+              <div className="max-w-md mx-auto py-8">
+                <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
+                  <div className="space-y-2 text-center">
+                    <Badge className="bg-teal-500/10 text-teal-650 dark:text-teal-400 border border-teal-500/10 text-[9px] uppercase tracking-wider font-extrabold py-0.5 px-2">
+                      ⚡ REPORT READY
+                    </Badge>
+                    <h2 className="text-xl font-black text-slate-850 dark:text-white leading-tight">
+                      Your Free Solar Sizing Report is Ready
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      Drop your WhatsApp number — we'll send your full report and connect you to verified Lagos installers.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleGateSubmit} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Full Name</label>
+                      <Input
+                        type="text"
+                        required
+                        placeholder="e.g. Alhaji Musa Bello"
+                        value={gateFullName}
+                        onChange={(e) => setGateFullName(e.target.value)}
+                        className="rounded-xl border-slate-250 dark:border-slate-800 dark:bg-slate-950 font-medium text-xs focus-visible:ring-teal-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">WhatsApp Number</label>
+                      <Input
+                        type="tel"
+                        required
+                        placeholder="+234 801 234 5678"
+                        value={gateWhatsApp}
+                        onChange={(e) => setGateWhatsApp(e.target.value)}
+                        className="rounded-xl border-slate-250 dark:border-slate-800 dark:bg-slate-950 font-medium text-xs focus-visible:ring-teal-500"
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={gateLoading}
+                      className="w-full bg-teal-650 hover:bg-teal-700 text-white rounded-xl text-xs font-black shadow-md h-10 border-none transition-all cursor-pointer"
+                    >
+                      {gateLoading ? 'Preparing Report...' : 'Get My Free Report on WhatsApp →'}
+                    </Button>
+                  </form>
+
+                  <div className="text-center pt-2">
+                    <button
+                      type="button"
+                      onClick={handleGateSkip}
+                      className="text-xs font-bold text-slate-455 hover:text-slate-655 dark:hover:text-slate-350 underline transition-all cursor-pointer"
+                    >
+                      Skip — show the report without saving
+                    </button>
+                  </div>
+                </Card>
+              </div>
+            ) : (
+              <>
+                {/* Sizing result hero card */}
+                <Card className="relative overflow-hidden border-teal-500/25 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-950 text-white shadow-xl rounded-3xl p-6 sm:p-8">
               <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
               
               <div className="space-y-4">
@@ -1056,7 +1267,7 @@ Could we connect to discuss a formal quote and installation assessment?`;
                 </p>
                 
                 <p className="text-[9px] text-slate-500 italic mt-1">
-                  *Converted in real-time at the current parallel rate of ₦{usdToNgnRate.toFixed(2)}/USD via open.er-api.com.
+                  *Converted in real-time at the {fxSource} of ₦{usdToNgnRate.toFixed(2)}/USD.
                 </p>
 
                 <div className="h-px bg-white/10 my-4" />
@@ -1342,14 +1553,43 @@ Could we connect to discuss a formal quote and installation assessment?`;
               )}
             </div>
 
+            {/* ── City Compliance Notes Card ── */}
+            <LocalComplianceCard city={activeCity} />
+
+            {/* ── Dynamic Matched Installers Card ── */}
+            <MatchedInstallersCard cityId={cityId} activeCity={activeCity} onShare={handleShareToInstaller} />
+
+            {/* Keep the plain WhatsApp share CTA as a fallback */}
+            <Card className="border border-teal-500/20 bg-teal-500/[0.03] dark:bg-teal-500/[0.01] rounded-3xl p-6 sm:p-8 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1 max-w-xl">
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-850 dark:text-white flex items-center gap-2">
+                    📱 Share Report via WhatsApp
+                  </h3>
+                  <p className="text-xs text-slate-555 dark:text-slate-400 font-medium">
+                    Send this sizing report directly to any installer or to a friend who needs solar quotes.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleShareToInstaller}
+                  className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl text-xs font-black px-6 h-10 border-none shadow-md shrink-0 cursor-pointer"
+                >
+                  Share / Send to Installer 📱
+                </Button>
+              </div>
+            </Card>
+
+              </>
+            )}
+
             {/* Actions for customer */}
             <div className="flex flex-col sm:flex-row gap-3 pt-3">
               <Button
                 type="button"
                 className="flex-1 bg-gradient-to-r from-teal-650 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-2xl font-black py-6 text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all border-none cursor-pointer"
-                onClick={handleWhatsAppShare}
+                onClick={handleShareToInstaller}
               >
-                Send Sizing Report to Installer on WhatsApp 📱
+                Share Sizing Report 📱
               </Button>
 
               <Button
@@ -1378,7 +1618,10 @@ Could we connect to discuss a formal quote and installation assessment?`;
       {/* ═══ Footer ═══ */}
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-16 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-slate-500">
-          <p>© <CopyrightYear /> SolarQuotePro — Transparent Sizing Sizer for Clients</p>
+          <div>
+            <p>© <CopyrightYear /> SolarQuotePro — Transparent Sizing Sizer for Clients</p>
+            <LegalNotice />
+          </div>
           <Link href="/" className="text-teal-600 hover:underline font-bold">
             Installer Workspace
           </Link>
@@ -1632,45 +1875,261 @@ Could we connect to discuss a formal quote and installation assessment?`;
             </div>
           )}
 
-          <DialogFooter className="grid grid-cols-2 gap-2 mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setPendingTemplate(null)}
-              className="w-full text-slate-600 dark:text-slate-350 font-extrabold rounded-2xl h-11 text-xs border-slate-250 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                if (pendingTemplate) {
-                  const mappedQty = mapTemplateToEstimator(pendingTemplate);
-                  setQuantities(mappedQty);
-                  setBackupHours(pendingTemplate.suggestedBackupHours);
-                  setAppliedTemplateId(pendingTemplate.id);
-                  setIsCustomized(false);
-                  setHideBadge(false);
-                  
-                  // Auto-expand heavy loads if template has them
-                  const hasHeavy = pendingTemplate.appliances.some(
-                    (app) => ['deep_freezer', 'inverter_ac', 'standard_ac', 'water_pump', 'microwave'].includes(app.applianceKey) && app.quantity > 0
-                  );
-                  if (hasHeavy) {
-                    setShowHeavyLoads(true);
-                  }
-
-                  toast.success(`Applied "${pendingTemplate.label}" template!`);
-                }
-                setPendingTemplate(null);
-              }}
-              className="w-full bg-teal-650 hover:bg-teal-700 text-white font-extrabold rounded-2xl h-11 text-xs border-none cursor-pointer"
-            >
-              Apply Template
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+interface LocalComplianceCardProps {
+  city: NigerianCity;
+}
+
+function LocalComplianceCard({ city }: LocalComplianceCardProps) {
+  const [copied, setCopied] = React.useState(false);
+
+  const landlordTemplate = `LANDLORD SOLAR INSTALLATION CONSENT ADDENDUM
+
+This Addendum is made this _____ day of ____________, 20___, between ________________________ (Landlord) and ________________________ (Tenant) for the property at __________________________________________________.
+
+The Landlord hereby consents to the installation of a removable solar power system by the Tenant on the designated roof/balcony structural areas, subject to:
+1. Inverter/battery components remain the personal property of the Tenant and are fully removable upon lease expiration.
+2. Installation must be performed by a verified, licensed solar partner.
+3. Tenant is responsible for any structural waterproofing/roof penetrations.
+
+Signed: ____________ (Landlord)   ____________ (Tenant)`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(landlordTemplate);
+    setCopied(true);
+    toast.success('Consent Addendum template copied to clipboard!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-md">
+      <div className="space-y-2">
+        <h3 className="font-extrabold text-sm sm:text-base text-slate-850 dark:text-white flex items-center gap-2">
+          📋 Local Regulatory & Legal Assets
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Ensure your installation is fully compliant with regional regulations and tenure contracts.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {/* Compliance Guidelines */}
+        <div className="space-y-2.5">
+          <p className="text-xs font-black text-slate-800 dark:text-slate-200">
+            {city.name} Compliance Checklist:
+          </p>
+          <ul className="space-y-2 pl-4 list-disc text-xs text-slate-600 dark:text-slate-400">
+            {city.complianceNotes.map((note, index) => (
+              <li key={index} className="leading-relaxed">
+                {note}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Landlord Consent Template */}
+        <div className="border border-teal-500/20 bg-teal-500/[0.02] dark:bg-teal-500/[0.01] rounded-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-teal-850 dark:text-teal-400 flex items-center gap-1.5">
+              📜 Landlord Consent Addendum Template
+            </span>
+            <div className="flex gap-1.5">
+              <Button
+                onClick={handleCopy}
+                variant="outline"
+                size="sm"
+                className="text-[10px] h-7 px-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border-teal-500/20 text-teal-700 dark:text-teal-400 font-bold rounded-lg cursor-pointer"
+              >
+                {copied ? 'Copied!' : 'Copy 📋'}
+              </Button>
+              <Button
+                onClick={() => window.open(`/estimator/landlord-consent?city=${city.id}`, '_blank')}
+                variant="default"
+                size="sm"
+                className="text-[10px] h-7 px-2.5 bg-teal-650 hover:bg-teal-700 text-white font-bold rounded-lg cursor-pointer"
+              >
+                Download PDF ⬇️
+              </Button>
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+            Essential for tenants to secure authorization before installing removable roof-mounted panel frames.
+          </p>
+          <pre className="text-[9px] font-mono bg-slate-55 dark:bg-slate-950 p-2.5 rounded-lg overflow-x-auto text-slate-600 dark:text-slate-400 max-h-32 border border-slate-200 dark:border-slate-800">
+            {landlordTemplate}
+          </pre>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+interface MatchedInstallersCardProps {
+  cityId: string;
+  activeCity: NigerianCity;
+  onShare: () => void;
+}
+
+function MatchedInstallersCard({ cityId, activeCity, onShare }: MatchedInstallersCardProps) {
+  const allAreas = useMarketplaceStore(state => state.serviceAreas);
+  const installers = useMarketplaceStore(state => state.installers);
+  const subscriptions = useMarketplaceStore(state => state.subscriptions);
+
+  const cityNormalisationMap: Record<string, { state: string; city: string }> = {
+    'lagos':         { state: 'Lagos', city: 'Lekki' },
+    'lagos-ikeja':   { state: 'Lagos', city: 'Ikeja' },
+    'abuja':         { state: 'Abuja', city: 'Maitama' },
+    'port-harcourt': { state: 'Rivers', city: 'Port Harcourt' },
+    'kano':          { state: 'Kano',  city: 'Kano' },
+    'ibadan':        { state: 'Oyo',   city: 'Ibadan' },
+    'enugu':         { state: 'Enugu', city: 'Enugu' },
+    'benin':         { state: 'Edo',   city: 'Benin City' },
+    'jos':           { state: 'Plateau', city: 'Jos' },
+    'kaduna':        { state: 'Kaduna', city: 'Kaduna' },
+    'yola':          { state: 'Adamawa', city: 'Yola' },
+  };
+
+  const normalised = cityNormalisationMap[cityId] ?? { state: activeCity.state, city: activeCity.name };
+
+  const matched = React.useMemo(() => {
+    // Phase 1: Search for exact State and City matches
+    let matchingIds = Array.from(
+      new Set(
+        allAreas
+          .filter(
+            (sa) =>
+              sa.state.toLowerCase() === normalised.state.toLowerCase() &&
+              sa.city.toLowerCase() === normalised.city.toLowerCase()
+          )
+          .map((sa) => sa.installer_id)
+      )
+    );
+
+    // Phase 2: Fall back to State-only match if zero exact matches found
+    if (matchingIds.length === 0) {
+      matchingIds = Array.from(
+        new Set(
+          allAreas
+            .filter(
+              (sa) =>
+                sa.state.toLowerCase() === normalised.state.toLowerCase()
+            )
+            .map((sa) => sa.installer_id)
+        )
+      );
+    }
+
+    // Sort matching installers based on verified listing subscription tiers
+    const sorted = matchingIds.sort((a, b) => {
+      const subA = subscriptions.find(s => s.installer_id === a);
+      const subB = subscriptions.find(s => s.installer_id === b);
+      
+      const scoreA = subA?.tier === 'verified_partner_plus' ? 1000 : subA?.tier === 'verified_partner' ? 500 : 0;
+      const scoreB = subB?.tier === 'verified_partner_plus' ? 1000 : subB?.tier === 'verified_partner' ? 500 : 0;
+      
+      return scoreB - scoreA;
+    });
+
+    return sorted
+      .map(id => {
+        const inst = installers.find(i => i.id === id);
+        const sub = subscriptions.find(s => s.installer_id === id);
+        return inst ? { ...inst, tier: sub?.tier || 'basic' } : null;
+      })
+      .filter((i): i is NonNullable<typeof i> => i !== null);
+  }, [allAreas, installers, subscriptions, normalised.state, normalised.city]);
+
+  if (matched.length === 0) {
+    return (
+      <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 space-y-4">
+        <h3 className="font-extrabold text-sm sm:text-base text-slate-855 dark:text-white flex items-center gap-2">
+          🛡️ Verified Installer Partners
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          No direct installer matches found for your specific area. Share your report with a general consultant to be matched.
+        </p>
+        <Button onClick={onShare} className="w-full bg-teal-650 hover:bg-teal-700 text-white font-extrabold rounded-2xl h-11 text-xs">
+          Match Me with an Installer 📱
+        </Button>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-md">
+      <div className="space-y-1">
+        <h3 className="font-extrabold text-sm sm:text-base text-slate-855 dark:text-white flex items-center gap-2">
+          🛡️ Match with Verified {normalised.state} Installers
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          These verified partners service {normalised.city} and can provide NERC/LSEB compliant installations.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {matched.slice(0, 3).map((inst) => (
+          <div
+            key={inst.id}
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border border-slate-100 dark:border-slate-800 hover:border-teal-500/20 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 transition-all gap-4"
+          >
+            <div className="space-y-1.5 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-black text-xs text-slate-850 dark:text-white">
+                  {inst.business_name}
+                </span>
+                {inst.is_verified && (
+                  <Badge className="bg-teal-500/10 text-teal-650 dark:bg-teal-950/40 dark:text-teal-400 border border-teal-500/20 text-[9px] px-1.5 py-0 rounded-full font-bold">
+                    ✓ Verified Partner
+                  </Badge>
+                )}
+                {inst.tier === 'verified_partner_plus' && (
+                  <Badge className="bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-500/20 text-[9px] px-1.5 py-0 rounded-full font-bold animate-pulse">
+                    ★ Top Match
+                  </Badge>
+                )}
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2">
+                {inst.description}
+              </p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {inst.specialty_tags.slice(0, 3).map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="text-[9px] font-semibold bg-slate-200/60 dark:bg-slate-800 text-slate-650 dark:text-slate-400 px-2 py-0.5 rounded"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex sm:flex-col gap-2 w-full sm:w-auto shrink-0">
+              <Button
+                onClick={() => {
+                  toast.success(`Request sent to ${inst.business_name}! They will contact you shortly.`);
+                }}
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-initial text-[10px] h-8 px-3 font-bold rounded-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer"
+              >
+                Inquire ✉
+              </Button>
+              <Button
+                onClick={onShare}
+                size="sm"
+                className="flex-1 sm:flex-initial text-[10px] h-8 px-3 font-black rounded-xl bg-teal-600 hover:bg-teal-700 text-white border-none cursor-pointer"
+              >
+                WhatsApp 📱
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }

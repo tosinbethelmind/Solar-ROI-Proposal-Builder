@@ -76,8 +76,6 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-
-
   const isAdminRoute = path.startsWith('/admin') || path.startsWith('/api/admin')
   
   // Exclude public POST endpoints for B2C sizer leads and B2B training cohort leads

@@ -53,6 +53,12 @@ export default function AdminLogs() {
 
   React.useEffect(() => {
     fetchLogs();
+
+    // Poll for live telemetry logs updates every 10 seconds
+    const interval = setInterval(() => {
+      fetchLogs(false);
+    }, 10000);
+    return () => clearInterval(interval);
   }, [fetchLogs]);
 
   const getLogIcon = (type: string) => {

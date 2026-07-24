@@ -3,6 +3,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import fs from 'fs'
 import path from 'path'
+import { NextRequest } from 'next/server'
 
 // Mock server client imports
 vi.mock('@/lib/supabase/server', () => ({
@@ -98,7 +99,7 @@ describe('SolarQuotePro SaaS Security & RLS Leak Audit', () => {
 
       vi.mocked(createClient).mockResolvedValue(mockSupabase as any)
 
-      const mockRequest = new Request('http://localhost/api/proposals', {
+      const mockRequest = new NextRequest('http://localhost/api/proposals', {
         method: 'POST',
         body: JSON.stringify({
           proposal: { customer_name: 'Leak Test Client' },
@@ -167,7 +168,7 @@ describe('SolarQuotePro SaaS Security & RLS Leak Audit', () => {
 
       vi.mocked(createClient).mockResolvedValue(mockSupabase as any)
 
-      const mockRequest = new Request('http://localhost/api/proposals', {
+      const mockRequest = new NextRequest('http://localhost/api/proposals', {
         method: 'POST',
         body: JSON.stringify({
           proposal: { customer_name: 'Quota Exceed Client' },

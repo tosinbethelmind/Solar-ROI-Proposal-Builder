@@ -25,7 +25,8 @@ import {
   Bell,
   Handshake,
   Compass,
-  FileText
+  FileText,
+  Share2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,8 @@ const navItems = [
   { name: 'Overview Console', href: '/admin', icon: LayoutDashboard },
   { name: 'Installer Workspaces', href: '/admin/companies', icon: Building2 },
   { name: 'Insights Blog Editor', href: '/admin/content', icon: FileText },
+  { name: 'Blog Automation', href: '/admin/blog-automation', icon: Sparkles },
+  { name: 'Community Outreach', href: '/admin/social', icon: Share2 },
   { name: 'B2C Sizer Leads', href: '/admin/leads', icon: UserCheck },
   { name: 'Lead Scrapers Console', href: '/admin/scrapers', icon: Compass },
   { name: 'Team Members', href: '/admin/users', icon: Users2 },

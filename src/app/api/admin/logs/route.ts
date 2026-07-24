@@ -63,8 +63,10 @@ export async function GET() {
 
     // 3. Query FX rate updates if any
     try {
-      if (fs.existsSync(settingsFilePath)) {
-        const settings = JSON.parse(fs.readFileSync(settingsFilePath, 'utf8'));
+      const fileExists = await fs.promises.access(settingsFilePath).then(() => true).catch(() => false);
+      if (fileExists) {
+        const fileContent = await fs.promises.readFile(settingsFilePath, 'utf8');
+        const settings = JSON.parse(fileContent);
         if (settings.history) {
           settings.history.forEach((h: any, i: number) => {
             logsList.push({

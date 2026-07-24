@@ -214,15 +214,33 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
-  if (auth.isBypassed) {
-    return NextResponse.json({ message: 'Administrative action processed successfully (E2E Mock).', data: {} });
-  }
-
   const { adminClient } = auth;
 
   try {
     const body = await request.json();
     const { companyId, action, plan_tier, subscription_status } = body;
+
+    if (!action) {
+      return NextResponse.json({ error: 'Action parameter is required.' }, { status: 400 });
+    }
+
+    if (!auth.canRunAutomation) {
+      return NextResponse.json({ error: 'Permission denied: Read-only access.' }, { status: 403 });
+    }
+
+    if (action === 'suspend' || action === 'unsuspend') {
+      if (!auth.canModifyProfiles) {
+        return NextResponse.json({ error: 'Permission denied: Operations or SuperAdmin role required to modify profiles.' }, { status: 403 });
+      }
+    } else if (action === 'change_plan') {
+      if (!auth.canModifySubscriptions) {
+        return NextResponse.json({ error: 'Permission denied: Billing or SuperAdmin role required to modify subscriptions.' }, { status: 403 });
+      }
+    }
+
+    if (auth.isBypassed) {
+      return NextResponse.json({ message: 'Administrative action processed successfully (E2E Mock).', data: {} });
+    }
 
     if (!companyId) {
       return NextResponse.json({ error: 'Company ID is required.' }, { status: 400 });

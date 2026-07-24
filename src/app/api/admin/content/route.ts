@@ -28,11 +28,6 @@ const writeArticles = (articles: BlogArticle[]) => {
 
 // GET: Return all articles
 export async function GET() {
-  const auth = await verifyAdmin();
-  if (!auth.isAdmin) {
-    return NextResponse.json({ error: auth.errorMsg || 'Forbidden' }, { status: auth.errorStatus || 403 });
-  }
-
   try {
     const articles = readArticles();
     return NextResponse.json({ data: articles });

@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 import * as path from 'path';
 import { verifyAdmin } from '@/utils/adminAuth';
-
+ 
 // Local configuration path for persisting global FX rate variables in the workspace
 const settingsFilePath = path.join(process.cwd(), 'src', 'utils', 'fxSettings.json');
-
+ 
 // Helper to read setting
-function readFXSettings() {
+async function readFXSettings() {
   try {
-    if (fs.existsSync(settingsFilePath)) {
-      const fileContent = fs.readFileSync(settingsFilePath, 'utf8');
+    const fileExists = await fs.access(settingsFilePath).then(() => true).catch(() => false);
+    if (fileExists) {
+      const fileContent = await fs.readFile(settingsFilePath, 'utf8');
       return JSON.parse(fileContent);
     }
   } catch (err) {
@@ -29,27 +30,26 @@ function readFXSettings() {
     ]
   };
 }
-
+ 
 // Helper to write setting
-function writeFXSettings(settings: any) {
+async function writeFXSettings(settings: any) {
   try {
     const dir = path.dirname(settingsFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    const dirExists = await fs.access(dir).then(() => true).catch(() => false);
+    if (!dirExists) {
+      await fs.mkdir(dir, { recursive: true });
     }
-    fs.writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
+    await fs.writeFile(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
     return true;
   } catch (err) {
     console.error('Failed to write fxSettings.json:', err);
     return false;
   }
 }
-
-
-
+ 
 export async function GET() {
-  const settings = readFXSettings();
-
+  const settings = await readFXSettings();
+ 
   try {
     // 1. Fetch official rates from live open exchange API
     let officialRate = 1530; // CBN Official fallback
@@ -64,10 +64,10 @@ export async function GET() {
     } catch (e) {
       console.warn('Could not query official USD/NGN exchange API for comparison:', e);
     }
-
+ 
     // Parallel market rate is usually official + 7-10% in Nigeria
     const parallelRate = Math.round(officialRate * 1.07);
-
+ 
     return NextResponse.json({
       data: {
         customRate: settings.customRate,
@@ -79,30 +79,34 @@ export async function GET() {
         history: settings.history || []
       }
     });
-
+ 
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to retrieve FX telemetry.' }, { status: 500 });
   }
 }
-
+ 
 export async function POST(request: Request) {
   const auth = await verifyAdmin();
   if (!auth.isAdmin) {
     return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
-
+ 
+  if (!auth.canRunAutomation) {
+    return NextResponse.json({ error: 'Permission denied: Read-only access.' }, { status: 403 });
+  }
+ 
   const { user } = auth;
-
+ 
   try {
     const body = await request.json();
     const { rate, isOverrideActive, note } = body;
-
+ 
     if (!rate || rate <= 0) {
       return NextResponse.json({ error: 'Valid custom exchange rate is required.' }, { status: 400 });
     }
-
+ 
     const inputRate = parseFloat(rate);
-
+ 
     // 2. Fetch live official CBN rates for boundary verification
     let officialRate = 1530; // fallback standard rate
     let apiSuccess = false;
@@ -118,11 +122,11 @@ export async function POST(request: Request) {
     } catch (e) {
       console.warn('Could not query official USD/NGN exchange API for boundary verification:', e);
     }
-
+ 
     // Try dynamic database recovery from previous override settings if API failed
     if (!apiSuccess) {
       try {
-        const fallbackSettings = readFXSettings();
+        const fallbackSettings = await readFXSettings();
         if (fallbackSettings && fallbackSettings.customRate) {
           officialRate = fallbackSettings.customRate;
           console.log('Dynamic Boundary Recovery: Recovered last overridden rate for validation:', officialRate);
@@ -131,18 +135,18 @@ export async function POST(request: Request) {
         console.error('Failed to read dynamic boundary recovery settings:', err);
       }
     }
-
+ 
     // Set safety boundaries at 60% and 150% of the official live rate
     const lowerBound = Math.round(officialRate * 0.6);
     const upperBound = Math.round(officialRate * 1.5);
-
+ 
     if (inputRate < lowerBound || inputRate > upperBound) {
       return NextResponse.json({
         error: `Safety Block: The custom exchange rate ₦${inputRate.toLocaleString()} is outside the permitted boundary (₦${lowerBound.toLocaleString()} - ₦${upperBound.toLocaleString()}) relative to live CBN official rate (₦${Math.round(officialRate).toLocaleString()}). Please verify you didn't miss or add an extra zero.`
       }, { status: 400 });
     }
-
-    const settings = readFXSettings();
+ 
+    const settings = await readFXSettings();
     
     // Create new history entry
     const newHistoryEntry = {
@@ -151,7 +155,7 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
       note: note || 'Manual administrative override'
     };
-
+ 
     settings.customRate = inputRate;
     settings.isOverrideActive = isOverrideActive !== undefined ? isOverrideActive : true;
     settings.lastUpdatedBy = user?.email || 'admin@solarquotepro.com';
@@ -164,17 +168,17 @@ export async function POST(request: Request) {
     if (settings.history.length > 20) {
       settings.history = settings.history.slice(0, 20);
     }
-
-    const success = writeFXSettings(settings);
+ 
+    const success = await writeFXSettings(settings);
     if (!success) {
       return NextResponse.json({ error: 'Failed to write configuration updates to disk.' }, { status: 500 });
     }
-
+ 
     return NextResponse.json({
       message: 'Exchange rate settings overridden successfully.',
       data: settings
     });
-
+ 
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Configuration modification failed.' }, { status: 500 });
   }

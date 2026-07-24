@@ -37,7 +37,7 @@ async function moveCursorTo(page: any, locator: any) {
   if (box) {
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
-    await page.evaluate(({ x, y }) => {
+    await page.evaluate(({ x, y }: { x: number; y: number }) => {
       const cursor = document.getElementById('playwright-mock-cursor');
       if (cursor) {
         cursor.style.left = `${x}px`;

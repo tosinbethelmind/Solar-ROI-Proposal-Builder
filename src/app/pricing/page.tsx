@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useSubscriptionStore, SubscriptionTier, BillingCycle } from '@/store/subscriptionStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { AuthButton } from '@/components/auth/AuthButton';
+import { supabase } from '@/lib/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { 
@@ -25,6 +27,8 @@ import {
   ArrowRight,
   FileText
 } from 'lucide-react';
+import EnterpriseModal from '@/components/EnterpriseModal';
+import PaymentMethodModal from '@/components/PaymentMethodModal';
 
 /* ─── Unified Data Structure Types ─── */
 export interface PricingPlan {
@@ -53,9 +57,9 @@ const proposalPlans: PricingPlan[] = [
     priceQuarterly: 0,
     priceAnnual: 0,
     features: [
-      '3 proposals/month quota',
+      '2 proposals/month quota',
       'Quick Proposal Mode included',
-      'Standard PDF (No Watermark)',
+      'Standard PDF (Watermarked)',
       'Single user seat included'
     ],
     ctaLabel: 'Activate Free Starter Workspace',
@@ -66,9 +70,9 @@ const proposalPlans: PricingPlan[] = [
     name: 'Starter Plan',
     category: 'proposal',
     bestFor: 'Solo installers & active technicians',
-    priceMonthly: 18000,
-    priceQuarterly: 48600, // ₦16,200/mo * 3 (10% off)
-    priceAnnual: 172800, // ₦14,400/mo * 12 (20% off)
+    priceMonthly: 15000,
+    priceQuarterly: 40500, // ₦13,500/mo * 3 (10% off)
+    priceAnnual: 144000, // ₦12,000/mo * 12 (20% off)
     features: [
       'Up to 10 proposals per month',
       'Pristine PDF (No watermark)',
@@ -84,9 +88,9 @@ const proposalPlans: PricingPlan[] = [
     name: 'Professional',
     category: 'proposal',
     bestFor: 'Growing solar installer teams',
-    priceMonthly: 45000,
-    priceQuarterly: 121500, // ₦40,500/mo * 3 (10% off)
-    priceAnnual: 432000, // ₦36,000/mo * 12 (20% off)
+    priceMonthly: 35000,
+    priceQuarterly: 94500, // ₦31,500/mo * 3 (10% off)
+    priceAnnual: 336000, // ₦28,000/mo * 12 (20% off)
     badge: 'Most Popular',
     highlighted: true,
     features: [
@@ -104,9 +108,9 @@ const proposalPlans: PricingPlan[] = [
     name: 'Enterprise Plan',
     category: 'proposal',
     bestFor: 'EPCs & larger solar corporate companies',
-    priceMonthly: 120000,
-    priceQuarterly: 324000, // ₦108,000/mo * 3 (10% off)
-    priceAnnual: 1152000, // ₦96,000/mo * 12 (20% off)
+    priceMonthly: 95000,
+    priceQuarterly: 256500, // ₦85,500/mo * 3 (10% off)
+    priceAnnual: 912000, // ₦76,000/mo * 12 (20% off)
     features: [
       'Unlimited or custom proposals',
       'Complete White-Label templates',
@@ -141,41 +145,41 @@ const listingPlans: PricingPlan[] = [
     ctaHref: '/workspace/listing'
   },
   {
-    id: 'list-basic',
-    name: 'Basic Listing',
-    category: 'listing',
-    bestFor: 'Technicians growing local exposure',
-    priceMonthly: 12500,
-    priceQuarterly: 33750, // ₦11,250/mo * 3 (10% off)
-    priceAnnual: 120000, // ₦10,000/mo * 12 (20% off)
-    features: [
-      'Everything in Free Listing',
-      'Better profile placement',
-      'Stronger phone & WhatsApp contact',
-      'Top tier search coverage results',
-      'Exposure to local homeowners'
-    ],
-    ctaLabel: 'Get Basic Listing',
-    ctaHref: '#payment-section'
-  },
-  {
     id: 'list-verified',
-    name: 'SolarQuotePro Verified',
+    name: 'Verified Partner',
     category: 'listing',
-    bestFor: 'Established companies seeking maximum trust',
-    priceMonthly: 30000,
-    priceQuarterly: 81000, // ₦27,000/mo * 3 (10% off)
-    priceAnnual: 288000, // ₦24,000/mo * 12 (20% off)
+    bestFor: 'Growing local exposure and lead access',
+    priceMonthly: 25000,
+    priceQuarterly: 67500, // ₦22,500/mo * 3 (10% off)
+    priceAnnual: 240000, // ₦20,000/mo * 12 (20% off)
     badge: 'Highly Visible',
     highlighted: true,
     features: [
-      'Everything in Basic Listing',
-      'Official SolarQuotePro Verified Badge',
+      'Everything in Free Listing',
+      'Official Verified Partner Badge',
       'Premium search placement weight',
       'Priority visibility for lead-routing',
-      'Eligible for direct quote routing'
+      'Access to local homeowner leads'
     ],
     ctaLabel: 'Get Verified Listing',
+    ctaHref: '#payment-section'
+  },
+  {
+    id: 'list-verified_partner_plus',
+    name: 'Partner Plus',
+    category: 'listing',
+    bestFor: 'Established companies seeking maximum trust & exclusive leads',
+    priceMonthly: 75000,
+    priceQuarterly: 202500, // ₦67,500/mo * 3 (10% off)
+    priceAnnual: 720000, // ₦60,000/mo * 12 (20% off)
+    features: [
+      'Everything in Verified Listing',
+      'Official Partner Plus Gold Badge',
+      'Exclusive lead routing priority',
+      'Unlimited service area coverage states',
+      'Direct customer phone & WhatsApp presentation'
+    ],
+    ctaLabel: 'Get Partner Plus Listing',
     ctaHref: '#payment-section'
   }
 ];
@@ -187,15 +191,15 @@ const bundlePlans: PricingPlan[] = [
     name: 'Growth Bundle',
     category: 'bundle',
     bestFor: 'Solo installers combining tools & leads',
-    priceMonthly: 27000, // Starter (18k) + Basic (12.5k) = 30.5k value for 27k (Save 3.5k)
-    priceQuarterly: 72900, // ₦24,300/mo * 3 (10% off)
-    priceAnnual: 259200, // ₦21,600/mo * 12 (20% off)
+    priceMonthly: 30000, // Starter (15k) + Verified Partner (25k) = 40k value for 30k (Save 10k)
+    priceQuarterly: 81000, // ₦27,000/mo * 3 (10% off)
+    priceAnnual: 288000, // ₦24,000/mo * 12 (20% off)
     features: [
       'Starter Proposal SaaS Plan included',
-      'Basic Listing Directory Plan included',
+      'Verified Partner Directory Listing included',
       'Pristine PDF Proposal Export',
       'Custom phone/WhatsApp presentation',
-      'Save ₦3,500/month combined!'
+      'Save ₦10,000/month combined!'
     ],
     ctaLabel: 'Select Growth Bundle',
     ctaHref: '#payment-section'
@@ -205,17 +209,17 @@ const bundlePlans: PricingPlan[] = [
     name: 'Verified Growth Bundle',
     category: 'bundle',
     bestFor: 'Established companies seeking quotes & high visibility',
-    priceMonthly: 60000, // Professional (45k) + Verified (30k) = 75k value for 60k (Save 15k)
-    priceQuarterly: 162000, // ₦54,000/mo * 3 (10% off)
-    priceAnnual: 576000, // ₦48,000/mo * 12 (20% off)
+    priceMonthly: 85000, // Professional (35k) + Partner Plus (75k) = 110k value for 85k (Save 25k)
+    priceQuarterly: 229500, // ₦76,500/mo * 3 (10% off)
+    priceAnnual: 816000, // ₦68,000/mo * 12 (20% off)
     badge: 'Ultimate Value',
     highlighted: true,
     features: [
       'Professional Proposal SaaS Plan',
-      'SolarQuotePro Verified Directory Listing',
+      'Partner Plus Directory Listing',
       'Full load sizing + ROI generator tool',
-      'Verified Badge + Priority lead routing',
-      'Save ₦15,000/month combined!'
+      'Verified Badge + Exclusive lead routing',
+      'Save ₦25,000/month combined!'
     ],
     ctaLabel: 'Select Verified Bundle',
     ctaHref: '#payment-section'
@@ -304,11 +308,36 @@ export default function PricingPage() {
     isTrial, 
     trialProposalsRemaining, 
     setSubscription,
-    resetToTrial 
+    resetToTrial,
+    launchPromoClaimed,
+    claimLaunchPromo
   } = useSubscriptionStore();
   
   const [cycle, setCycle] = React.useState<BillingCycle>(billingCycle);
   const [mounted, setMounted] = React.useState(false);
+  const [session, setSession] = React.useState<any>(null);
+  const [sessionLoading, setSessionLoading] = React.useState(true);
+  const [enterpriseModalOpen, setEnterpriseModalOpen] = React.useState(false);
+  const [selectedPlanId, setSelectedPlanId] = React.useState<string | null>(null);
+  const [paymentSelectionOpen, setPaymentSelectionOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    async function getSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setSessionLoading(false);
+    }
+    getSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      setSession(session);
+      setSessionLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Manual Bank Transfer Receipt Form State
   const [receiptFile, setReceiptFile] = React.useState<string>('');
@@ -353,6 +382,10 @@ export default function PricingPage() {
   }
 
   const handleSubscribe = async (tierId: string) => {
+    if (tierId === 'enterprise') {
+      setEnterpriseModalOpen(true);
+      return;
+    }
     if (tierId === 'free') {
       setSubscription('free', 'monthly', false);
       alert('🎉 Plan switched to Free Starter Plan!');
@@ -360,6 +393,12 @@ export default function PricingPage() {
       return;
     }
     
+    setSelectedPlanId(tierId);
+    setPaymentSelectionOpen(true);
+  };
+
+  const handleExecutePaystack = async () => {
+    if (!selectedPlanId) return;
     try {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
@@ -367,7 +406,7 @@ export default function PricingPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          planId: tierId,
+          planId: selectedPlanId,
           cycle: cycle,
         }),
       });
@@ -378,14 +417,24 @@ export default function PricingPage() {
       }
 
       window.location.href = data.authorization_url;
-    } catch (err) {
+    } catch (err: any) {
       console.error('[Pricing Upgrade] Checkout error:', err);
       // Fallback manual sandboxed upgrade
-      const targetSaaSTier = (tierId.startsWith('list-') || tierId.startsWith('bundle-')) ? 'pro' : tierId;
+      const targetSaaSTier = (selectedPlanId.startsWith('list-') || selectedPlanId.startsWith('bundle-')) ? 'pro' : selectedPlanId;
       setSubscription(targetSaaSTier as SubscriptionTier, cycle, false);
-      alert(`🎉 [Demo Activation] Upgraded locally to ${tierId.toUpperCase()} (${cycle.toUpperCase()})! You can also submit bank receipt below for formal admin verification.`);
+      alert(`🎉 [Demo Activation] Upgraded locally to ${selectedPlanId.toUpperCase()} (${cycle.toUpperCase()})! You can also submit bank receipt below for formal admin verification.`);
       router.push('/');
     }
+  };
+
+  const handleSelectManualPayment = () => {
+    if (selectedPlanId) {
+      setManualPlan(selectedPlanId);
+    }
+    setManualCycle(cycle);
+    setTimeout(() => {
+      document.getElementById('payment-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const handleManualPaymentSubmit = async (e: React.FormEvent) => {
@@ -479,24 +528,73 @@ export default function PricingPage() {
     return 'year';
   };
 
+  const allPlans = [...proposalPlans, ...listingPlans, ...bundlePlans];
+  const selectedPlan = allPlans.find((p) => p.id === selectedPlanId);
+  const planName = selectedPlan?.name || '';
+  const planPrice = selectedPlan ? getTotalPrice(selectedPlan) : 0;
+  const priceFormatted = formatNaira(planPrice) + (cycle === 'monthly' ? '/month' : cycle === 'quarterly' ? '/quarter' : '/year');
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
       
       {/* ═══ Header ═══ */}
-      <header className="sticky top-0 z-40 border-b bg-white/85 dark:bg-slate-900/85 backdrop-blur-lg border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2 group">
-            <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:text-teal-650 transition-colors" />
-            <span className="font-bold text-sm text-slate-700 dark:text-slate-350">Dashboard</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold px-2.5 py-0.5 bg-teal-100 text-teal-800 dark:bg-teal-950/45 dark:text-teal-400 rounded-full">
-              Current Plan: <span className="font-black uppercase">{currentTier} {isTrial && '(Trial)'}</span>
-            </span>
-            <ThemeToggle />
+      {sessionLoading ? (
+        <header className="sticky top-0 z-40 border-b bg-white/85 dark:bg-slate-900/85 backdrop-blur-lg border-slate-200 dark:border-slate-800 h-14" />
+      ) : session ? (
+        <header className="sticky top-0 z-40 border-b bg-white/85 dark:bg-slate-900/85 backdrop-blur-lg border-slate-200 dark:border-slate-800">
+          <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
+            <Link href="/" className="flex items-center gap-2 group">
+              <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:text-teal-650 transition-colors" />
+              <span className="font-bold text-sm text-slate-700 dark:text-slate-350">Dashboard</span>
+            </Link>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold px-2.5 py-0.5 bg-teal-100 text-teal-800 dark:bg-teal-950/45 dark:text-teal-400 rounded-full">
+                Current Plan: <span className="font-black uppercase">{currentTier} {isTrial && '(Trial)'}</span>
+              </span>
+              <ThemeToggle />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      ) : (
+        <header className="sticky top-0 z-50 border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-slate-200 dark:border-slate-800">
+          {/* A1 — Announcement bar */}
+          <div className="bg-[#F59E0B] text-[#0A0F1E] py-2 px-4 text-center font-bold text-xs flex flex-wrap items-center justify-center gap-2 z-50 relative">
+            <span>⚡ Band A tariffs hit ₦225/kWh this month. Nigerian installers using SolarQuotePro are quoting 3× faster.</span>
+            <Link href="/estimator" className="underline font-black whitespace-nowrap hover:opacity-75">→ Estimate My Savings</Link>
+          </div>
+
+          <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              </div>
+              <span className="font-extrabold text-base tracking-tight text-slate-850 dark:text-slate-200">SolarQuotePro</span>
+            </Link>
+            <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600 dark:text-slate-400">
+              <Link href="/#why-solarquotepro" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Why SolarQuotePro</Link>
+              <Link href="/#pricing-tiers" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors text-teal-605 dark:text-teal-400 font-extrabold">Pricing Plans</Link>
+              <Link href="/#storm-safety" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Safety Standard</Link>
+              <Link href="/#blog-section" className="hover:text-slate-950 dark:hover:text-slate-100 transition-colors">Energy Insights</Link>
+            </nav>
+
+            <div className="flex items-center gap-3">
+              <Link href="/blog">
+                <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-655 hover:bg-slate-150 dark:text-slate-350">
+                  Insights
+                </Button>
+              </Link>
+
+              <Link href="/workspace" className="hidden sm:block">
+                <Button variant="outline" size="sm" className="text-xs font-bold border-teal-500/20 text-teal-655 hover:bg-teal-50 dark:hover:bg-teal-950/30 rounded-xl">
+                  Open Installer Workspace
+                </Button>
+              </Link>
+              <AuthButton />
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
+      )}
 
       {/* ═══ Pricing Intro / Hero ═══ */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-16">
@@ -536,6 +634,43 @@ export default function PricingPage() {
             </button>
           </div>
         </section>
+
+        {/* ── Addition A: Trust Reassurance Strip ── */}
+        <p className="text-sm text-center text-emerald-400 mt-3" style={{ marginTop: '12px' }}>
+          ✓ All prices fixed in Naira · No FX adjustments mid-subscription · Cancel anytime · 7-day free trial included
+        </p>
+
+        {/* 🇳🇬 Special Nigeria Launch Offer Banner */}
+        {!launchPromoClaimed && (
+          <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 p-8 text-white shadow-xl animate-in slide-in-from-top-3 duration-500 max-w-4xl mx-auto">
+            <div className="absolute -top-12 -right-12 size-40 rounded-full bg-teal-500/10 blur-xl pointer-events-none" />
+            <div className="absolute -bottom-12 -left-12 size-40 rounded-full bg-emerald-500/10 blur-xl pointer-events-none" />
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 text-emerald-450 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  🇳🇬 Special Launch Promo
+                </div>
+                <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
+                  Get 20 Free Proposals (Valued at ₦175,000!)
+                </h2>
+                <p className="text-slate-350 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                  To celebrate our launch in Nigeria, we are offering the first 1,000 installers <strong>20 free proposal credits</strong> with full access to Pro tier features, custom branding, and watermark-free PDF downloads. Absolutely zero setup cost!
+                </p>
+              </div>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-extrabold shadow-lg shadow-emerald-500/20 transition-all rounded-2xl flex items-center justify-center gap-2 text-xs px-6 h-11 shrink-0 border-none w-full md:w-auto"
+                onClick={() => {
+                  claimLaunchPromo();
+                  alert('🎉 Congratulations! You have unlocked the Pro Launch Offer with 20 free proposals!');
+                  router.push('/');
+                }}
+              >
+                Claim Free Launch Upgrade ➔
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* ═══ Homeowner Free Estimator Callout ═══ */}
         <section className="bg-gradient-to-r from-teal-500/10 via-indigo-500/5 to-teal-500/10 border border-teal-500/20 rounded-3xl p-6 sm:p-8 max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 shadow-md transition-all duration-300 hover:shadow-lg">
@@ -598,7 +733,7 @@ export default function PricingPage() {
                     </div>
 
                     <div>
-                      <div className="flex items-baseline gap-1">
+                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
                         <span className="text-2xl font-black text-slate-850 dark:text-white">
                           {currentPrice === 0 ? '₦0' : formatNaira(currentPrice)}
                         </span>
@@ -644,6 +779,12 @@ export default function PricingPage() {
                           {plan.ctaLabel}
                         </Button>
                       </Link>
+                    )}
+                    {/* Addition B: Enterprise custom invoicing note */}
+                    {plan.id === 'enterprise' && (
+                      <p className="mt-2 text-xs italic text-center text-teal-600/70 dark:text-teal-400/60 leading-snug">
+                        Custom Naira invoicing and purchase orders available for EPC firms and government projects. Ask us about annual contracts.
+                      </p>
                     )}
                   </div>
                 </Card>
@@ -694,7 +835,7 @@ export default function PricingPage() {
                     </div>
 
                     <div>
-                      <div className="flex items-baseline gap-1">
+                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
                         <span className="text-2xl font-black text-slate-850 dark:text-white">
                           {currentPrice === 0 ? '₦0' : formatNaira(currentPrice)}
                         </span>
@@ -781,7 +922,7 @@ export default function PricingPage() {
                     </div>
 
                     <div>
-                      <div className="flex items-baseline gap-1">
+                      <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
                         <span className="text-3xl font-black text-slate-850 dark:text-white">
                           {formatNaira(currentPrice)}
                         </span>
@@ -834,12 +975,34 @@ export default function PricingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-950/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
             <div className="space-y-4">
-              <p className="font-extrabold uppercase tracking-wider text-[9px] text-teal-655 dark:text-teal-400">GTBANK PAYMENT INSTRUCTIONS</p>
-              <div className="space-y-1 text-slate-655 dark:text-slate-350">
-                <p>Bank Name: <strong className="text-slate-800 dark:text-slate-200">Guaranty Trust Bank (GTBank)</strong></p>
-                <p>Account Name: <strong className="text-slate-800 dark:text-slate-200">SolarQuotePro Technologies Ltd</strong></p>
-                <p>Account Number: <strong className="text-slate-800 dark:text-slate-200">1029384756</strong></p>
+              <p className="font-extrabold uppercase tracking-wider text-[9px] text-teal-655 dark:text-teal-400">CHOOSE BANK ACCOUNT FOR TRANSFER</p>
+              
+              <div className="space-y-3">
+                {/* GTBank */}
+                <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1">
+                  <p className="text-[10px] font-black text-slate-400">OPTION 1: GUARANTY TRUST BANK</p>
+                  <p>Bank: <strong className="text-slate-800 dark:text-slate-200">Guaranty Trust Bank (GTBank)</strong></p>
+                  <p>Account Name: <strong className="text-slate-800 dark:text-slate-200">SolarQuotePro Technologies Ltd</strong></p>
+                  <p>Account Number: <strong className="text-slate-850 dark:text-white font-extrabold">1029384756</strong></p>
+                </div>
+
+                {/* Moniepoint */}
+                <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1">
+                  <p className="text-[10px] font-black text-slate-400">OPTION 2: MONIEPOINT MICROFINANCE BANK</p>
+                  <p>Bank: <strong className="text-slate-800 dark:text-slate-200">Moniepoint MFB</strong></p>
+                  <p>Account Name: <strong className="text-slate-800 dark:text-slate-200">SolarQuotePro Technologies Ltd</strong></p>
+                  <p>Account Number: <strong className="text-slate-850 dark:text-white font-extrabold">5092837461</strong></p>
+                </div>
+
+                {/* OPay */}
+                <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1">
+                  <p className="text-[10px] font-black text-slate-400">OPTION 3: OPAY</p>
+                  <p>Bank: <strong className="text-slate-800 dark:text-slate-200">OPay</strong></p>
+                  <p>Account Name: <strong className="text-slate-800 dark:text-slate-200">SolarQuotePro Technologies Ltd</strong></p>
+                  <p>Account Number: <strong className="text-slate-850 dark:text-white font-extrabold">8192837465</strong></p>
+                </div>
               </div>
+
               <div className="p-3 bg-teal-500/5 border border-teal-500/10 rounded-xl text-[10px] text-slate-500 leading-relaxed font-semibold">
                 ⚠️ **Reference instruction**: Always include your company email and selected tier in the transfer description box to secure automatic confirmation within minutes.
               </div>
@@ -852,15 +1015,15 @@ export default function PricingPage() {
                 <select 
                   value={manualPlan} 
                   onChange={(e) => setManualPlan(e.target.value)} 
-                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-880 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
                 >
-                  <option value="starter">Starter Proposal (₦18,000/mo)</option>
-                  <option value="pro">Professional Proposal (₦45,000/mo)</option>
-                  <option value="enterprise">Enterprise Proposal (₦120,000/mo)</option>
-                  <option value="list-basic">Basic Directory Listing (₦12,500/mo)</option>
-                  <option value="list-verified">SolarQuotePro Verified Listing (₦30,000/mo)</option>
-                  <option value="bundle-growth">Growth Combined Bundle (₦27,000/mo)</option>
-                  <option value="bundle-verified-growth">Verified Combined Bundle (₦60,000/mo)</option>
+                  <option value="starter">Starter Proposal (₦15,000/mo)</option>
+                  <option value="pro">Professional Proposal (₦35,000/mo)</option>
+                  <option value="enterprise">Enterprise Proposal (₦95,000/mo)</option>
+                  <option value="list-verified">Verified Partner Listing (₦25,000/mo)</option>
+                  <option value="list-verified_partner_plus">Partner Plus Listing (₦75,000/mo)</option>
+                  <option value="bundle-growth">Growth Combined Bundle (₦30,000/mo)</option>
+                  <option value="bundle-verified-growth">Verified Growth Bundle (₦85,000/mo)</option>
                 </select>
               </div>
               <div>
@@ -935,10 +1098,17 @@ export default function PricingPage() {
                   </ul>
                 </div>
                 <div className="pt-4">
-                  <a href="#setup-form" className="block w-full">
+                  <a href={plan.id === 'srv-enterprise' ? undefined : "#setup-form"} className="block w-full">
                     <Button 
                       variant="outline" 
-                      onClick={() => setSetupPackage(plan.id.replace('srv-', ''))}
+                      onClick={(e) => {
+                        if (plan.id === 'srv-enterprise') {
+                          e.preventDefault();
+                          setEnterpriseModalOpen(true);
+                        } else {
+                          setSetupPackage(plan.id.replace('srv-', ''));
+                        }
+                      }}
                       className="w-full text-[10px] font-black rounded-lg h-9 border-slate-300 dark:border-slate-700"
                     >
                       {plan.ctaLabel}
@@ -1135,6 +1305,16 @@ export default function PricingPage() {
         </section>
 
       </main>
+      <EnterpriseModal isOpen={enterpriseModalOpen} onClose={() => setEnterpriseModalOpen(false)} />
+      <PaymentMethodModal
+        isOpen={paymentSelectionOpen}
+        onClose={() => setPaymentSelectionOpen(false)}
+        planId={selectedPlanId}
+        planName={planName}
+        priceFormatted={priceFormatted}
+        onSelectManual={handleSelectManualPayment}
+        onSelectAutomatic={handleExecutePaystack}
+      />
     </div>
   );
 }

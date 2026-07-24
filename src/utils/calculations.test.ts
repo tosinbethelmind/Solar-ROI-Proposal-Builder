@@ -39,12 +39,14 @@ describe('calculations', () => {
       const { peakSurgeWatts, kva } = calculateInverterSize(appliances, pContinuous);
       
       // Expected:
-      // simultaneous_surge = (1050+550)*2 = 3200W
-      // non_sim_surge = 150*2 = 300W
-      // peakSurge = 1750 + 3200 + 300 = 5250W
-      expect(peakSurgeWatts).toBe(5250);
+      // AC: default inductive -> 3.0x multiplier -> surge delta = 2.0 -> 1050 * 2 = 2100W
+      // Pump: heavy inductive -> 5.0x multiplier -> surge delta = 4.0 -> 550 * 4 = 2200W
+      // simultaneous_surge = 2100 + 2200 = 4300W
+      // Fridge: default inductive -> 3.0x multiplier -> surge delta = 2.0 -> 150 * 2 = 300W
+      // peakSurge = 1750 + 4300 + 300 = 6350W
+      expect(peakSurgeWatts).toBe(6350);
       
-      // reqKvaRaw = (5250 * 1.25) / (0.8 * 1000) = 8.203125 kVA
+      // reqKvaRaw = (6350 * 1.25) / (0.8 * 1000) = 9.921875 kVA
       // Standard tiers: [1.5, 2.5, 3.5, 5, 7.5, 10, 15]
       // Expected tier: 10 kVA
       expect(kva).toBe(10);
@@ -74,6 +76,18 @@ describe('calculations', () => {
   });
 
   describe('calculateBatteryBank', () => {
+    it('Direct Load Runtime Sizing (backup-hours) sizes battery for actual runtime', () => {
+      const appliances: InputAppliance[] = [
+        { name: 'TV', wattage: 100, quantity: 1, dailyRuntimeHours: 4, isInductive: false, loadType: 'essential', isIncludedInBackup: true, simultaneousStart: false },
+        { name: 'Fridge', wattage: 200, quantity: 1, dailyRuntimeHours: 24, isInductive: true, loadType: 'essential', isIncludedInBackup: true, simultaneousStart: false }
+      ];
+      const flat = calculateBatteryBank(5200, 8, 48, 'lithium', 'flat-load', appliances);
+      const backupHours = calculateBatteryBank(5200, 8, 48, 'lithium', 'backup-hours', appliances);
+      
+      expect(flat.reqAhRaw).toBeCloseTo(1733.33 / (48 * 0.8), 1);
+      expect(backupHours.reqAhRaw).toBeCloseTo(2000 / (48 * 0.8), 1);
+    });
+
     it('Battery DoD Test: Require ~1.6x more Ah for lead-acid (0.5) vs lithium (0.8) for same load', () => {
       // 2400 Wh essential per day.
       const essentialDailyWh = 2400;
@@ -113,6 +127,18 @@ describe('calculations', () => {
       
       expect(lithium.reqArrayWp).toBeLessThan(leadAcid.reqArrayWp);
     });
+
+    it('supports essential load sizing basis for budget/standard tiers', () => {
+      const totalDailyWh = 10000;
+      const essentialDailyWh = 4000;
+      const totalBasis = calculatePanelArray(totalDailyWh, 4.5, 'lithium', 450, 'total', essentialDailyWh);
+      const essentialBasis = calculatePanelArray(totalDailyWh, 4.5, 'lithium', 450, 'essential', essentialDailyWh);
+
+      expect(essentialBasis.panelCount).toBeLessThan(totalBasis.panelCount);
+      // etaCombined base = 0.612. Derating factor (default matches 'other') = 0.88 * 0.92 = 0.8096
+      // etaCombined = 0.612 * 0.8096 = 0.4954752
+      expect(essentialBasis.reqArrayWp).toBeCloseTo((4000 * 1.05) / (4.5 * 0.4954752), 1);
+    });
   });
 
   describe('getGeneratorFuelRate', () => {
@@ -120,12 +146,16 @@ describe('calculations', () => {
       expect(getGeneratorFuelRate(2.5, 'petrol')).toBe(1.0);
     });
 
-    it('Generator Missing Test: gen_capacity_kva = 6 selects nearest table entry (5.0)', () => {
-      expect(getGeneratorFuelRate(6, 'petrol')).toBe(1.8);
-      // Wait, let's verify if 6 is closer to 5 or 7.5.
+    it('selects new lookup ratings like 1.0kVA, 6.5kVA, 25kVA correctly', () => {
+      expect(getGeneratorFuelRate(1.0, 'petrol')).toBe(0.45);
+      expect(getGeneratorFuelRate(6.5, 'diesel')).toBe(1.7);
+      expect(getGeneratorFuelRate(25, 'diesel')).toBe(5.8);
+    });
+
+    it('Generator Missing Test: gen_capacity_kva = 6 selects nearest table entry (6.5)', () => {
+      expect(getGeneratorFuelRate(6, 'petrol')).toBe(2.2);
+      // |6 - 6.5| = 0.5 (closest)
       // |6 - 5| = 1.0
-      // |6 - 7.5| = 1.5
-      // Closest is 5.0. 5.0 petrol is 1.8.
     });
 
     it('throws error if fuel type is not supported for the closest entry', () => {
@@ -173,6 +203,70 @@ describe('calculations', () => {
       expect(roi.paybackMonths).toBeGreaterThan(19);
       expect(roi.paybackMonths).toBeLessThan(21);
       expect(roi.baseMonthlySavings).toBe(156188);
+    });
+
+    it('Respects custom serviceCostPerEvent correctly', () => {
+      const genInputs: import('./calculations').GeneratorInputs = {
+        fuelType: 'petrol',
+        capacityKva: 2.5,
+        dailyHours: 6,
+        fuelPricePerLiter: 750,
+        serviceCostPerEvent: 15000 // Custom: ₦15,000 instead of default ₦6,000
+      };
+
+      const gridInputs: import('./calculations').GridInputs = {
+        dailyHours: 8,
+        tariffPerKwh: 225
+      };
+
+      const roi = calculateROI(3000000, genInputs, gridInputs, 4800);
+      
+      // Fuel rate for 2.5 petrol is 1.0. 
+      // Fuel cost = 6 * 1.0 * 750 * 30.4 = 136,800
+      // Maintenance = (6 * 30.4 / 100) * 15000 = 27,360
+      // Gen Cost = 164,160
+      
+      // Grid Cost = (4800/24/1000) * 8 * 225 * 30.4 = 0.2 * 8 * 225 * 30.4 = 10,944
+      
+      // Solar O&M = 3000000 * 0.01 / 12 = 2,500
+      
+      // Base savings = 164,160 + 10,944 - 2,500 = 172,604
+      
+      expect(roi.baseMonthlySavings).toBe(172604);
+    });
+
+    it('Calculates payback using actual billing entries as override', () => {
+      const genInputs: import('./calculations').GeneratorInputs = {
+        fuelType: 'petrol',
+        capacityKva: 2.5,
+        dailyHours: 6,
+        fuelPricePerLiter: 750,
+      };
+      
+      const gridInputs: import('./calculations').GridInputs = {
+        dailyHours: 8,
+        tariffPerKwh: 225
+      };
+
+      const actualBilling = {
+        monthlyGridBill: 15000,
+        monthlyGenFuel: 80000,
+        monthlyGenMaint: 10000
+      };
+
+      const roi = calculateROI(3000000, genInputs, gridInputs, 4800, actualBilling);
+      
+      // With actualBilling override:
+      // genMonthlyCost = 80,000 + 10,000 = 90,000
+      // gridMonthlyCost = 15,000
+      // Solar O&M = 3,000,000 * 0.01 / 12 = 2,500
+      // Base savings = 90,000 + 15,000 - 2,500 = 102,500
+      
+      expect(roi.genMonthlyCost).toBe(90000);
+      expect(roi.gridMonthlyCost).toBe(15000);
+      expect(roi.baseMonthlySavings).toBe(102500);
+      expect(roi.paybackMonths).toBeGreaterThan(28); // 3000000 / 102500 is ~29.2 without degradation, which means slightly more with degradation
+      expect(roi.paybackMonths).toBeLessThan(31);
     });
   });
 

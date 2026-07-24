@@ -79,19 +79,8 @@ export const useHomeownerSubscriptionStore = create<HomeownerSubscriptionState>(
           return { allowed: true, remaining: state.tokens, reason: `${state.tokens} Token(s) available` };
         }
 
-        // Free tier gets 1 calculation per month
-        const freeLimit = 1;
-        const remainingFree = Math.max(0, freeLimit - state.estimationsUsedThisMonth);
-        
-        if (remainingFree > 0) {
-          return { allowed: true, remaining: remainingFree, reason: '1 Free Monthly Estimation' };
-        }
-
-        return { 
-          allowed: false, 
-          remaining: 0, 
-          reason: 'You have used your 1 free monthly estimation. Upgrade to unlock.' 
-        };
+        // Free tier gets unlimited calculations
+        return { allowed: true, remaining: 9999, reason: 'Unlimited Free Sizing calculations' };
       },
 
       consumeEstimation: () => {

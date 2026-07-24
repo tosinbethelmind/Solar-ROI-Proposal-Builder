@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CopyrightYear } from '@/components/ui/CopyrightYear';
+import { LegalNotice } from '@/components/ui/LegalNotice';
 import { Settings, FileText, Plus, Zap, Sparkles, TrendingUp, DollarSign, ArrowRight } from 'lucide-react';
 
 /* ─── Helpers ───────────────────────────────────────────────── */
@@ -118,7 +119,7 @@ export default function WorkspaceDashboardPage() {
   const { savedProposals, deleteProposal } = useHistoryStore();
   const { reset } = useWizardStore();
   const { appMode, setAppMode } = useUiStore();
-  const { checkAccess, openUpgradeModal, tier: currentTier, isTrial } = useSubscriptionStore();
+  const { checkAccess, openUpgradeModal, tier: currentTier, isTrial, launchPromoClaimed, claimLaunchPromo, trialProposalsRemaining } = useSubscriptionStore();
   const [mounted, setMounted] = React.useState(false);
   const [profileComplete, setProfileComplete] = React.useState(false);
 
@@ -147,9 +148,16 @@ export default function WorkspaceDashboardPage() {
     }
 
     if (!isE2E) {
-      if (isTrial && currentCount >= 2) {
-        openUpgradeModal(null);
-        return;
+      if (isTrial) {
+        if (launchPromoClaimed) {
+          if (trialProposalsRemaining <= 0) {
+            openUpgradeModal(null);
+            return;
+          }
+        } else if (currentCount >= 7) {
+          openUpgradeModal(null);
+          return;
+        }
       }
       if (currentTier === 'free' && currentCount >= 1) {
         openUpgradeModal(null);
@@ -179,9 +187,16 @@ export default function WorkspaceDashboardPage() {
     }
 
     if (!isE2E) {
-      if (isTrial && currentCount >= 2) {
-        openUpgradeModal(null);
-        return;
+      if (isTrial) {
+        if (launchPromoClaimed) {
+          if (trialProposalsRemaining <= 0) {
+            openUpgradeModal(null);
+            return;
+          }
+        } else if (currentCount >= 7) {
+          openUpgradeModal(null);
+          return;
+        }
       }
       if (currentTier === 'free' && currentCount >= 1) {
         openUpgradeModal(null);
@@ -292,6 +307,20 @@ export default function WorkspaceDashboardPage() {
               Home
             </Button>
 
+            <Button variant="ghost" size="sm" className="text-xs font-bold text-emerald-650 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-slate-800 flex items-center gap-1" onClick={() => router.push('/walkthroughs')}>
+              🎓 Academy
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              title="Rapid on-site package sizer — works offline"
+              className="text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:bg-slate-800 flex items-center gap-1"
+              onClick={() => router.push('/start-simple')}
+            >
+              ⚡ Quick Sizer
+            </Button>
+
             <Button variant="ghost" size="sm" className="text-xs font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-350 dark:hover:bg-slate-800" onClick={() => router.push('/blog')}>
               Insights
             </Button>
@@ -335,23 +364,78 @@ export default function WorkspaceDashboardPage() {
         )}
 
         {/* ═══ Subscription Quota Alerts ═══ */}
-        {isTrial && savedProposals.length === 1 && (
+        {/* 🇳🇬 Nigeria Launch Promo Banner */}
+        {!launchPromoClaimed && (
+          <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 p-6 text-white shadow-xl animate-in slide-in-from-top-3 duration-500">
+            <div className="absolute -top-12 -right-12 size-40 rounded-full bg-teal-500/10 blur-xl pointer-events-none" />
+            <div className="absolute -bottom-12 -left-12 size-40 rounded-full bg-emerald-500/10 blur-xl pointer-events-none" />
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 text-emerald-450 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  🇳🇬 Special Nigeria Launch Offer
+                </div>
+                <h2 className="text-lg font-black tracking-tight text-white">
+                  Unlock Free Pro Level & 20 Proposals!
+                </h2>
+                <p className="text-slate-350 text-xs max-w-2xl leading-relaxed">
+                  We are celebrating our Nigeria launch! The first 1,000 installers get <strong>20 free proposals</strong> instead of 2, plus full access to custom branding, watermark-free PDFs, and generator ROI charts. Claim yours now!
+                </p>
+              </div>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-extrabold shadow-lg shadow-emerald-500/20 transition-all rounded-2xl flex items-center justify-center gap-2 text-xs px-6 h-11 shrink-0 border-none"
+                onClick={() => {
+                  claimLaunchPromo();
+                  alert('🎉 Congratulations! You have unlocked the Pro Launch Offer with 20 free proposals!');
+                }}
+              >
+                Claim Free Launch Upgrade ➔
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {launchPromoClaimed && isTrial && trialProposalsRemaining > 0 && (
+          <div className="p-4 bg-emerald-500/10 border border-emerald-500/35 text-emerald-900 dark:text-emerald-350 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-base">🇳🇬</span>
+              <span><strong>Nigeria Launch Promo Active:</strong> You have <strong>{trialProposalsRemaining} of 20</strong> free proposals remaining. Enjoy unwatermarked PDFs and full Pro features!</span>
+            </div>
+            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md border-none" onClick={() => openUpgradeModal(null)}>
+              Upgrade Workspace
+            </Button>
+          </div>
+        )}
+
+        {launchPromoClaimed && isTrial && trialProposalsRemaining <= 0 && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/35 text-rose-900 dark:text-rose-350 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-base">🔒</span>
+              <span><strong>Promo Quota Completed:</strong> You have used all 20 of your free launch proposals. Upgrade to a paid plan now to continue saving and sharing quotes.</span>
+            </div>
+            <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md border-none" onClick={() => openUpgradeModal(null)}>
+              Unlock Unlimited
+            </Button>
+          </div>
+        )}
+
+        {isTrial && !launchPromoClaimed && savedProposals.length >= 1 && savedProposals.length < 7 && (
           <div className="p-4 bg-teal-500/10 border border-teal-500/35 text-teal-900 dark:text-teal-300 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
             <div className="flex items-center gap-2.5">
               <span className="text-base">💡</span>
-              <span><strong>Trial Active:</strong> You have used <strong>1 of 2</strong> free proposals on your Pro Trial. Upgrade to Starter or Pro to save unlimited draft proposals.</span>
+              <span><strong>Trial Active:</strong> You have used <strong>{savedProposals.length} of 7</strong> free proposals on your Pro Trial. Upgrade to Starter or Pro to save unlimited draft proposals.</span>
             </div>
-            <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
+            <Button size="sm" className="bg-teal-650 hover:bg-teal-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
               Upgrade Now
             </Button>
           </div>
         )}
 
-        {isTrial && savedProposals.length >= 2 && (
-          <div className="p-4 bg-rose-500/10 border border-rose-500/35 text-rose-900 dark:text-rose-300 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+        {isTrial && !launchPromoClaimed && savedProposals.length >= 7 && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/35 text-rose-900 dark:text-rose-350 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
             <div className="flex items-center gap-2.5">
               <span className="text-base">🔒</span>
-              <span><strong>Trial Completed:</strong> You have created your <strong>2 of 2</strong> allowed free proposals. Upgrade to a paid plan now to save and share new proposals.</span>
+              <span><strong>Trial Completed:</strong> You have created your <strong>7 of 7</strong> allowed free proposals. Upgrade to a paid plan now to save and share new proposals.</span>
             </div>
             <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
               Unlock Unlimited
@@ -359,11 +443,11 @@ export default function WorkspaceDashboardPage() {
           </div>
         )}
 
-        {currentTier === 'free' && savedProposals.length >= 1 && (
-          <div className="p-4 bg-rose-500/10 border border-rose-500/35 text-rose-900 dark:text-rose-300 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+        {currentTier === 'free' && !launchPromoClaimed && savedProposals.length >= 2 && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/35 text-rose-900 dark:text-rose-350 text-xs font-semibold rounded-2xl animate-in slide-in-from-top-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
             <div className="flex items-center gap-2.5">
               <span className="text-base">🔒</span>
-              <span><strong>Proposal Limit Reached:</strong> Your Free plan is limited to <strong>1 proposal</strong>. Upgrade to Starter or Pro to continue drafting quotes.</span>
+              <span><strong>Proposal Limit Reached:</strong> Your Free Starter Plan is limited to <strong>2 proposals</strong>. Upgrade to Starter Plan or Pro to continue drafting quotes.</span>
             </div>
             <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shrink-0 font-extrabold rounded-xl text-xs py-1 px-4 shadow-md" onClick={() => openUpgradeModal(null)}>
               Upgrade Plan
@@ -616,7 +700,10 @@ export default function WorkspaceDashboardPage() {
       {/* ═══ Footer ═══ */}
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-12 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 dark:text-slate-500">
-          <p>© <CopyrightYear /> SolarQuotePro — Built for Nigerian Installers</p>
+          <div>
+            <p>© <CopyrightYear /> SolarQuotePro — Built for Nigerian Installers</p>
+            <LegalNotice />
+          </div>
           <p className="flex items-center gap-1.5">
             <span className="inline-block size-1.5 rounded-full bg-emerald-500 animate-pulse animate-duration-1000" />
             Offline-ready PWA active

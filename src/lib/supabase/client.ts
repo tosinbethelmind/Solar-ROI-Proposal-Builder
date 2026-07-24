@@ -5,11 +5,14 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-
 
 const realClient = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
-// Check if we are running in browser and E2E bypass is active
 const isBypassed = typeof window !== 'undefined' && (
   document.cookie.includes('bypass_auth=solar-quotepro-e2e-secret-key-2026') ||
   document.cookie.includes('bypass_auth=true')
 )
+
+if (typeof window !== 'undefined') {
+  console.log('SUPABASE CLIENT BUNDLE LOADED. document.cookie:', document.cookie, 'isBypassed:', isBypassed);
+}
 
 function createMockSupabase() {
   const mockUser = { id: 'mock-installer-id', email: 'installer@test.local', user_metadata: { company_name: 'Solar Installer' } }
@@ -38,7 +41,11 @@ function createMockSupabase() {
       setTimeout(() => cb('SIGNED_IN', mockSession), 0)
       return { data: { subscription: { unsubscribe: () => {} } } }
     },
-    signOut: () => Promise.resolve({ error: null })
+    signOut: () => Promise.resolve({ error: null }),
+    updateUser: (updateData: any) => {
+      Object.assign(mockUser.user_metadata, updateData.data || {});
+      return Promise.resolve({ data: { user: mockUser }, error: null });
+    }
   }
 
   return {

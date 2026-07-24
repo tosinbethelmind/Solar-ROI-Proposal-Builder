@@ -19,6 +19,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.8,
     response_speed: 'Usually under 2 hours',
     contact_preference: 'WhatsApp',
+    cac_number: 'RC-1485901',
     created_at: new Date().toISOString()
   },
   {
@@ -34,6 +35,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.6,
     response_speed: 'Usually under 4 hours',
     contact_preference: 'Phone Call',
+    cac_number: 'RC-1294850',
     created_at: new Date().toISOString()
   },
   {
@@ -49,6 +51,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.9,
     response_speed: 'Usually under 1 hour',
     contact_preference: 'WhatsApp',
+    cac_number: 'RC-1104859',
     created_at: new Date().toISOString()
   },
   {
@@ -79,6 +82,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.8,
     response_speed: 'Usually under 2 hours',
     contact_preference: 'WhatsApp',
+    cac_number: 'RC-1394058',
     created_at: new Date().toISOString()
   },
   {
@@ -94,6 +98,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.7,
     response_speed: 'Usually under 3 hours',
     contact_preference: 'WhatsApp',
+    cac_number: 'RC-1659302',
     created_at: new Date().toISOString()
   },
   {
@@ -109,6 +114,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.6,
     response_speed: 'Usually under 4 hours',
     contact_preference: 'Phone Call',
+    cac_number: 'RC-1234908',
     created_at: new Date().toISOString()
   },
   {
@@ -124,6 +130,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.9,
     response_speed: 'Usually under 2 hours',
     contact_preference: 'WhatsApp',
+    cac_number: 'RC-1583021',
     created_at: new Date().toISOString()
   },
   {
@@ -139,6 +146,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.7,
     response_speed: 'Usually under 4 hours',
     contact_preference: 'Email',
+    cac_number: 'RC-1039485',
     created_at: new Date().toISOString()
   },
   {
@@ -154,6 +162,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.8,
     response_speed: 'Usually under 2 hours',
     contact_preference: 'WhatsApp',
+    cac_number: 'RC-1748293',
     created_at: new Date().toISOString()
   },
   {
@@ -169,6 +178,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.6,
     response_speed: 'Usually under 3 hours',
     contact_preference: 'WhatsApp',
+    cac_number: 'RC-1938502',
     created_at: new Date().toISOString()
   },
   {
@@ -184,6 +194,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.5,
     response_speed: 'Usually under 24 hours',
     contact_preference: 'Phone Call',
+    cac_number: 'RC-1847529',
     created_at: new Date().toISOString()
   },
   {
@@ -199,6 +210,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.8,
     response_speed: 'Usually under 4 hours',
     contact_preference: 'Email',
+    cac_number: 'RC-1038472',
     created_at: new Date().toISOString()
   },
   {
@@ -214,6 +226,7 @@ const MOCK_INSTALLERS: InstallerProfile[] = [
     rating_average: 4.9,
     response_speed: 'Usually under 1 hour',
     contact_preference: 'WhatsApp',
+    cac_number: 'RC-1582038',
     created_at: new Date().toISOString()
   },
   {
@@ -515,8 +528,9 @@ interface MarketplaceState {
   // Actions
   addInstallerProfile: (profile: Omit<InstallerProfile, 'id' | 'rating_count' | 'rating_average' | 'created_at'>) => void;
   updateInstallerProfile: (id: string, updates: Partial<InstallerProfile>) => void;
-  addServiceArea: (installerId: string, state: string, city: string) => void;
+  addServiceArea: (installerId: string, state: string, city: string) => boolean;
   removeServiceArea: (id: string) => void;
+  setServiceAreas: (installerId: string, areas: { state: string; city: string }[]) => void;
   submitLead: (lead: Omit<HomeownerLead, 'id' | 'created_at'>, targetInstallerId?: string) => void;
   updateLeadStatus: (assignmentId: string, status: LeadAssignment['status']) => void;
   updateLeadPipelineStatus: (assignmentId: string, pipelineStatus: 'New' | 'Contacted' | 'Qualified' | 'Proposal Sent' | 'Won' | 'Lost') => void;
@@ -579,15 +593,41 @@ export const useMarketplaceStore = create<MarketplaceState>()(
       },
 
       addServiceArea: (installerId, state, city) => {
+        const existing = get().serviceAreas.filter(sa => sa.installer_id === installerId);
+        if (existing.length >= 10) {
+          return false;
+        }
+        const isDuplicate = existing.some(
+          sa => sa.state.toLowerCase() === state.toLowerCase() && sa.city.toLowerCase() === city.toLowerCase()
+        );
+        if (isDuplicate) {
+          return false;
+        }
         const id = 'sa-' + Math.random().toString(36).substr(2, 9);
         set((stateData) => ({
           serviceAreas: [...stateData.serviceAreas, { id, installer_id: installerId, state, city }]
         }));
+        return true;
       },
 
       removeServiceArea: (id) => {
         set((state) => ({
           serviceAreas: state.serviceAreas.filter((sa) => sa.id !== id)
+        }));
+      },
+
+      setServiceAreas: (installerId, areas) => {
+        const mapped = areas.slice(0, 10).map(a => ({
+          id: 'sa-' + Math.random().toString(36).substr(2, 9),
+          installer_id: installerId,
+          state: a.state,
+          city: a.city
+        }));
+        set((state) => ({
+          serviceAreas: [
+            ...state.serviceAreas.filter(sa => sa.installer_id !== installerId),
+            ...mapped
+          ]
         }));
       },
 
@@ -615,8 +655,8 @@ export const useMarketplaceStore = create<MarketplaceState>()(
         } else {
           // General Matching Algorithm
           const allAreas = get().serviceAreas;
-          // 1. Service Area Match (State & City)
-          const matchingInstallers = Array.from(
+          // Phase 1: Search for exact State and City matches
+          let matchingInstallers = Array.from(
             new Set(
               allAreas
                 .filter(
@@ -627,6 +667,20 @@ export const useMarketplaceStore = create<MarketplaceState>()(
                 .map((sa) => sa.installer_id)
             )
           );
+
+          // Phase 2: Fall back to State-only match if zero exact matches found
+          if (matchingInstallers.length === 0) {
+            matchingInstallers = Array.from(
+              new Set(
+                allAreas
+                  .filter(
+                    (sa) =>
+                      sa.state.toLowerCase() === lead.state.toLowerCase()
+                  )
+                  .map((sa) => sa.installer_id)
+              )
+            );
+          }
 
           if (matchingInstallers.length > 0) {
             // Sort matching installers based on verified listing tiers

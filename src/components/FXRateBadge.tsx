@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { formatFXDisplay } from '@/utils/exchangeRate';
+import { formatFXDisplay, fetchUSDNGNRate } from '@/utils/exchangeRate';
 import { RefreshCw, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -17,24 +17,13 @@ export function FXRateBadge() {
   const fetchBackground = async (currentRate: number | null) => {
     setIsRefreshing(true);
     try {
-      const response = await fetch('https://open.er-api.com/v6/latest/USD');
-      if (!response.ok) throw new Error('Fetch failed');
-      const data = await response.json();
-      
-      if (data && data.rates && data.rates.NGN) {
-        const liveRate = data.rates.NGN;
-        localStorage.setItem('solarquotepro_last_fx_rate', liveRate.toString());
-        localStorage.setItem('solarquotepro_fx_rate_timestamp', Date.now().toString());
-        
-        setRate(liveRate);
-        setIsEstimated(false);
-        setStatus('live');
-        setLastFetched(new Date().toLocaleString(undefined, {
-          day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
-        }));
-      } else {
-        throw new Error('Invalid NGN rate in response');
-      }
+      const liveRate = await fetchUSDNGNRate();
+      setRate(liveRate);
+      setIsEstimated(false);
+      setStatus('live');
+      setLastFetched(new Date().toLocaleString(undefined, {
+        day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
+      }));
     } catch (err) {
       console.warn('FX background fetch failed, using fallback/cached rate.', err);
       if (currentRate) {
@@ -171,7 +160,9 @@ export function FXRateBadge() {
               </div>
               <div className="flex justify-between">
                 <span>Source:</span>
-                <span className="font-semibold">Open Exchange Rates</span>
+                <span className="font-semibold">
+                  {typeof window !== 'undefined' ? localStorage.getItem('solarquotepro_fx_source') || 'Live Interbank Rate • open.er-api.com' : 'Live Interbank Rate • open.er-api.com'}
+                </span>
               </div>
             </div>
 

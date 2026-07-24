@@ -7,14 +7,14 @@ import { Button } from '@/components/ui/button';
 const PLAN_KEYS = ['free', 'starter', 'professional', 'enterprise'];
 
 const PLAN_HEADERS = {
-  free: { name: 'Free Plan', price: '₦0', label: 'Homeowners' },
-  starter: { name: 'Starter', price: '₦18,000', label: 'Solo Installers' },
-  professional: { name: 'Professional', price: '₦45,000', label: 'Growing Teams' },
-  enterprise: { name: 'Enterprise', price: '₦120,000', label: 'EPC Firms' }
+  free: { name: 'Free Starter Plan', price: '₦0', label: 'Homeowners' },
+  starter: { name: 'Starter Plan', price: '₦15,000', label: 'Solo Installers' },
+  professional: { name: 'Professional', price: '₦35,000', label: 'Growing Teams' },
+  enterprise: { name: 'Enterprise Plan', price: '₦95,000', label: 'EPC Firms' }
 };
 
 const COMPARE_ROWS = [
-  { group: 'Core Sizing & Proposals', label: 'Proposals / Month', free: '1 Proposal', starter: '10 Proposals', professional: '40 Proposals', enterprise: 'Unlimited' },
+  { group: 'Core Sizing & Proposals', label: 'Proposals / Month', free: '2 Proposals', starter: '10 Proposals', professional: '40 Proposals', enterprise: 'Unlimited' },
   { group: 'Core Sizing & Proposals', label: 'Watermark-free PDF export', free: false, starter: true, professional: true, enterprise: true },
   { group: 'Core Sizing & Proposals', label: 'WhatsApp direct sharing', free: false, starter: true, professional: true, enterprise: true },
   { group: 'Core Sizing & Proposals', label: 'Offline field mode cache', free: true, starter: true, professional: true, enterprise: true },

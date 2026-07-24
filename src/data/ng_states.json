@@ -1,0 +1,158 @@
+{
+  "Lagos": [
+    "Ikeja",
+    "Lekki",
+    "Victoria Island",
+    "Ikoyi",
+    "Gbagada",
+    "Surulere",
+    "Ajah",
+    "Ibeju-Lekki",
+    "Apapa",
+    "Yaba",
+    "Agege",
+    "Ogba",
+    "Ojodu",
+    "Ilupeju",
+    "Lagos Island",
+    "Badagry"
+  ],
+  "FCT": [
+    "Abuja",
+    "Wuse",
+    "Maitama",
+    "Garki",
+    "Asokoro",
+    "Gwarinpa"
+  ],
+  "Rivers": [
+    "Port Harcourt",
+    "Obio-Akpor",
+    "Eleme",
+    "Bonny"
+  ],
+  "Kano": [
+    "Kano",
+    "Wudil",
+    "Gwarzo"
+  ],
+  "Oyo": [
+    "Ibadan",
+    "Ogbomosho",
+    "Oyo"
+  ],
+  "Enugu": [
+    "Enugu",
+    "Nsukka"
+  ],
+  "Edo": [
+    "Benin",
+    "Auchi"
+  ],
+  "Plateau": [
+    "Jos",
+    "Bukuru"
+  ],
+  "Kaduna": [
+    "Kaduna",
+    "Zaria"
+  ],
+  "Adamawa": [
+    "Yola",
+    "Mubi"
+  ],
+  "Abia": [
+    "Aba",
+    "Umuahia"
+  ],
+  "Anambra": [
+    "Awka",
+    "Onitsha",
+    "Nnewi"
+  ],
+  "Akwa Ibom": [
+    "Uyo",
+    "Eket",
+    "Ikot Ekpene"
+  ],
+  "Bauchi": [
+    "Bauchi"
+  ],
+  "Bayelsa": [
+    "Yenagoa"
+  ],
+  "Benue": [
+    "Makurdi",
+    "Gboko"
+  ],
+  "Borno": [
+    "Maiduguri"
+  ],
+  "Cross River": [
+    "Calabar"
+  ],
+  "Delta": [
+    "Asaba",
+    "Warri"
+  ],
+  "Ebonyi": [
+    "Abakaliki"
+  ],
+  "Ekiti": [
+    "Ado-Ekiti"
+  ],
+  "Gombe": [
+    "Gombe"
+  ],
+  "Imo": [
+    "Owerri"
+  ],
+  "Jigawa": [
+    "Dutse"
+  ],
+  "Katsina": [
+    "Katsina"
+  ],
+  "Kebbi": [
+    "Birnin Kebbi"
+  ],
+  "Kogi": [
+    "Lokoja"
+  ],
+  "Kwara": [
+    "Ilorin"
+  ],
+  "Nasarawa": [
+    "Lafia",
+    "Karu"
+  ],
+  "Niger": [
+    "Minna",
+    "Suleja"
+  ],
+  "Ogun": [
+    "Abeokuta",
+    "Ijebu Ode",
+    "Ota"
+  ],
+  "Ondo": [
+    "Akure",
+    "Ondo"
+  ],
+  "Osun": [
+    "Osogbo",
+    "Ile-Ife"
+  ],
+  "Sokoto": [
+    "Sokoto"
+  ],
+  "Taraba": [
+    "Jalingo"
+  ],
+  "Yobe": [
+    "Damaturu"
+  ],
+  "Zamfara": [
+    "Gusau"
+  ]
+}

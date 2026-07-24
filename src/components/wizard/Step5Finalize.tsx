@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Copy, CheckCircle2 } from 'lucide-react';
 import { fetchUSDNGNRate } from '@/utils/exchangeRate';
+import { getCityById } from '@/lib/nigerianCities';
 
 import { useTracking } from '@/hooks/useTracking';
 
@@ -92,32 +93,20 @@ export default function Step5Finalize({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const [compliance, setCompliance] = React.useState(() => {
+  const activeCity = React.useMemo(() => getCityById(proposal.city_id || 'lagos'), [proposal.city_id]);
+
+  const [compliance, setCompliance] = React.useState<Record<number, boolean>>(() => {
     try {
-      const stored = localStorage.getItem('lagosCompliance');
-      return stored ? JSON.parse(stored) : {
-        nercPermit: false,
-        laspppaApproval: false,
-        landlordApproval: false,
-        sonCertified: false,
-        structuralRoof: false,
-        wiringDiagram: false
-      };
+      const stored = localStorage.getItem(`compliance_${proposal.city_id || 'lagos'}`);
+      return stored ? JSON.parse(stored) : {};
     } catch {
-      return {
-        nercPermit: false,
-        laspppaApproval: false,
-        landlordApproval: false,
-        sonCertified: false,
-        structuralRoof: false,
-        wiringDiagram: false
-      };
+      return {};
     }
   });
 
   React.useEffect(() => {
-    localStorage.setItem('lagosCompliance', JSON.stringify(compliance));
-  }, [compliance]);
+    localStorage.setItem(`compliance_${activeCity.id}`, JSON.stringify(compliance));
+  }, [compliance, activeCity.id]);
 
   const [error, setError] = React.useState('');
   const [copied, setCopied] = React.useState(false);
@@ -359,21 +348,21 @@ ${footerStr}`;
     console.log('[ensureSaved] isE2E:', isE2E, 'loadedId:', loadedId, 'savedCount:', savedCount);
     
     if (!loadedId) {
-      if (subState.isTrial && savedCount >= 2) {
+      if (subState.isTrial && savedCount >= 7) {
         console.log('[ensureSaved] Quota limit reached (Trial)');
-        setError('Proposal limit reached for your Pro Trial (2 lifetime). Please upgrade to save new estimates.');
+        setError('Proposal limit reached for your Pro Trial (7 lifetime). Please upgrade to save new estimates.');
         subState.openUpgradeModal(null);
         return null;
       }
-      if (subState.tier === 'free' && savedCount >= 1) {
+      if (subState.tier === 'free' && savedCount >= 2) {
         console.log('[ensureSaved] Quota limit reached (Free)');
-        setError('Proposal limit reached for your Free plan (1 lifetime). Please upgrade to save new estimates.');
+        setError('Proposal limit reached for your Free Starter Plan (2 lifetime). Please upgrade to save new estimates.');
         subState.openUpgradeModal(null);
         return null;
       }
       if (subState.tier === 'starter' && savedCount >= 10) {
         console.log('[ensureSaved] Quota limit reached (Starter)');
-        setError('Proposal limit reached for your Starter plan (10 monthly). Please upgrade to save new estimates.');
+        setError('Proposal limit reached for your Starter Plan (10 monthly). Please upgrade to save new estimates.');
         subState.openUpgradeModal(null);
         return null;
       }
@@ -434,6 +423,10 @@ ${footerStr}`;
   };
 
   const handleCopyLink = async () => {
+    if (!checkAccess('interactiveProposals').unlocked) {
+      openUpgradeModal('interactiveProposals');
+      return;
+    }
     const id = await ensureSaved();
     if (!id) return;
     
@@ -836,6 +829,36 @@ ${footerStr}`;
                     </div>
                   )}
                 </div>
+
+                {/* 3. Interactive Proposal Checkouts */}
+                <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">3. Interactive Proposal Checkouts</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-slate-500 font-bold">Site Survey Booking Fee (₦)</Label>
+                      <Input
+                        type="number"
+                        value={proposal.surveyFee ?? 15000}
+                        onChange={e => updateProposal({ surveyFee: Math.max(0, Number(e.target.value)) })}
+                        placeholder="15,000"
+                        className="h-9 text-xs"
+                      />
+                      <p className="text-[10px] text-muted-foreground leading-normal">Charge clients an upfront fee to book physical inspections. Set to 0 to disable.</p>
+                    </div>
+                    <div className="flex flex-col justify-center space-y-2">
+                      <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={proposal.offerInsurance ?? false}
+                          onChange={(e) => updateProposal({ offerInsurance: e.target.checked })}
+                          className="w-4 h-4 accent-teal-600 rounded cursor-pointer"
+                        />
+                        <span>Offer 12-Month Solar Shield Insurance</span>
+                      </label>
+                      <p className="text-[10px] text-muted-foreground leading-normal">Clients can purchase workmanship & grid/surge protection warranty (adds 2% of turnkey price).</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -927,7 +950,7 @@ ${footerStr}`;
             )}
           </div>
 
-          {/* 📋 LAGOS REGULATORY COMPLIANCE CHECKLIST */}
+          {/* 📋 REGULATORY COMPLIANCE CHECKLIST */}
           <div className="border rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
             <button 
               type="button"
@@ -935,7 +958,7 @@ ${footerStr}`;
               onClick={() => setComplianceOpen(!complianceOpen)}
             >
               <span className="flex items-center gap-1.5">
-                <span>📋</span> Lagos Regulatory Compliance Checklist
+                <span>📋</span> {activeCity.name} Regulatory Compliance Checklist
               </span>
               <span className="text-muted-foreground text-sm">{complianceOpen ? '▲ Hide' : '▼ Expand'}</span>
             </button>
@@ -943,86 +966,28 @@ ${footerStr}`;
             {complianceOpen && (
               <div className="p-5 space-y-4 border-t border-slate-100 dark:border-slate-800 text-xs">
                 <p className="text-slate-500 font-medium leading-relaxed">
-                  Verify Lagos State and national regulatory codes to assure client credibility and minimize structural liabilities.
+                  Verify local state and national regulatory codes for {activeCity.name} to assure client credibility and minimize structural liabilities.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={compliance.nercPermit} 
-                      onChange={e => setCompliance({ ...compliance, nercPermit: e.target.checked })}
-                      className="mt-0.5 accent-teal-600 rounded"
-                    />
-                    <div>
-                      <span className="font-semibold block text-slate-700 dark:text-slate-300">NERC Microgrid Permit</span>
-                      <span className="text-[10px] text-slate-400 block">Not required if system capacity is &lt; 1 MW. Verified exempt.</span>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={compliance.laspppaApproval} 
-                      onChange={e => setCompliance({ ...compliance, laspppaApproval: e.target.checked })}
-                      className="mt-0.5 accent-teal-600 rounded"
-                    />
-                    <div>
-                      <span className="font-semibold block text-slate-700 dark:text-slate-300">LASPPPA Roof Setbacks</span>
-                      <span className="text-[10px] text-slate-400 block">Confirm panel placement respects Lagos structural roof boundary codes.</span>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={compliance.landlordApproval} 
-                      onChange={e => setCompliance({ ...compliance, landlordApproval: e.target.checked })}
-                      className="mt-0.5 accent-teal-600 rounded"
-                    />
-                    <div>
-                      <span className="font-semibold block text-slate-700 dark:text-slate-300">Landlord/Estate Consent</span>
-                      <span className="text-[10px] text-slate-400 block">Written consent acquired if rental or managed Lekki/Ikoyi estate.</span>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={compliance.sonCertified} 
-                      onChange={e => setCompliance({ ...compliance, sonCertified: e.target.checked })}
-                      className="mt-0.5 accent-teal-600 rounded"
-                    />
-                    <div>
-                      <span className="font-semibold block text-slate-700 dark:text-slate-300">SON Hardware Certificates</span>
-                      <span className="text-[10px] text-slate-400 block">Verify inverters and batteries are SONCAP certified import stock.</span>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={compliance.structuralRoof} 
-                      onChange={e => setCompliance({ ...compliance, structuralRoof: e.target.checked })}
-                      className="mt-0.5 accent-teal-600 rounded"
-                    />
-                    <div>
-                      <span className="font-semibold block text-slate-700 dark:text-slate-300">Roof Truss Integrity Audit</span>
-                      <span className="text-[10px] text-slate-400 block">Trusses inspected to support wind load specs (up to 45 m/s gust).</span>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={compliance.wiringDiagram} 
-                      onChange={e => setCompliance({ ...compliance, wiringDiagram: e.target.checked })}
-                      className="mt-0.5 accent-teal-600 rounded"
-                    />
-                    <div>
-                      <span className="font-semibold block text-slate-700 dark:text-slate-300">Single-Line Wiring Diagram</span>
-                      <span className="text-[10px] text-slate-400 block">Lagos distribution grid interlock safety schematic attached.</span>
-                    </div>
-                  </label>
+                  {activeCity.complianceNotes.map((note, index) => {
+                    const parts = note.split(':');
+                    const title = parts[0] || 'Requirement';
+                    const description = parts.slice(1).join(':').trim() || note;
+                    return (
+                      <label key={index} className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-slate-50/50 dark:bg-slate-900/30 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={compliance[index] || false}
+                          onChange={e => setCompliance({ ...compliance, [index]: e.target.checked })}
+                          className="mt-0.5 accent-teal-600 rounded"
+                        />
+                        <div>
+                          <span className="font-semibold block text-slate-700 dark:text-slate-300">{title}</span>
+                          <span className="text-[10px] text-slate-400 block">{description}</span>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
             )}

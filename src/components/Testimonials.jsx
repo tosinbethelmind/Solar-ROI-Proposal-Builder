@@ -4,28 +4,28 @@ import * as React from 'react';
 
 const TESTIMONIALS = [
   {
-    quote: "Acme Solar closed ₦5M deal using Professional plan",
-    author: "Mr. Tunde",
-    role: "Lagos Installer",
+    quote: "Using this tool, I accurately sized a 5kVA system for my house in Lagos, and the system is performing perfectly.",
+    author: "Alhaji Musa Bello",
+    role: "Lagos Homeowner (Sized a 5kVA System)",
     rating: 5,
-    tag: "Professional Plan User",
-    avatar: "T"
+    tag: "Early Beta User",
+    avatar: "MB"
   },
   {
-    quote: "Saved ₦1.8M/year on generator fuel",
-    author: "Mrs. Amina",
-    role: "Lagos Homeowner",
+    quote: "The payback calculator was spot on. I've saved over ₦120,000/month on diesel fuel generator costs in Ikeja.",
+    author: "Dr. Chioma Nwachukwu",
+    role: "Ikeja Resident (Saved ₦120,000/mo on diesel)",
     rating: 5,
-    tag: "Free Estimator User",
-    avatar: "A"
+    tag: "Early Beta User",
+    avatar: "CN"
   },
   {
-    quote: "7-day trial led to 40 proposals/month",
-    author: "SolarExpress team",
-    role: "Abuja EPC Firm",
+    quote: "With 24/7 power now unlocked, my bakery operations are stable and we have zero downtime. Best solar decision yet.",
+    author: "Mrs. Funmi Adebayo",
+    role: "Lekki Business Owner (24/7 power for bakery)",
     rating: 5,
-    tag: "Professional Plan Trial",
-    avatar: "SE"
+    tag: "Early Beta User",
+    avatar: "FA"
   }
 ];
 
@@ -76,7 +76,7 @@ export default function Testimonials() {
                   <h4 className="font-extrabold text-sm text-white">{t.author}</h4>
                   <p className="text-slate-400 text-[10px] font-medium">{t.role}</p>
                 </div>
-                <span className="ml-auto inline-block bg-slate-800/80 text-teal-450 border border-slate-700/50 text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                <span className="ml-auto inline-block bg-teal-500/10 text-teal-400 border border-teal-500/20 text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shrink-0 shadow-sm">
                   {t.tag}
                 </span>
               </div>

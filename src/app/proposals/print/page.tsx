@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { fetchUSDNGNRate } from '@/utils/exchangeRate';
+import { getCityById } from '@/lib/nigerianCities';
+import { calculateROI } from '@/utils/calculations';
 
 export interface PrintProposalData extends Partial<ProposalState> {
   id?: string;
@@ -19,6 +21,8 @@ export interface PrintProposalData extends Partial<ProposalState> {
   installer_logo_url?: string;
   installer_tagline?: string;
   paymentPlan?: any;
+  gen_fuel_price_per_liter?: number;
+  roi_gen_maintenance_cost_per_event?: number;
 }
 
 const generateProposalSignature = (id: string, cost: number, fx: number) => {
@@ -120,6 +124,7 @@ function PrintProposalContent() {
             customer_email: data.customer_email || undefined,
             customer_phone: data.customer_phone || undefined,
             region_id: data.region_id || undefined,
+            city_id: data.city_id || data.calculations_snapshot?.city_id || undefined,
             backup_hours: Number(data.backup_hours),
             peak_sun_hours: Number(data.peak_sun_hours),
             battery_chemistry: data.calculations_snapshot?.battery_chemistry || 'lithium',
@@ -128,6 +133,7 @@ function PrintProposalContent() {
             gen_fuel_type: data.gen_fuel_type || undefined,
             gen_capacity_kva: data.gen_capacity_kva ? Number(data.gen_capacity_kva) : undefined,
             gen_daily_hours: Number(data.gen_daily_hours),
+            gen_fuel_price_per_liter: data.gen_fuel_price_per_liter ? Number(data.gen_fuel_price_per_liter) : undefined,
             labour_cost_ngn: Number(data.labour_cost_ngn),
             accessories_cost_ngn: Number(data.accessories_cost_ngn),
             markup_percentage: Number(data.markup_percentage),
@@ -142,6 +148,9 @@ function PrintProposalContent() {
             paymentPlan: data.calculations_snapshot?.paymentPlan || { selectedPlan: 'outright', downPaymentPercent: 20, includeInProposal: true },
             lockedFXRate: data.locked_fx_rate || data.calculations_snapshot?.lockedFXRate || null,
             fxRateLockedAt: data.fx_rate_locked_at || data.calculations_snapshot?.fxRateLockedAt || null,
+            monthly_phcn_bill: Number(data.monthly_phcn_bill || 0),
+            monthly_gen_fuel_cost: Number(data.monthly_gen_fuel_cost || 0),
+            monthly_gen_maintenance: Number(data.monthly_gen_maintenance || 0),
           };
 
           setProposal(reconstructedProposal);
@@ -156,6 +165,57 @@ function PrintProposalContent() {
 
     fetchRemote();
   }, [id, savedProposals, storeProposal, storeCalculations]);
+
+  const systemCost = proposal?.final_quoted_price_ngn || 0;
+
+  // ROI / Savings Calculations
+  const roiCalculations = React.useMemo(() => {
+    if (!proposal || !calculations) return { paybackMonths: Infinity, baseMonthlySavings: 0, genMonthlyCost: 0, gridMonthlyCost: 0 };
+    const essentialWh = calculations.essentialDailyWh || 0;
+    const fuelPrice = proposal.gen_fuel_price_per_liter ?? 
+      (proposal.gen_fuel_type === 'diesel' 
+        ? (proposal.fuelPrices?.dieselPerLitre ?? 1400) 
+        : (proposal.fuelPrices?.petrolPerLitre ?? 1100));
+    const genInputs = {
+      fuelType: (proposal.gen_fuel_type || 'petrol') as 'petrol' | 'diesel',
+      capacityKva: proposal.gen_capacity_kva ?? 5,
+      dailyHours: proposal.gen_daily_hours ?? 0,
+      fuelPricePerLiter: fuelPrice,
+      serviceCostPerEvent: proposal.roi_gen_maintenance_cost_per_event ?? (proposal.gen_fuel_type === 'diesel' ? 35005 : 6000)
+    };
+    const gridInputs = {
+      dailyHours: proposal.nepa_daily_hours ?? 0,
+      tariffPerKwh: proposal.nepa_tariff_per_kwh ?? 225
+    };
+    const actualBilling = {
+      monthlyGridBill: proposal.monthly_phcn_bill ?? 0,
+      monthlyGenFuel: proposal.monthly_gen_fuel_cost ?? 0,
+      monthlyGenMaint: proposal.monthly_gen_maintenance ?? 0
+    };
+    return calculateROI(systemCost, genInputs, gridInputs, essentialWh, actualBilling);
+  }, [systemCost, proposal, calculations]);
+
+  const roiProjections = React.useMemo(() => {
+    if (!roiCalculations || roiCalculations.paybackMonths === Infinity) return [];
+    
+    const baseSavings = roiCalculations.baseMonthlySavings;
+    const PANEL_DEGRADATION_RATE = 0.005;
+    const projections = [];
+    let cumSavings = 0;
+    
+    for (let year = 1; year <= 10; year++) {
+      const yearlySavings = baseSavings * 12 * Math.pow(1 - PANEL_DEGRADATION_RATE, year - 1);
+      cumSavings += yearlySavings;
+      projections.push({
+        year,
+        yearlySavings: Math.round(yearlySavings),
+        cumulativeSavings: Math.round(cumSavings),
+        roiPercent: ((cumSavings / systemCost) * 100).toFixed(0)
+      });
+    }
+    
+    return projections;
+  }, [roiCalculations, systemCost]);
 
   if (loading) {
     return (
@@ -183,9 +243,12 @@ function PrintProposalContent() {
   const expirationDate = new Date();
   expirationDate.setDate(expirationDate.getDate() + 30);
 
-  const systemCost = proposal.final_quoted_price_ngn || 0;
   const backupHours = proposal.backup_hours ?? 4;
   const peakSunHours = proposal.peak_sun_hours ?? 5;
+
+  const totalOldEnergyCost = Math.round((roiCalculations?.genMonthlyCost || 0) + (roiCalculations?.gridMonthlyCost || 0));
+  const solarSavings = Math.round(roiCalculations?.baseMonthlySavings || 0);
+
 
   const plan = proposal.paymentPlan || {
     selectedPlan: 'outright',
@@ -451,40 +514,128 @@ function PrintProposalContent() {
 
             {/* Localized NERC Grid Sizing & DISCO Mapping */}
             {(() => {
-              const regulatory = (calculations as any).regulatory || { nerc_tariff_class: 'R2A', disco_region: 'Eko_DISCO', grid_availability_assumption: 0.35 };
+              const selectedCity = proposal.city_id ? getCityById(proposal.city_id) : undefined;
+              const regulatory = (calculations as any).regulatory || { 
+                nerc_tariff_class: selectedCity?.tariffBand || 'Band A', 
+                disco_region: selectedCity?.disco || 'EKEDC', 
+                grid_availability_assumption: (proposal.nepa_daily_hours || 8.4) / 24 
+              };
               const availabilityHrs = (regulatory.grid_availability_assumption * 24).toFixed(1);
               
               return (
-                <div className="flex gap-6 items-start print-avoid-break pt-6 border-t border-slate-100">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl shrink-0" style={{ backgroundColor: primaryColor, color: 'white' }}>🏢</div>
-                  <div className="w-full">
-                    <h3 className="text-2xl font-bold mb-2">4. Local NERC Grid Tariff Mapping</h3>
-                    <p className="text-slate-600 mb-4">
-                      Your installation site is synchronized with the regional Distribution Company (DISCO) and NERC pricing tier to optimize grid-displacement ROI models:
-                    </p>
-                    <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border text-xs text-slate-700">
-                      <div>
-                        <span className="font-bold text-slate-500 uppercase tracking-wider block text-[9px] mb-1">DISCO Grid Network</span>
-                        <span className="font-bold text-slate-800">{regulatory.disco_region.replace('_', ' ')}</span>
-                      </div>
-                      <div>
-                        <span className="font-bold text-slate-500 uppercase tracking-wider block text-[9px] mb-1">NERC Class / Tariff</span>
-                        <span className="font-bold text-slate-800">{regulatory.nerc_tariff_class} (₦{(proposal.nepa_tariff_per_kwh || 225).toLocaleString()}/kWh)</span>
-                      </div>
-                      <div>
-                        <span className="font-bold text-slate-500 uppercase tracking-wider block text-[9px] mb-1">Grid Availability Index</span>
-                        <span className="font-bold text-slate-800">{availabilityHrs} Hrs/Day ({Math.round(regulatory.grid_availability_assumption * 100)}% reliability)</span>
+                <>
+                  <div className="flex gap-6 items-start print-avoid-break pt-6 border-t border-slate-100">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl shrink-0" style={{ backgroundColor: primaryColor, color: 'white' }}>🏢</div>
+                    <div className="w-full">
+                      <h3 className="text-2xl font-bold mb-2">4. Local NERC Grid Tariff Mapping</h3>
+                      <p className="text-slate-600 mb-4">
+                        Your installation site is synchronized with the regional Distribution Company (DISCO) and NERC pricing tier to optimize grid-displacement ROI models:
+                      </p>
+                      <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border text-xs text-slate-700">
+                        <div>
+                          <span className="font-bold text-slate-500 uppercase tracking-wider block text-[9px] mb-1">DISCO Grid Network</span>
+                          <span className="font-bold text-slate-800">{regulatory.disco_region}</span>
+                        </div>
+                        <div>
+                          <span className="font-bold text-slate-500 uppercase tracking-wider block text-[9px] mb-1">NERC Class / Tariff</span>
+                          <span className="font-bold text-slate-800">{regulatory.nerc_tariff_class} (₦{(proposal.nepa_tariff_per_kwh || 225).toLocaleString()}/kWh)</span>
+                        </div>
+                        <div>
+                          <span className="font-bold text-slate-500 uppercase tracking-wider block text-[9px] mb-1">Grid Availability Index</span>
+                          <span className="font-bold text-slate-800">{availabilityHrs} Hrs/Day ({Math.round(regulatory.grid_availability_assumption * 100)}% reliability)</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+
+                  {selectedCity && (
+                    <div className="flex gap-6 items-start print-avoid-break pt-6 border-t border-slate-100">
+                      <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl shrink-0" style={{ backgroundColor: primaryColor, color: 'white' }}>📋</div>
+                      <div className="w-full">
+                        <h3 className="text-2xl font-bold mb-2">5. Regional Regulatory & Permitting Standards</h3>
+                        <p className="text-slate-600 mb-3">
+                          This system design complies with the statutory guidelines for <strong>{selectedCity.name}</strong> ({selectedCity.state}):
+                        </p>
+                        <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1.5">
+                          {selectedCity.complianceNotes.map((note, index) => (
+                            <li key={index}>{note}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </>
               );
             })()}
           </div>
         </div>
 
+        {/* === PAGE 2.5: FINANCIAL PAYBACK & ROI === */}
+        <div className="print:h-screen print:break-after-page p-12 bg-white flex flex-col justify-between">
+          <div>
+            <h2 className="text-3xl font-black mb-6" style={{ color: primaryColor }}>Financial Payback & ROI Analysis</h2>
+            <p className="text-sm mb-8 text-slate-700 leading-relaxed">
+              Comparing your legacy monthly energy expenses against clean solar, this sheet illustrates your financial return and payback timeline. By displacing noisy diesel/petrol generators and high NERC grid tariffs, the system offsets its installation cost and creates pure profit.
+            </p>
+
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="bg-slate-50 p-4 rounded-xl border">
+                <span className="font-bold text-slate-500 uppercase tracking-wider block text-[9px] mb-1">Monthly Legacy Spend</span>
+                <span className="text-xl font-extrabold text-red-500 line-through">₦{totalOldEnergyCost.toLocaleString()}</span>
+                <span className="text-[10px] text-slate-400 block mt-1">Generator Fuel + Grid Tariff</span>
+              </div>
+              <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-250">
+                <span className="font-bold text-emerald-600 uppercase tracking-wider block text-[9px] mb-1">Monthly Solar Savings</span>
+                <span className="text-xl font-extrabold text-emerald-600">₦{solarSavings.toLocaleString()}</span>
+                <span className="text-[10px] text-emerald-500 block mt-1">Naira saved net of O&M</span>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-xl border">
+                <span className="font-bold text-slate-505 uppercase tracking-wider block text-[9px] mb-1">Estimated Payback Period</span>
+                <span className="text-xl font-extrabold text-amber-500">
+                  {roiCalculations.paybackMonths === Infinity ? 'N/A' : `${(roiCalculations.paybackMonths / 12).toFixed(1)} Years`}
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-1">Investment break-even time</span>
+              </div>
+            </div>
+
+            <h3 className="text-base font-bold text-slate-800 mb-4 border-b pb-2">10-Year Cumulative Cash Projections</h3>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b" style={{ borderColor: secondaryColor }}>
+                  <th className="py-2.5 font-bold text-slate-700 text-xs uppercase tracking-wider">Year</th>
+                  <th className="py-2.5 font-bold text-slate-700 text-xs uppercase tracking-wider text-right">Yearly Savings (NGN)</th>
+                  <th className="py-2.5 font-bold text-slate-700 text-xs uppercase tracking-wider text-right">Cumulative Savings (NGN)</th>
+                  <th className="py-2.5 font-bold text-slate-700 text-xs uppercase tracking-wider text-right">Return on Investment (ROI %)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roiProjections.length > 0 ? (
+                  roiProjections.map((proj) => (
+                    <tr key={proj.year} className="border-b hover:bg-slate-50/50 text-slate-700">
+                      <td className="py-2 text-xs font-semibold">Year {proj.year}</td>
+                      <td className="py-2 text-xs text-right">₦{proj.yearlySavings.toLocaleString()}</td>
+                      <td className="py-2 text-xs text-right font-medium">₦{proj.cumulativeSavings.toLocaleString()}</td>
+                      <td className="py-2 text-xs text-right text-emerald-600 font-semibold">{proj.roiPercent}%</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-xs text-slate-400">
+                      No projections available for the current configuration.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-8 p-4 bg-slate-50 border rounded-xl text-[10px] text-slate-500 leading-normal">
+            <p><strong>Disclaimer:</strong> Financial projections are modeled based on May 2026 Nigerian fuel price indices (petrol/diesel averages), NERC grid availability class statistics, and an annual solar panel degradation factor of 0.5%. Actual ROI values may vary based on weather variations, changes in local grid tariff policies, and inflation fluctuations.</p>
+          </div>
+        </div>
+
         {/* === PAGE 3: EQUIPMENT LIST === */}
-        <div className="p-12 bg-white min-h-[1122px] print-avoid-break">
+        <div className="p-12 bg-white min-h-[1122px] print-avoid-break print:break-before-page">
           {(() => {
             const inverterCost = proposal.inverter_cost_ngn ?? 0;
             const batteryUnitCost = proposal.battery_unit_cost_ngn ?? 0;

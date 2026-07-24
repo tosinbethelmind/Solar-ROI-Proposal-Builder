@@ -79,6 +79,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
 
+  if (!auth.canRunAutomation) {
+    return NextResponse.json({ error: 'Permission denied: Read-only access.' }, { status: 403 });
+  }
+
+  if (!auth.canModifySubscriptions) {
+    return NextResponse.json({ error: 'Permission denied: Billing or SuperAdmin role required to modify subscriptions.' }, { status: 403 });
+  }
+
   const { adminClient } = auth;
 
   try {

@@ -9,23 +9,23 @@ type Cycle = 'monthly' | 'annual';
 
 const PLANS = [
   {
-    id: 'free', name: 'Free Plan', audience: 'Homeowners', monthlyPrice: 0, annualPrice: 0,
+    id: 'free', name: 'Free Starter Plan', audience: 'Homeowners', monthlyPrice: 0, annualPrice: 0,
     btnText: 'Start Free', btnLink: '/estimator', highlight: false, border: 'border-slate-300 dark:border-slate-700',
-    features: { proposals: '1', watermark: false, fx: false, fullLoad: false, genRoi: false, whatsapp: false, whiteLabel: false, users: '1', accountMgr: false, offline: true },
+    features: { proposals: '2', watermark: false, fx: false, fullLoad: false, genRoi: false, whatsapp: false, whiteLabel: false, users: '1', accountMgr: false, offline: true },
   },
   {
-    id: 'starter', name: 'Starter', audience: 'Solo Installers', monthlyPrice: 18000, annualPrice: 14400,
+    id: 'starter', name: 'Starter Plan', audience: 'Solo Installers', monthlyPrice: 15000, annualPrice: 12000,
     btnText: 'Upgrade Starter', btnLink: '/pricing', highlight: false, border: 'border-slate-300 dark:border-slate-700',
     features: { proposals: '10', watermark: true, fx: true, fullLoad: false, genRoi: false, whatsapp: true, whiteLabel: false, users: '1', accountMgr: false, offline: true },
   },
   {
-    id: 'pro', name: 'Professional', audience: 'Growing Teams', monthlyPrice: 45000, annualPrice: 36000,
+    id: 'pro', name: 'Professional', audience: 'Growing Teams', monthlyPrice: 35000, annualPrice: 28000,
     btnText: 'Go Pro — 7-Day Trial', btnLink: '/pricing', highlight: true, border: 'border-teal-500',
     badge: '⭐ MOST POPULAR',
     features: { proposals: '40', watermark: true, fx: true, fullLoad: true, genRoi: true, whatsapp: true, whiteLabel: false, users: '3', accountMgr: false, offline: true },
   },
   {
-    id: 'enterprise', name: 'Enterprise', audience: 'EPC Firms', monthlyPrice: 120000, annualPrice: 96000,
+    id: 'enterprise', name: 'Enterprise Plan', audience: 'EPC Firms', monthlyPrice: 95000, annualPrice: 76000,
     btnText: 'Go Enterprise', btnLink: '/pricing', highlight: false, border: 'border-amber-400',
     badge: 'FOR EPC FIRMS',
     features: { proposals: 'Unlimited', watermark: true, fx: true, fullLoad: true, genRoi: true, whatsapp: true, whiteLabel: true, users: 'Unlimited', accountMgr: true, offline: true },

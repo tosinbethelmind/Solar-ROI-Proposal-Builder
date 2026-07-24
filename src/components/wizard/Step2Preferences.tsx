@@ -10,6 +10,62 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { NIGERIAN_CITIES, getCityById } from '@/lib/nigerianCities';
+
+function getRegionIdFromCityId(cityId?: string): number | undefined {
+  if (!cityId) return undefined;
+  switch (cityId) {
+    case 'lagos':
+    case 'lagos-ikeja':
+      return 1;
+    case 'abuja':
+      return 2;
+    case 'kano':
+      return 3;
+    case 'port-harcourt':
+      return 4;
+    case 'enugu':
+      return 5;
+    case 'ibadan':
+      return 6;
+    case 'benin':
+      return 7;
+    case 'kaduna':
+      return 8;
+    case 'jos':
+      return 9;
+    default:
+      return undefined;
+  }
+}
+
+function getPshFromCityId(cityId?: string): number {
+  switch (cityId) {
+    case 'lagos':
+    case 'lagos-ikeja':
+      return 4.2;
+    case 'abuja':
+      return 5.0;
+    case 'kano':
+      return 5.8;
+    case 'port-harcourt':
+      return 4.0;
+    case 'enugu':
+      return 4.5;
+    case 'ibadan':
+      return 4.8;
+    case 'benin':
+      return 4.3;
+    case 'kaduna':
+      return 5.5;
+    case 'jos':
+      return 5.2;
+    case 'yola':
+      return 5.8;
+    default:
+      return 4.2;
+  }
+}
 
 // ── Zod Schema ─────────────────────────────────────────────────────────────
 const step2Schema = z.object({
@@ -23,6 +79,10 @@ const step2Schema = z.object({
   monthly_phcn_bill: z.number().nonnegative(),
   monthly_gen_fuel_cost: z.number().nonnegative(),
   monthly_gen_maintenance: z.number().nonnegative(),
+  city_id: z.string().optional(),
+  battery_sizing_method: z.enum(['backup-hours', 'flat-load']).optional(),
+  panel_sizing_basis: z.enum(['total', 'essential']).optional(),
+  annual_inflation_rate: z.number().min(0).max(100).optional(),
 });
 
 type Step2Form = z.infer<typeof step2Schema>;
@@ -77,6 +137,7 @@ export default function Step2Preferences({
   onBack: () => void;
 }) {
   const { proposal, updateProposal, setCalculations, setStep } = useWizardStore();
+  const [showAdvancedSizing, setShowAdvancedSizing] = React.useState(false);
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<Step2Form>({
     resolver: zodResolver(step2Schema),
@@ -91,6 +152,10 @@ export default function Step2Preferences({
       monthly_phcn_bill: proposal.monthly_phcn_bill ?? 8000,
       monthly_gen_fuel_cost: proposal.monthly_gen_fuel_cost ?? 85000,
       monthly_gen_maintenance: proposal.monthly_gen_maintenance ?? 12000,
+      city_id: proposal.city_id || 'lagos',
+      battery_sizing_method: proposal.battery_sizing_method || 'backup-hours',
+      panel_sizing_basis: proposal.panel_sizing_basis || 'essential',
+      annual_inflation_rate: proposal.annual_inflation_rate !== undefined ? Math.round(proposal.annual_inflation_rate * 100) : 20,
     },
   });
 
@@ -98,6 +163,7 @@ export default function Step2Preferences({
   const backupHours = watch('backup_hours');
   const nepaDailyHours = watch('nepa_daily_hours');
   const selectedTier = watch('selected_tier');
+  const cityId = watch('city_id') || 'lagos';
 
   const watchDieselPrice = watch('diesel_price');
   const watchPhcn = watch('monthly_phcn_bill') || 0;
@@ -113,7 +179,18 @@ export default function Step2Preferences({
     }
   }, [watchDieselPrice, setValue]);
 
+  React.useEffect(() => {
+    if (cityId) {
+      const city = getCityById(cityId);
+      setValue('nepa_tariff_per_kwh', city.tariffRateNGN, { shouldValidate: true });
+    }
+  }, [cityId, setValue]);
+
   const onSubmit = (data: Step2Form) => {
+    const selectedCity = getCityById(data.city_id || 'lagos');
+    const psh = getPshFromCityId(data.city_id);
+    const regionId = getRegionIdFromCityId(data.city_id);
+
     updateProposal({
       battery_chemistry: data.battery_chemistry,
       backup_hours: data.backup_hours,
@@ -127,13 +204,34 @@ export default function Step2Preferences({
       monthly_phcn_bill: data.monthly_phcn_bill,
       monthly_gen_fuel_cost: data.monthly_gen_fuel_cost,
       monthly_gen_maintenance: data.monthly_gen_maintenance,
+      city_id: data.city_id,
+      region_id: regionId,
+      peak_sun_hours: psh,
+      battery_sizing_method: data.battery_sizing_method || 'backup-hours',
+      panel_sizing_basis: data.panel_sizing_basis || 'essential',
+      annual_inflation_rate: data.annual_inflation_rate !== undefined ? data.annual_inflation_rate / 100 : 0.20,
     });
 
     // Pre-compute sizing so Step 3 loads instantly
     const { totalDailyWh, essentialDailyWh, pContinuous } = calculateDailyLoad(proposal.appliances);
     const { kva, systemVoltage, peakSurgeWatts } = calculateInverterSize(proposal.appliances, pContinuous);
-    const battery = calculateBatteryBank(essentialDailyWh, data.backup_hours, systemVoltage, data.battery_chemistry);
-    const panel = calculatePanelArray(totalDailyWh, proposal.peak_sun_hours, data.battery_chemistry);
+    const battery = calculateBatteryBank(
+      essentialDailyWh, 
+      data.backup_hours, 
+      systemVoltage, 
+      data.battery_chemistry, 
+      data.battery_sizing_method || 'backup-hours',
+      proposal.appliances
+    );
+    const panel = calculatePanelArray(
+      totalDailyWh, 
+      psh, 
+      data.battery_chemistry, 
+      450, 
+      data.panel_sizing_basis || 'essential', 
+      essentialDailyWh,
+      data.city_id
+    );
 
     setCalculations({
       totalDailyWh,
@@ -149,6 +247,11 @@ export default function Step2Preferences({
       panelCount: panel.panelCount,
       panelUnitWp: panel.panelUnitWp,
       panelTotalWp: panel.totalWp,
+      regulatory: {
+        nerc_tariff_class: selectedCity.tariffBand,
+        disco_region: selectedCity.disco,
+        grid_availability_assumption: data.nepa_daily_hours / 24,
+      }
     });
 
     setStep(3);
@@ -224,7 +327,35 @@ export default function Step2Preferences({
       {/* ── Section B: Backup & Grid ── */}
       <section>
         <h3 className="font-semibold text-base mb-1">B. Backup Duration & Grid</h3>
-        <p className="text-sm text-muted-foreground mb-4">How long must the system power your essential loads without sun or grid?</p>
+        <p className="text-sm text-muted-foreground mb-4">Select your region, and choose how long the system must power essential loads.</p>
+
+        {/* City/Region Selector */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Label htmlFor="city_id">City / Grid Region</Label>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger type="button">
+                  <Info className="w-4 h-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs text-xs">
+                  <p>Selecting your city automatically sets the default NERC tariff rate and solar sun hours for that region.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <select
+            id="city_id"
+            className="w-full h-10 rounded-lg border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            {...register('city_id')}
+          >
+            {NIGERIAN_CITIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} ({c.disco})
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* Backup slider */}
         <div className="mb-6">
@@ -373,6 +504,64 @@ export default function Step2Preferences({
         )}
       </section>
 
+      {/* ── Section C.2: Advanced Sizing Options Accordion ── */}
+      <section className="border rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-4 space-y-4">
+        <button
+          type="button"
+          onClick={() => setShowAdvancedSizing(!showAdvancedSizing)}
+          className="w-full flex items-center justify-between transition-all text-left"
+        >
+          <span className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <span>⚙️</span> Advanced Sizing Logic Settings
+          </span>
+          <span className="text-[11px] text-teal-650 font-semibold">
+            {showAdvancedSizing ? '▲ Hide Advanced Options' : '▼ Show Advanced Options'}
+          </span>
+        </button>
+        
+        {showAdvancedSizing && (
+          <div className="pt-2 border-t space-y-4 animate-in slide-in-from-top-1 duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Battery Sizing Method */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700 dark:text-slate-350">
+                  Battery Capacity Sizing Methodology
+                </Label>
+                <select
+                  value={watch('battery_sizing_method')}
+                  onChange={(e) => setValue('battery_sizing_method', e.target.value as 'backup-hours' | 'flat-load', { shouldValidate: true })}
+                  className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-teal-500"
+                >
+                  <option value="backup-hours">Direct Load Runtime during Backup (Standard Installer Method)</option>
+                  <option value="flat-load">24-Hour Flat Average Load (Traditional Sizing)</option>
+                </select>
+                <span className="block text-[10px] text-slate-400">
+                  Direct Load Runtime sizes batteries based on real-world backup period consumption. 24h Flat Sizing distributes load equally over a 24h period.
+                </span>
+              </div>
+
+              {/* Panel Sizing Basis */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700 dark:text-slate-350">
+                  Solar Panel Array Sizing Basis
+                </Label>
+                <select
+                  value={watch('panel_sizing_basis')}
+                  onChange={(e) => setValue('panel_sizing_basis', e.target.value as 'total' | 'essential', { shouldValidate: true })}
+                  className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-teal-500"
+                >
+                  <option value="essential">Essential Backed-up Loads Only (Grid-Bypass Standard)</option>
+                  <option value="total">Total Household Load (Grid Offset / Net-Zero Sizing)</option>
+                </select>
+                <span className="block text-[10px] text-slate-400">
+                  Grid-Bypass limits panels to battery charging & essential loads. Total Household sizes panels for all loads.
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* ── Section D: Legacy Energy Spend ── */}
       <section className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl border p-6 space-y-6">
         <div>
@@ -424,11 +613,37 @@ export default function Step2Preferences({
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total Legacy Energy Cost:</span>
-          <span className="text-xl font-bold text-teal-600 dark:text-teal-400">
-            ₦{totalLegacyEnergyCost.toLocaleString(undefined, { maximumFractionDigits: 0 })} / month
-          </span>
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+          <div className="space-y-1">
+            <Label htmlFor="annual-inflation" className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              Annual Fuel/Grid Inflation Rate (%)
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger type="button">
+                    <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs">
+                    <p>Compounding annual rate to simulate fuel & grid price increases over the 5-30 year project lifecycle (e.g. 20% default).</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Input
+              id="annual-inflation"
+              type="number"
+              className="w-32"
+              min={0}
+              max={100}
+              placeholder="e.g. 20"
+              {...register('annual_inflation_rate', { valueAsNumber: true })}
+            />
+          </div>
+          <div className="flex flex-col md:items-end justify-center">
+            <span className="text-xs text-muted-foreground font-semibold">Total Legacy Energy Cost:</span>
+            <span className="text-xl font-extrabold text-teal-600 dark:text-teal-400">
+              ₦{totalLegacyEnergyCost.toLocaleString(undefined, { maximumFractionDigits: 0 })} / month
+            </span>
+          </div>
         </div>
       </section>
 

@@ -266,6 +266,7 @@ export default function InstallersDirectoryPage() {
             sortedInstallers.map((inst) => {
               const sub = subscriptions.find(s => s.installer_id === inst.id);
               const isPremiumPlus = sub?.tier === 'verified_partner_plus';
+              const matchingSa = serviceAreas.filter(sa => sa.installer_id === inst.id);
               
               return (
                 <Card 
@@ -290,19 +291,26 @@ export default function InstallersDirectoryPage() {
                   <CardHeader className="p-6 pb-2 space-y-3 relative">
                     {/* Badge Treatment */}
                     <div className="flex items-center justify-between">
-                      {inst.is_verified ? (
-                        <Badge className={`text-[8px] font-black uppercase py-0.5 px-2 border-none ${
-                          isPremiumPlus 
-                            ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white' 
-                            : 'bg-emerald-500/10 text-emerald-650'
-                        }`}>
-                          🛡️ SolarQuotePro Verified
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-slate-100 text-slate-500 border-none text-[8px] font-black uppercase">
-                          Basic Listing
-                        </Badge>
-                      )}
+                      <div className="flex flex-wrap gap-1 items-center">
+                        {inst.is_verified ? (
+                          <Badge className={`text-[8px] font-black uppercase py-0.5 px-2 border-none ${
+                            isPremiumPlus 
+                              ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white' 
+                              : 'bg-emerald-500/10 text-emerald-650'
+                          }`}>
+                            🛡️ Verified
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-slate-100 text-slate-500 border-none text-[8px] font-black uppercase">
+                            Basic Listing
+                          </Badge>
+                        )}
+                        {inst.cac_number && (
+                          <Badge className="bg-teal-500/10 text-teal-655 dark:bg-teal-950/20 dark:text-teal-400 border-none text-[8px] font-black uppercase py-0.5 px-2">
+                            ✓ CAC Verified
+                          </Badge>
+                        )}
+                      </div>
 
                       <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500">
                         <Star className="w-3.5 h-3.5 fill-current" />
@@ -314,9 +322,28 @@ export default function InstallersDirectoryPage() {
                       <CardTitle className="text-sm sm:text-base font-black text-slate-850 dark:text-slate-100 leading-snug">
                         {inst.business_name}
                       </CardTitle>
-                      <p className="text-[10px] text-slate-500 flex items-center gap-1 font-bold">
-                        <Clock className="w-3 h-3 text-slate-400" /> {inst.response_speed}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-500 font-bold">
+                        <p className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-slate-400" /> {inst.response_speed}
+                        </p>
+                        {matchingSa.length > 0 && (
+                          <div 
+                            className="flex items-center gap-1.5 text-slate-550 dark:text-slate-400 font-bold"
+                            title={matchingSa.map(sa => `${sa.city}, ${sa.state}`).join('\n')}
+                          >
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="truncate max-w-[140px]">
+                              {matchingSa.slice(0, 3).map(sa => sa.city).join(' • ')}
+                              {matchingSa.length > 3 && (
+                                <span className="text-teal-650 dark:text-teal-400 font-black">
+                                  {` +${matchingSa.length - 3} more`}
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
 
@@ -329,16 +356,23 @@ export default function InstallersDirectoryPage() {
                       {/* Specializations */}
                       <div className="flex flex-wrap gap-1">
                         {inst.specialty_tags.map((tag, tIdx) => (
-                          <Badge key={tIdx} variant="secondary" className="bg-slate-100 dark:bg-slate-850 text-slate-655 dark:text-slate-350 text-[9px] py-0 px-2 border-none">
+                          <Badge key={tIdx} variant="secondary" className="bg-slate-100 dark:bg-slate-855 text-slate-655 dark:text-slate-350 text-[9px] py-0 px-2 border-none">
                             {tag}
                           </Badge>
                         ))}
                       </div>
 
                       {/* Brands handled */}
-                      <div className="text-[10px] font-semibold text-slate-455">
-                        <span className="font-bold text-slate-600 dark:text-slate-300">Brands: </span>
-                        {inst.brands_handled.join(', ')}
+                      <div className="text-[10px] font-semibold text-slate-455 space-y-1">
+                        <div>
+                          <span className="font-bold text-slate-600 dark:text-slate-300">Brands: </span>
+                          {inst.brands_handled.join(', ')}
+                        </div>
+                        {inst.cac_number && (
+                          <div className="text-[9px] font-black text-slate-400 dark:text-slate-500">
+                            🛡️ CAC RC: <span className="text-slate-500 dark:text-slate-400 font-bold">{inst.cac_number}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>

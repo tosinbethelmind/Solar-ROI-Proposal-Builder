@@ -36,9 +36,15 @@ export function useTracking() {
       try {
         if (typeof window === 'undefined') return;
 
-        const phWindow = window as unknown as PostHogWindow;
-        if (phWindow.posthog && typeof phWindow.posthog.capture === 'function') {
-          phWindow.posthog.capture(eventName, payload ?? {});
+        if (posthog && typeof posthog.capture === 'function') {
+          posthog.capture(eventName, payload ?? {});
+        } else {
+          const phWindow = window as unknown as PostHogWindow;
+          if (phWindow.posthog && typeof phWindow.posthog.capture === 'function') {
+            phWindow.posthog.capture(eventName, payload ?? {});
+          } else if (process.env.NODE_ENV === 'development') {
+            console.log(`[Mock Tracking Event] ${eventName}:`, payload);
+          }
         }
       } catch (err) {
         console.warn('[Tracking Error] Silently caught:', err);
@@ -52,14 +58,21 @@ export function useTracking() {
       try {
         if (typeof window === 'undefined') return;
 
-        const phWindow = window as unknown as PostHogWindow;
-        if (phWindow.posthog && typeof phWindow.posthog.capture === 'function') {
-          phWindow.posthog.capture('app_error', {
-            message:
-              error instanceof Error ? error.message : String(error ?? 'Unknown error'),
-            name: error instanceof Error ? error.name : 'UnknownError',
-            ...context,
-          });
+        const errorPayload = {
+          message: error instanceof Error ? error.message : String(error ?? 'Unknown error'),
+          name: error instanceof Error ? error.name : 'UnknownError',
+          ...context,
+        };
+
+        if (posthog && typeof posthog.capture === 'function') {
+          posthog.capture('app_error', errorPayload);
+        } else {
+          const phWindow = window as unknown as PostHogWindow;
+          if (phWindow.posthog && typeof phWindow.posthog.capture === 'function') {
+            phWindow.posthog.capture('app_error', errorPayload);
+          } else if (process.env.NODE_ENV === 'development') {
+            console.error(`[Mock Tracking Error]:`, errorPayload);
+          }
         }
       } catch (err) {
         console.warn('[Tracking Error] Silently caught in trackError:', err);

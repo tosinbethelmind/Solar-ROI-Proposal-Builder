@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { verifyAdmin } from '@/utils/adminAuth';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 import * as path from 'path';
-
+ 
 const settingsFilePath = path.join(process.cwd(), 'src', 'utils', 'platformSettings.json');
-
-function readPlatformSettings() {
+ 
+async function readPlatformSettings() {
   try {
-    if (fs.existsSync(settingsFilePath)) {
-      const fileContent = fs.readFileSync(settingsFilePath, 'utf8');
+    const fileExists = await fs.access(settingsFilePath).then(() => true).catch(() => false);
+    if (fileExists) {
+      const fileContent = await fs.readFile(settingsFilePath, 'utf8');
       return JSON.parse(fileContent);
     }
   } catch (err) {
@@ -24,45 +25,46 @@ function readPlatformSettings() {
     lastUpdatedAt: new Date().toISOString()
   };
 }
-
-function writePlatformSettings(settings: any) {
+ 
+async function writePlatformSettings(settings: any) {
   try {
     const dir = path.dirname(settingsFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    const dirExists = await fs.access(dir).then(() => true).catch(() => false);
+    if (!dirExists) {
+      await fs.mkdir(dir, { recursive: true });
     }
-    fs.writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
+    await fs.writeFile(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
     return true;
   } catch (err) {
     console.error('Failed to write platformSettings.json:', err);
     return false;
   }
 }
-
+ 
 export async function GET() {
   const auth = await verifyAdmin();
   if (!auth.isAdmin) {
     return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
-
-  const settings = readPlatformSettings();
+ 
+  const settings = await readPlatformSettings();
   return NextResponse.json({ data: settings });
 }
-
+ 
 export async function POST(request: Request) {
   const auth = await verifyAdmin();
   if (!auth.isAdmin) {
     return NextResponse.json({ error: auth.errorMsg }, { status: auth.errorStatus });
   }
-
+ 
   const { user } = auth;
-
+ 
   try {
     const body = await request.json();
     const { dieselPrice, petrolPrice, gridTariff, vatTaxRate, updatedBy } = body;
-
-    const settings = readPlatformSettings();
-
+ 
+    const settings = await readPlatformSettings();
+ 
     // Enforce safety boundary checks to block extreme/erroneous values
     if (dieselPrice !== undefined) {
       const parsedDiesel = parseFloat(dieselPrice);
@@ -73,7 +75,7 @@ export async function POST(request: Request) {
       }
       settings.dieselPrice = parsedDiesel;
     }
-
+ 
     if (petrolPrice !== undefined) {
       const parsedPetrol = parseFloat(petrolPrice);
       if (isNaN(parsedPetrol) || parsedPetrol < 100 || parsedPetrol > 10000) {
@@ -83,7 +85,7 @@ export async function POST(request: Request) {
       }
       settings.petrolPrice = parsedPetrol;
     }
-
+ 
     if (gridTariff !== undefined) {
       const parsedTariff = parseFloat(gridTariff);
       if (isNaN(parsedTariff) || parsedTariff < 10 || parsedTariff > 1000) {
@@ -93,7 +95,7 @@ export async function POST(request: Request) {
       }
       settings.gridTariff = parsedTariff;
     }
-
+ 
     if (vatTaxRate !== undefined) {
       const parsedVat = parseFloat(vatTaxRate);
       if (isNaN(parsedVat) || parsedVat < 0 || parsedVat > 50) {
@@ -103,20 +105,20 @@ export async function POST(request: Request) {
       }
       settings.vatTaxRate = parsedVat;
     }
-
+ 
     settings.lastUpdatedBy = updatedBy || user?.email || 'admin@solarquotepro.com';
     settings.lastUpdatedAt = new Date().toISOString();
-
-    const success = writePlatformSettings(settings);
+ 
+    const success = await writePlatformSettings(settings);
     if (!success) {
       return NextResponse.json({ error: 'Failed to write settings updates to disk.' }, { status: 500 });
     }
-
+ 
     return NextResponse.json({
       message: 'Global platform settings updated successfully.',
       data: settings
     });
-
+ 
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Settings modification failed.' }, { status: 500 });
   }

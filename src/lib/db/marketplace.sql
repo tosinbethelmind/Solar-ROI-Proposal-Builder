@@ -39,20 +39,18 @@ CREATE TABLE IF NOT EXISTS listing_subscriptions (
 -- 4. Homeowner Leads
 CREATE TABLE IF NOT EXISTS homeowner_leads (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    phone TEXT NOT NULL,
-    email TEXT NOT NULL,
-    state TEXT NOT NULL,
-    city TEXT NOT NULL,
-    property_type TEXT NOT NULL, -- 'residential' | 'commercial' | 'industrial'
-    monthly_spend NUMERIC NOT NULL, -- monthly NEPA/fuel spend in Naira
-    power_source TEXT NOT NULL, -- 'grid' | 'generator' | 'mixed'
-    interest_type TEXT NOT NULL, -- 'bill_savings' | 'backup_power' | 'full_solar'
-    budget_range TEXT NOT NULL, -- e.g., 'Under ₦1.5M', '₦1.5M - ₦3M', etc.
-    preferred_contact TEXT NOT NULL, -- 'WhatsApp' | 'Phone Call' | 'Email'
-    timeline TEXT NOT NULL, -- 'Immediate' | '1-3 Months' | 'Researching'
-    note TEXT,
-    request_source TEXT NOT NULL DEFAULT 'general', -- 'general' | 'estimator' | 'direct_profile'
+    name TEXT,
+    phone TEXT,
+    email TEXT,
+    location TEXT,
+    running_load_w INTEGER,
+    kva_recommended TEXT,
+    monthly_savings_ngn NUMERIC,
+    monthly_fuel_spend NUMERIC,
+    full_name TEXT,
+    whatsapp TEXT,
+    city_disco TEXT,
+    estimated_system_size TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

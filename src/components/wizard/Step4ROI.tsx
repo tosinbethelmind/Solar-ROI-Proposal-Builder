@@ -25,6 +25,8 @@ import {
   DollarSign,
   Lock
 } from 'lucide-react';
+import { fetchUSDNGNRate } from '@/utils/exchangeRate';
+import { calculateROI, NERC_TARIFF_BANDS, TariffBand, calculateBatteryTCO } from '@/utils/calculations';
 
 export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { proposal, updateProposal, finalPriceNaira, calculations } = useWizardStore();
@@ -53,15 +55,12 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
     setAccordions(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Fetch exchange rate from ExchangeRate-API
+  // Fetch exchange rate from central utility
   const fetchExchangeRate = React.useCallback(async () => {
     setRateLoading(true);
     setRateStatus('loading');
     try {
-      const response = await fetch('https://open.er-api.com/v6/latest/USD');
-      if (!response.ok) throw new Error('API fetch failed');
-      const data = await response.json();
-      const fetchedRate = Math.round(data.rates.NGN);
+      const fetchedRate = await fetchUSDNGNRate();
       if (fetchedRate > 500) {
         updateProposal({
           lockedFXRate: fetchedRate,
@@ -187,10 +186,70 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
   const phcnBill = proposal.monthly_phcn_bill ?? 8000;
   const yearsToCalculate = proposal.roi_years_to_calculate ?? 5;
 
-  const monthlyGenFuelCost = Math.round(fuelConsumption * hoursPerDay * 30 * fuelPrice);
-  const monthlySavings = Math.round(monthlyGenFuelCost + phcnBill);
-  const paybackMonths = monthlySavings > 0 ? Math.round(finalSellingPrice / monthlySavings) : 0;
-  const paybackYears = (paybackMonths / 12).toFixed(1);
+  const roiCalculations = React.useMemo(() => {
+    const essentialWh = calculations?.essentialDailyWh || 0;
+    const genInputs = {
+      fuelType: (proposal.gen_fuel_type || 'petrol') as 'petrol' | 'diesel',
+      capacityKva: genSizeKva,
+      dailyHours: hoursPerDay,
+      fuelPricePerLiter: fuelPrice,
+      serviceCostPerEvent: proposal.roi_gen_maintenance_cost_per_event ?? (proposal.gen_fuel_type === 'diesel' ? 35005 : 6000)
+    };
+    const gridInputs = {
+      dailyHours: proposal.nepa_daily_hours ?? 4,
+      tariffPerKwh: proposal.nepa_tariff_per_kwh ?? 225
+    };
+    const actualBilling = {
+      monthlyGridBill: proposal.monthly_phcn_bill ?? 0,
+      monthlyGenFuel: proposal.monthly_gen_fuel_cost ?? 0,
+      monthlyGenMaint: proposal.monthly_gen_maintenance ?? 0
+    };
+    return calculateROI(
+      finalSellingPrice, 
+      genInputs, 
+      gridInputs, 
+      essentialWh, 
+      actualBilling, 
+      proposal.annual_inflation_rate || 0.20
+    );
+  }, [finalSellingPrice, genSizeKva, hoursPerDay, fuelPrice, proposal.gen_fuel_type, proposal.roi_gen_maintenance_cost_per_event, proposal.nepa_daily_hours, proposal.nepa_tariff_per_kwh, proposal.monthly_phcn_bill, proposal.monthly_gen_fuel_cost, proposal.monthly_gen_maintenance, calculations?.essentialDailyWh, proposal.annual_inflation_rate]);
+
+  const monthlySavings = roiCalculations.paybackMonths === Infinity ? 0 : Math.round(roiCalculations.baseMonthlySavings);
+  const paybackMonths = roiCalculations.paybackMonths === Infinity ? 0 : roiCalculations.paybackMonths;
+  const paybackYears = paybackMonths > 0 ? (paybackMonths / 12).toFixed(1) : '0';
+  const monthlyGenFuelCost = Math.round(roiCalculations.genMonthlyCost || 0);
+
+  const projections = React.useMemo(() => {
+    const list = [];
+    const genMonthly = roiCalculations.genMonthlyCost || 0;
+    const gridMonthly = roiCalculations.gridMonthlyCost || 0;
+    const legacyMonthlyBase = genMonthly + gridMonthly;
+    const solarOMMonthly = (finalSellingPrice * 0.01) / 12;
+    const inflationRate = proposal.annual_inflation_rate ?? 0.20;
+    const PANEL_DEGRADATION_RATE = 0.005;
+
+    let cumulativeLegacySpend = 0;
+    let cumulativeSavings = 0;
+
+    for (let yr = 1; yr <= yearsToCalculate; yr++) {
+      const inflatedLegacyYearly = legacyMonthlyBase * Math.pow(1 + inflationRate, yr - 1) * 12;
+      cumulativeLegacySpend += inflatedLegacyYearly;
+      
+      const inflatedSolarOMYearly = solarOMMonthly * Math.pow(1 + inflationRate, yr - 1) * 12;
+      
+      const yearlySavings = (inflatedLegacyYearly * Math.pow(1 - PANEL_DEGRADATION_RATE, yr - 1)) - inflatedSolarOMYearly;
+      cumulativeSavings += yearlySavings;
+      const netSavings = cumulativeSavings - finalSellingPrice;
+
+      list.push({
+        year: yr,
+        legacySpend: cumulativeLegacySpend,
+        solarInvestment: finalSellingPrice,
+        netSavings: Math.round(netSavings)
+      });
+    }
+    return list;
+  }, [roiCalculations, yearsToCalculate, finalSellingPrice, proposal.annual_inflation_rate]);
 
   // standard generator size change logic
   const handleGenSizeChange = (val: string) => {
@@ -283,7 +342,7 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
             </div>
             <p className="text-[10px] text-slate-500 truncate mt-0.5">
               {isOnline 
-                ? `Exchange rates synced: ₦${(proposal.lockedFXRate || 1600).toLocaleString()}/$`
+                ? `Exchange rates synced: ₦${(proposal.lockedFXRate || 1600).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/$ via ${typeof window !== 'undefined' ? (localStorage.getItem('solarquotepro_fx_source') || 'Live Interbank Rate • open.er-api.com') : 'Live Interbank Rate • open.er-api.com'}`
                 : `Offline mode — using locked rate from ${proposal.fxRateLockedAt ? new Date(proposal.fxRateLockedAt).toLocaleDateString() : 'local storage'}`
               }
             </p>
@@ -603,7 +662,7 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
                     3. Currency & FX Volatility Safeguards
                   </span>
                   <span className="text-[10px] text-slate-400 font-medium">
-                    {accordions.fx ? '▲ Collapse' : `▼ Expand (Locked FX: ₦${(proposal.lockedFXRate || 1600).toLocaleString()})`}
+                    {accordions.fx ? '▲ Collapse' : `▼ Expand (Locked FX: ₦${(proposal.lockedFXRate || 1600).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
                   </span>
                 </button>
                 {accordions.fx && (
@@ -614,7 +673,7 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
                         <Input
                           type="number"
                           value={proposal.lockedFXRate || 1600}
-                          onChange={(e) => handleFieldChange({ lockedFXRate: Math.max(100, parseInt(e.target.value) || 1600) })}
+                          onChange={(e) => handleFieldChange({ lockedFXRate: Math.max(100, parseFloat(e.target.value) || 1600) })}
                           className="h-8 text-xs font-mono"
                         />
                       </div>
@@ -920,7 +979,7 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
                   </span>
                 </div>
                 <p className="text-[9px] text-slate-400 leading-tight">
-                  Quote validity: {quoteValidity} days | USD locked rate: ₦{(proposal.lockedFXRate || 1600).toLocaleString()}/$.
+                  Quote validity: {quoteValidity} days | USD locked rate: ₦{(proposal.lockedFXRate || 1600).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/$.
                 </p>
               </div>
             </div>
@@ -1068,6 +1127,17 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
               />
             </div>
 
+            {/* Gen Service Cost / Event */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Service Cost / Event (₦)</label>
+              <Input
+                type="number"
+                value={proposal.roi_gen_maintenance_cost_per_event ?? (proposal.gen_fuel_type === 'diesel' ? 35000 : 6000)}
+                onChange={(e) => handleFieldChange({ roi_gen_maintenance_cost_per_event: parseInt(e.target.value) || 0 })}
+                className="h-8 text-xs font-mono"
+              />
+            </div>
+
             {/* PHCN utility bill */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Current Monthly PHCN Grid Bill (₦)</label>
@@ -1077,6 +1147,36 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
                 onChange={(e) => handleFieldChange({ monthly_phcn_bill: parseInt(e.target.value) || 0 })}
                 className="h-8 text-xs font-mono"
               />
+            </div>
+
+            {/* NERC DisCo Tariff Band Selector */}
+            <div className="space-y-1.5 border-t pt-3 mt-2">
+              <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                <span>NERC DisCo Tariff Band</span>
+                <span className="text-[9px] text-teal-600 dark:text-teal-400 font-semibold">{proposal.tariff_band || 'Band A'}</span>
+              </label>
+              <select
+                value={proposal.tariff_band || 'Band A'}
+                onChange={(e) => {
+                  const bandKey = e.target.value as TariffBand;
+                  const bandInfo = NERC_TARIFF_BANDS[bandKey];
+                  handleFieldChange({
+                    tariff_band: bandKey,
+                    nepa_tariff_per_kwh: bandInfo?.avgTariffPerKwh || 209,
+                    nepa_daily_hours: bandInfo?.minHoursPerDay || 20
+                  });
+                }}
+                className="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-teal-500"
+              >
+                {Object.entries(NERC_TARIFF_BANDS).map(([key, info]) => (
+                  <option key={key} value={key}>
+                    {key}: ₦{info.avgTariffPerKwh}/kWh ({info.minHoursPerDay}+ hrs/day)
+                  </option>
+                ))}
+              </select>
+              <p className="text-[9px] text-slate-400 leading-tight">
+                {NERC_TARIFF_BANDS[proposal.tariff_band || 'Band A']?.description}
+              </p>
             </div>
           </div>
 
@@ -1093,8 +1193,8 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
                   <span className="block text-sm font-black text-amber-500 mt-1">₦{monthlyGenFuelCost.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="block text-[9px] text-slate-400 font-semibold">Total Utility Bill</span>
-                  <span className="block text-sm font-black text-amber-500 mt-1">₦{monthlySavings.toLocaleString()}</span>
+                  <span className="block text-[9px] text-slate-400 font-semibold">Est. Monthly Savings</span>
+                  <span className="block text-sm font-black text-emerald-500 mt-1">₦{monthlySavings.toLocaleString()}</span>
                 </div>
                 <div>
                   <span className="block text-[9px] text-slate-400 font-semibold">Solar Payback break-even</span>
@@ -1104,7 +1204,7 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
               <p className="text-[10px] text-slate-300 leading-relaxed border-t border-white/10 pt-2 mt-1">
                 By investing in Solar, you fully pay off your power capital and save{' '}
                 <strong className="text-teal-300">
-                  ₦{Math.max(0, (monthlySavings * 12 * yearsToCalculate) - finalSellingPrice).toLocaleString()}
+                  ₦{Math.max(0, projections[projections.length - 1]?.netSavings || 0).toLocaleString()}
                 </strong>{' '}
                 over {yearsToCalculate} years!
               </p>
@@ -1140,18 +1240,14 @@ export default function Step4ROI({ onNext, onBack }: { onNext: () => void; onBac
                   </tr>
                 </thead>
                 <tbody className="divide-y text-[11px]">
-                  {Array.from({ length: yearsToCalculate }).map((_, idx) => {
-                    const yr = idx + 1;
-                    const legacy = monthlySavings * 12 * yr;
-                    const savings = legacy - finalSellingPrice;
-
+                  {projections.map((proj) => {
                     return (
-                      <tr key={yr} className="hover:bg-slate-50/50 dark:hover:bg-slate-950/40">
-                        <td className="p-2.5 font-bold text-slate-700 dark:text-slate-300">Year {yr}</td>
-                        <td className="p-2.5 text-slate-500">₦{legacy.toLocaleString()}</td>
-                        <td className="p-2.5 text-slate-500">₦{finalSellingPrice.toLocaleString()}</td>
-                        <td className={`p-2.5 text-right font-black ${savings >= 0 ? 'text-teal-650 dark:text-teal-400' : 'text-slate-500'}`}>
-                          {savings >= 0 ? `+₦${savings.toLocaleString()}` : `-₦${Math.abs(savings).toLocaleString()}`}
+                      <tr key={proj.year} className="hover:bg-slate-50/50 dark:hover:bg-slate-950/40">
+                        <td className="p-2.5 font-bold text-slate-700 dark:text-slate-300">Year {proj.year}</td>
+                        <td className="p-2.5 text-slate-500">₦{proj.legacySpend.toLocaleString()}</td>
+                        <td className="p-2.5 text-slate-500">₦{proj.solarInvestment.toLocaleString()}</td>
+                        <td className={`p-2.5 text-right font-black ${proj.netSavings >= 0 ? 'text-teal-650 dark:text-teal-400' : 'text-slate-500'}`}>
+                          {proj.netSavings >= 0 ? `+₦${proj.netSavings.toLocaleString()}` : `-₦${Math.abs(proj.netSavings).toLocaleString()}`}
                         </td>
                       </tr>
                     );

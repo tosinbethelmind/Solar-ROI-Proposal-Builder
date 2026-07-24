@@ -109,7 +109,18 @@ function useNetworkStatus() {
 }
 
 function NewProposalPageInner() {
-  const { step, setStep, proposal, calculations, updateProposal, setCalculations, reset } = useWizardStore();
+  const { 
+    step, 
+    setStep, 
+    proposal, 
+    calculations, 
+    updateProposal, 
+    setCalculations, 
+    reset,
+    isStep1Valid,
+    isStep2Valid,
+    isStep3Valid
+  } = useWizardStore();
   const { fieldMode, setFieldMode, appMode } = useUiStore();
   const { saveProposal } = useHistoryStore();
   const { trackEvent } = useTracking();
@@ -140,6 +151,74 @@ function NewProposalPageInner() {
   const [quickPaymentEnabled, setQuickPaymentEnabled] = React.useState(false);
   const [quickDownPaymentPercent, setQuickDownPaymentPercent] = React.useState('20');
   const [quickDuration, setQuickDuration] = React.useState('12');
+
+  // ── Quick Draft Auto-Save ──
+  const QUICK_DRAFT_KEY = 'sqp_quick_proposal_draft';
+  const [quickDraftBanner, setQuickDraftBanner] = React.useState(false);
+  const [quickDraftToast, setQuickDraftToast] = React.useState(false);
+  const autoSaveTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // On mount: check for an existing quick draft
+  React.useEffect(() => {
+    if (flowType === 'quick' && typeof window !== 'undefined') {
+      const saved = localStorage.getItem(QUICK_DRAFT_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && (parsed.quickName || parsed.quickPrice)) {
+            setQuickDraftBanner(true);
+          }
+        } catch { /* ignore */ }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flowType]);
+
+  const saveQuickDraft = React.useCallback((overrides?: Record<string, unknown>) => {
+    if (typeof window === 'undefined') return;
+    const data = {
+      quickName, quickPhone, quickKva, quickPrice,
+      quickPaymentEnabled, quickDownPaymentPercent, quickDuration,
+      ...overrides,
+    };
+    localStorage.setItem(QUICK_DRAFT_KEY, JSON.stringify(data));
+  }, [quickName, quickPhone, quickKva, quickPrice, quickPaymentEnabled, quickDownPaymentPercent, quickDuration]);
+
+  const triggerAutoSave = React.useCallback((overrides?: Record<string, unknown>) => {
+    if (flowType !== 'quick') return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => saveQuickDraft(overrides), 800);
+  }, [flowType, saveQuickDraft]);
+
+  const handleResumeDraft = () => {
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem(QUICK_DRAFT_KEY);
+    if (!saved) return;
+    try {
+      const d = JSON.parse(saved);
+      if (d.quickName !== undefined) setQuickName(d.quickName);
+      if (d.quickPhone !== undefined) setQuickPhone(d.quickPhone);
+      if (d.quickKva !== undefined) setQuickKva(d.quickKva);
+      if (d.quickPrice !== undefined) setQuickPrice(d.quickPrice);
+      if (d.quickPaymentEnabled !== undefined) setQuickPaymentEnabled(d.quickPaymentEnabled);
+      if (d.quickDownPaymentPercent !== undefined) setQuickDownPaymentPercent(d.quickDownPaymentPercent);
+      if (d.quickDuration !== undefined) setQuickDuration(d.quickDuration);
+    } catch { /* ignore */ }
+    setQuickDraftBanner(false);
+    toast.success('Draft restored!');
+  };
+
+  const handleDiscardDraft = () => {
+    if (typeof window !== 'undefined') localStorage.removeItem(QUICK_DRAFT_KEY);
+    setQuickDraftBanner(false);
+  };
+
+  const handleManualSaveDraft = () => {
+    saveQuickDraft();
+    setQuickDraftToast(true);
+    toast.success('Draft saved successfully');
+    setTimeout(() => setQuickDraftToast(false), 2000);
+  };
 
   const [saveButtonText, setSaveButtonText] = React.useState('Save Draft');
 
@@ -396,6 +475,8 @@ function NewProposalPageInner() {
     });
 
     trackEvent('quick_proposal_submitted', { customer: name, kva });
+    // Clear draft on successful submission
+    if (typeof window !== 'undefined') localStorage.removeItem('sqp_quick_proposal_draft');
     setStep(5);
     setFlowType('wizard'); // transitions display back to final summary checklist page
   };
@@ -421,6 +502,12 @@ function NewProposalPageInner() {
             <Button variant="ghost" size="sm" onClick={handleLoadDemo} className="hidden sm:inline-flex rounded-xl">
               Load Demo
             </Button>
+            {flowType === 'quick' && (
+              <Button variant="secondary" size="sm" onClick={handleManualSaveDraft} className="hidden sm:inline-flex rounded-xl font-bold">
+                <Download className="w-4 h-4 mr-1.5" />
+                {quickDraftToast ? 'Saved ✓' : '💾 Save Draft'}
+              </Button>
+            )}
             {flowType === 'wizard' && (
               <Button variant="secondary" size="sm" onClick={handleSaveDraft} className="hidden sm:inline-flex rounded-xl font-bold">
                 <Download className="w-4 h-4 mr-1.5" />
@@ -494,6 +581,30 @@ function NewProposalPageInner() {
         {flowType === 'quick' ? (
           /* ═══ Quick Proposal Form Screen ═══ */
           <div className="max-w-xl mx-auto animate-in fade-in duration-300">
+            {/* ── Resume Draft Banner ── */}
+            {quickDraftBanner && (
+              <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 bg-amber-500/10 border border-amber-500/30 dark:bg-amber-950/20 dark:border-amber-500/20 rounded-2xl animate-in slide-in-from-top-2 duration-300">
+                <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                  📋 You have an unsaved quote draft.
+                </p>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleResumeDraft}
+                    className="px-3 py-1.5 text-[11px] font-black text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition-colors"
+                  >
+                    Resume Draft
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDiscardDraft}
+                    className="px-3 py-1.5 text-[11px] font-black text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 rounded-xl transition-colors"
+                  >
+                    Discard ✕
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
               <div className="text-center space-y-1.5">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-teal-500/10 text-teal-650 dark:text-teal-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
@@ -512,7 +623,7 @@ function NewProposalPageInner() {
                     name="customer_name"
                     required
                     value={quickName}
-                    onChange={e => setQuickName(e.target.value)}
+                    onChange={e => { setQuickName(e.target.value); triggerAutoSave({ quickName: e.target.value }); }}
                     placeholder="e.g. Alhaji Adeleke"
                     className="h-11 rounded-xl text-sm"
                   />
@@ -525,7 +636,7 @@ function NewProposalPageInner() {
                     id="phone"
                     name="phone"
                     value={quickPhone}
-                    onChange={e => setQuickPhone(e.target.value)}
+                    onChange={e => { setQuickPhone(e.target.value); triggerAutoSave({ quickPhone: e.target.value }); }}
                     placeholder="e.g. +234 803 123 4567"
                     className="h-11 rounded-xl text-sm"
                   />
@@ -536,7 +647,7 @@ function NewProposalPageInner() {
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-330">System Size (kVA)</label>
                     <select
                       value={quickKva}
-                      onChange={e => setQuickKva(e.target.value)}
+                      onChange={e => { setQuickKva(e.target.value); triggerAutoSave({ quickKva: e.target.value }); }}
                       aria-label="System Size in kVA"
                       title="System Size"
                       className="w-full h-11 bg-background border border-input rounded-xl px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
@@ -560,7 +671,7 @@ function NewProposalPageInner() {
                       required
                       min={0}
                       value={quickPrice}
-                      onChange={e => setQuickPrice(e.target.value)}
+                      onChange={e => { setQuickPrice(e.target.value); triggerAutoSave({ quickPrice: e.target.value }); }}
                       placeholder="e.g. 3500000"
                       className="h-11 rounded-xl text-sm"
                     />
@@ -628,15 +739,23 @@ function NewProposalPageInner() {
               <div className="flex items-center justify-between max-w-3xl mx-auto">
                 {stepsList.map((s, idx) => {
                   const isActive = step === s.number;
-                  const isCompleted = step > s.number;
+                  const isStepAccessible = (target: number) => {
+                    if (target === 1) return true;
+                    if (target === 2) return isStep1Valid();
+                    if (target === 3) return isStep1Valid() && isStep2Valid();
+                    if (target === 4) return isStep1Valid() && isStep2Valid() && isStep3Valid();
+                    if (target === 5) return isStep1Valid() && isStep2Valid() && isStep3Valid();
+                    return false;
+                  };
+                  const isAccessible = isStepAccessible(s.number);
                   return (
                     <div key={s.number} className="flex items-center flex-1 last:flex-none">
                       <div className="flex flex-col items-center relative">
                         <button
                           type="button"
-                          disabled={!isCompleted}
+                          disabled={!isAccessible}
                           onClick={() => {
-                            if (isCompleted) {
+                            if (isAccessible) {
                               setStep(s.number);
                               trackEvent('wizard_step_indicator_clicked', { targetStep: s.number });
                             }
@@ -644,7 +763,7 @@ function NewProposalPageInner() {
                           className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${
                             isActive
                                ? 'border-teal-650 bg-teal-650 text-white shadow-md'
-                               : isCompleted
+                               : isAccessible
                                ? 'border-teal-650 bg-teal-50 text-teal-655 dark:bg-teal-950/30 cursor-pointer hover:ring-2 hover:ring-teal-500/50 hover:bg-teal-100/50'
                                : 'border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-800 dark:bg-slate-900 cursor-not-allowed'
                           }`}

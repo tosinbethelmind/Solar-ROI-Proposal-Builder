@@ -51,3 +51,15 @@ next-env.d.ts
 /output.html
 /vercel_list*.txt
 
+# scratch & temporary files
+scratch/
+*.log
+check_creation_dates.js
+find_all_issue_references.js
+print_log_start.js
+scratch_read_current.js
+search_current_log.js
+theme_screenshots/
+untruncated_prompt.txt
+
+

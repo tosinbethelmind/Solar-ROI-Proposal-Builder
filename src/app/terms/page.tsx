@@ -6,6 +6,7 @@ import { ArrowLeft, Scale, Shield, FileText, CheckCircle } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { CopyrightYear } from '@/components/ui/CopyrightYear';
+import { LegalNotice } from '@/components/ui/LegalNotice';
 
 export default function TermsOfService() {
   return (
@@ -116,7 +117,10 @@ export default function TermsOfService() {
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-16 bg-white dark:bg-slate-900 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-450">
-          <p>© <CopyrightYear /> SolarQuotePro. All rights reserved.</p>
+          <div>
+            <p>© <CopyrightYear /> SolarQuotePro. All rights reserved.</p>
+            <LegalNotice />
+          </div>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
           </div>

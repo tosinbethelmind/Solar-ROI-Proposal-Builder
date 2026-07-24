@@ -38,7 +38,7 @@ export async function GET() {
       // 1. Fetch all companies to calculate metrics
       const { data, error: companiesError } = await adminClient
         .from('companies')
-        .select('*')
+        .select('id, name, email, created_at, subscription_status, subscription_tier, suspended')
         .order('created_at', { ascending: false });
 
       if (companiesError) {

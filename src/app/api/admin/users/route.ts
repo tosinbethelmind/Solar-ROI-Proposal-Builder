@@ -164,6 +164,24 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { memberId, action } = body;
 
+    if (!action) {
+      return NextResponse.json({ error: 'Action parameter is required.' }, { status: 400 });
+    }
+
+    if (!auth.canRunAutomation) {
+      return NextResponse.json({ error: 'Permission denied: Read-only access.' }, { status: 403 });
+    }
+
+    if (action === 'activate' || action === 'deactivate') {
+      if (!auth.canModifyProfiles) {
+        return NextResponse.json({ error: 'Permission denied: Operations or SuperAdmin role required to modify profiles.' }, { status: 403 });
+      }
+    }
+
+    if (auth.isBypassed) {
+      return NextResponse.json({ message: 'User action simulated successfully (E2E Mock).', data: {} });
+    }
+
     if (!memberId) {
       return NextResponse.json({ error: 'Member ID is required.' }, { status: 400 });
     }

@@ -28,7 +28,7 @@ export async function upsertTariffData(tableName: string, data: any[]) {
 // Helper to update lead status
 export async function updateLeadStatus(leadId: string, newStatus: string) {
   const supabase = createAdminClient();
-  const { error } = await supabase.from('leads').update({ status: newStatus }).eq('id', leadId);
+  const { error } = await supabase.from('homeowner_leads').update({ status: newStatus }).eq('id', leadId);
   if (error) {
     console.error('Failed to update lead status:', error);
     throw error;

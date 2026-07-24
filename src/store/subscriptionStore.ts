@@ -76,6 +76,11 @@ export const FEATURE_GATES = {
     tierRequired: 'enterprise' as SubscriptionTier,
     featureName: 'EPC Custom Integrations & Dedicated Support',
     description: 'Integrate proposal flows directly into corporate CRM, ERP, and inventory management APIs.'
+  },
+  interactiveProposals: {
+    tierRequired: 'pro' as SubscriptionTier,
+    featureName: 'Interactive Web Proposals & Checkout',
+    description: 'Generate client-facing web proposals with live load toggle sliders, Paystack site survey checkouts, and custom warranty insurance coverage.'
   }
 };
 
@@ -85,6 +90,8 @@ interface SubscriptionState {
   isTrial: boolean;
   trialStartDate: number;
   trialProposalsRemaining: number;
+  launchPromoClaimed?: boolean;
+  claimLaunchPromo: () => void;
   
   // Upgrade Modal Trigger State
   upgradeModalOpen: boolean;
@@ -117,12 +124,23 @@ const TIER_ORDER: Record<SubscriptionTier, number> = {
 export const useSubscriptionStore = create<SubscriptionState>()(
   persist(
     (set, get) => ({
-      // Defaults to 7-day Pro Trial (limit 2 total proposals) for excellent user onboarding experience
+      // Defaults to 7-day Pro Trial (limit 7 total proposals) for excellent user onboarding experience
       tier: 'pro',
       billingCycle: 'monthly',
       isTrial: true,
       trialStartDate: typeof Date !== 'undefined' ? Date.now() : 0,
-      trialProposalsRemaining: 2,
+      trialProposalsRemaining: 7,
+      launchPromoClaimed: false,
+
+      claimLaunchPromo: () => {
+        set({
+          tier: 'pro',
+          isTrial: true,
+          trialProposalsRemaining: 20, // 20 lifetime proposals under free launch promo
+          billingCycle: 'monthly',
+          launchPromoClaimed: true
+        });
+      },
 
       // Modal State
       upgradeModalOpen: false,
@@ -164,7 +182,8 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           billingCycle: 'monthly',
           isTrial: true,
           trialStartDate: Date.now(),
-          trialProposalsRemaining: 2
+          trialProposalsRemaining: 7,
+          launchPromoClaimed: false
         });
       },
 
@@ -212,6 +231,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
         isTrial: state.isTrial,
         trialStartDate: state.trialStartDate,
         trialProposalsRemaining: state.trialProposalsRemaining,
+        launchPromoClaimed: state.launchPromoClaimed,
       }),
     }
   )

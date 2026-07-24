@@ -152,11 +152,11 @@ export default function Step3Hardware({
     [essentialDailyWh, backupHours, systemVoltage]
   );
   const budgetPanel = React.useMemo(() => 
-    calculatePanelArray(totalDailyWh, peakSunHours, 'lead-acid', 450),
-    [totalDailyWh, peakSunHours]
+    calculatePanelArray(totalDailyWh, peakSunHours, 'lead-acid', 450, 'total', 0, proposal.city_id),
+    [totalDailyWh, peakSunHours, proposal.city_id]
   );
   const budgetPrice = React.useMemo(() => 
-    (budgetBattery.totalBatteries * 45000) + (budgetPanel.panelCount * 85000) + (inverterKva * 55000) + 80000 + 35000,
+    (budgetBattery.totalBatteries * 170000) + (budgetPanel.panelCount * 95000) + (inverterKva * 90000) + 100000 + 75000,
     [budgetBattery.totalBatteries, budgetPanel.panelCount, inverterKva]
   );
   const budgetUsableKwh = React.useMemo(() => 
@@ -170,11 +170,11 @@ export default function Step3Hardware({
     [essentialDailyWh, backupHours, systemVoltage]
   );
   const standardPanel = React.useMemo(() => 
-    calculatePanelArray(totalDailyWh, peakSunHours, 'lithium', 450),
-    [totalDailyWh, peakSunHours]
+    calculatePanelArray(totalDailyWh, peakSunHours, 'lithium', 450, 'total', 0, proposal.city_id),
+    [totalDailyWh, peakSunHours, proposal.city_id]
   );
   const standardPrice = React.useMemo(() => 
-    (standardBattery.totalBatteries * 120000) + (standardPanel.panelCount * 95000) + (inverterKva * 80000) + 80000 + 35000,
+    (standardBattery.totalBatteries * 850000) + (standardPanel.panelCount * 105000) + (inverterKva * 170000) + 150000 + 120000,
     [standardBattery.totalBatteries, standardPanel.panelCount, inverterKva]
   );
   const standardUsableKwh = React.useMemo(() => 
@@ -200,11 +200,11 @@ export default function Step3Hardware({
   }, [essentialDailyWh, backupHours, systemVoltage]);
 
   const premiumPanel = React.useMemo(() => 
-    calculatePanelArray(totalDailyWh, peakSunHours, 'lithium', 550),
-    [totalDailyWh, peakSunHours]
+    calculatePanelArray(totalDailyWh, peakSunHours, 'lithium', 550, 'total', 0, proposal.city_id),
+    [totalDailyWh, peakSunHours, proposal.city_id]
   );
   const premiumPrice = React.useMemo(() => 
-    (premiumBatteryInfo.totalBatteries * 180000) + (premiumPanel.panelCount * 110000) + (inverterKva * 120000) + 80000 + 35000,
+    (premiumBatteryInfo.totalBatteries * 1900000) + (premiumPanel.panelCount * 135000) + (inverterKva * 300000) + 250000 + 220000,
     [premiumBatteryInfo.totalBatteries, premiumPanel.panelCount, inverterKva]
   );
   const premiumUsableKwh = React.useMemo(() => 
@@ -240,9 +240,9 @@ export default function Step3Hardware({
       } catch (error) {
         console.warn('Supabase inverters fetch failed, using fallback:', error);
         setInverters([
-          { id: 'inv-1', brand: 'Luminous', model_name: `Cruze+ ${inverterKva}KVA`, capacity_kva: inverterKva, system_voltage: systemVoltage, price_ngn: inverterKva * 55000 },
-          { id: 'inv-2', brand: 'Deye', model_name: `SUN-${inverterKva}K-SG03LP1`, capacity_kva: inverterKva, system_voltage: systemVoltage, price_ngn: inverterKva * 80000 },
-          { id: 'inv-3', brand: 'Victron', model_name: `MultiPlus-II ${inverterKva}000`, capacity_kva: inverterKva, system_voltage: systemVoltage, price_ngn: inverterKva * 120000 }
+          { id: 'inv-1', brand: 'Luminous', model_name: `Cruze+ ${inverterKva}KVA`, capacity_kva: inverterKva, system_voltage: systemVoltage, price_ngn: inverterKva * 90000 },
+          { id: 'inv-2', brand: 'Deye', model_name: `SUN-${inverterKva}K-SG03LP1`, capacity_kva: inverterKva, system_voltage: systemVoltage, price_ngn: inverterKva * 170000 },
+          { id: 'inv-3', brand: 'Victron', model_name: `MultiPlus-II ${inverterKva}000`, capacity_kva: inverterKva, system_voltage: systemVoltage, price_ngn: inverterKva * 300000 }
         ]);
       }
 
@@ -256,9 +256,9 @@ export default function Step3Hardware({
       } catch (error) {
         console.warn('Supabase batteries fetch failed, using fallback:', error);
         setBatteries([
-          { id: 'bat-1', brand: 'Ritar', model_name: 'RA12-200', capacity_ah: 200, voltage: 12, chemistry: 'lead-acid', price_ngn: 45000 },
-          { id: 'bat-2', brand: 'Felicity', model_name: 'LPBF48100', capacity_ah: 100, voltage: 48, chemistry: 'lithium', price_ngn: 120000 },
-          { id: 'bat-3', brand: 'Pylontech', model_name: 'US3000C', capacity_ah: 74, voltage: 48, chemistry: 'lithium', price_ngn: 150000 }
+          { id: 'bat-1', brand: 'Ritar', model_name: 'RA12-200', capacity_ah: 200, voltage: 12, chemistry: 'lead-acid', price_ngn: 170000 },
+          { id: 'bat-2', brand: 'Felicity', model_name: 'LPBF48100', capacity_ah: 100, voltage: 48, chemistry: 'lithium', price_ngn: 850000 },
+          { id: 'bat-3', brand: 'Pylontech', model_name: 'US3000C', capacity_ah: 74, voltage: 48, chemistry: 'lithium', price_ngn: 950000 }
         ]);
       }
 
@@ -272,9 +272,9 @@ export default function Step3Hardware({
       } catch (error) {
         console.warn('Supabase panels fetch failed, using fallback:', error);
         setPanels([
-          { id: 'pan-1', brand: 'Jinko', model_name: 'Eagle 450W', wattage_wp: 450, price_ngn: 85000 },
-          { id: 'pan-2', brand: 'Canadian Solar', model_name: 'HiKu6 550W', wattage_wp: 550, price_ngn: 110000 },
-          { id: 'pan-3', brand: 'Longi', model_name: 'Hi-MO6 550W', wattage_wp: 550, price_ngn: 110000 }
+          { id: 'pan-1', brand: 'Jinko', model_name: 'Eagle 450W', wattage_wp: 450, price_ngn: 95000 },
+          { id: 'pan-2', brand: 'Canadian Solar', model_name: 'HiKu6 550W', wattage_wp: 550, price_ngn: 135000 },
+          { id: 'pan-3', brand: 'Longi', model_name: 'Hi-MO6 550W', wattage_wp: 550, price_ngn: 135000 }
         ]);
       }
       setLoading(false);
@@ -351,16 +351,33 @@ export default function Step3Hardware({
 
   const expertPanelSizing = React.useMemo(() => {
     if (!selectedPanel || !selectedBattery) return null;
-    return calculatePanelArray(totalDailyWh, peakSunHours, selectedBattery.chemistry, selectedPanel.wattage_wp);
-  }, [selectedPanel, selectedBattery, totalDailyWh, peakSunHours]);
+    return calculatePanelArray(
+      totalDailyWh, 
+      peakSunHours, 
+      selectedBattery.chemistry, 
+      selectedPanel.wattage_wp, 
+      'total', 
+      0, 
+      proposal.city_id
+    );
+  }, [selectedPanel, selectedBattery, totalDailyWh, peakSunHours, proposal.city_id]);
 
   const customPrice = React.useMemo(() => {
     if (!selectedInverter || !selectedBattery || !selectedPanel || !expertBatterySizing || !expertPanelSizing) return 0;
+    let labour = 150000;
+    let accessories = 120000;
+    if (proposal.selected_tier === 'budget') {
+      labour = 100000;
+      accessories = 75000;
+    } else if (proposal.selected_tier === 'premium') {
+      labour = 250000;
+      accessories = 220000;
+    }
     return (selectedInverter.price_ngn) +
            (selectedBattery.price_ngn * expertBatterySizing.totalBatteries) +
            (selectedPanel.price_ngn * expertPanelSizing.panelCount) +
-           80000 + 35000;
-  }, [selectedInverter, selectedBattery, selectedPanel, expertBatterySizing, expertPanelSizing]);
+           labour + accessories;
+  }, [selectedInverter, selectedBattery, selectedPanel, expertBatterySizing, expertPanelSizing, proposal.selected_tier]);
 
   // Determine actual final price to save in store
   const finalPrice = React.useMemo(() => {
@@ -399,24 +416,39 @@ export default function Step3Hardware({
     let inverterCost = 0;
     let batteryUnitCost = 0;
     let panelUnitCost = 0;
+    let labourCost = 150000;
+    let accessoriesCost = 120000;
 
     if (expertMode) {
       inverterCost = selectedInverter?.price_ngn || 0;
       batteryUnitCost = selectedBattery?.price_ngn || 0;
       panelUnitCost = selectedPanel?.price_ngn || 0;
+      if (proposal.selected_tier === 'budget') {
+        labourCost = 100000;
+        accessoriesCost = 75000;
+      } else if (proposal.selected_tier === 'premium') {
+        labourCost = 250000;
+        accessoriesCost = 220000;
+      }
     } else {
       if (proposal.selected_tier === 'budget') {
-        inverterCost = inverterKva * 55000;
-        batteryUnitCost = 45000;
-        panelUnitCost = 85000;
-      } else if (proposal.selected_tier === 'standard') {
-        inverterCost = inverterKva * 80000;
-        batteryUnitCost = 120000;
+        inverterCost = inverterKva * 90000;
+        batteryUnitCost = 170000;
         panelUnitCost = 95000;
+        labourCost = 100000;
+        accessoriesCost = 75000;
+      } else if (proposal.selected_tier === 'standard') {
+        inverterCost = inverterKva * 170000;
+        batteryUnitCost = 850000;
+        panelUnitCost = 105000;
+        labourCost = 150000;
+        accessoriesCost = 120000;
       } else { // premium
-        inverterCost = inverterKva * 120000;
-        batteryUnitCost = 180000;
-        panelUnitCost = 110000;
+        inverterCost = inverterKva * 300000;
+        batteryUnitCost = 1900000;
+        panelUnitCost = 135000;
+        labourCost = 250000;
+        accessoriesCost = 220000;
       }
     }
 
@@ -428,8 +460,8 @@ export default function Step3Hardware({
       inverter_cost_ngn: inverterCost,
       battery_unit_cost_ngn: batteryUnitCost,
       panel_unit_cost_ngn: panelUnitCost,
-      labour_cost_ngn: 80000,
-      accessories_cost_ngn: 35000,
+      labour_cost_ngn: labourCost,
+      accessories_cost_ngn: accessoriesCost,
       final_quoted_price_ngn: finalPrice,
     });
     onNext();
@@ -827,8 +859,8 @@ export default function Step3Hardware({
           </summary>
           <div className="mt-3 text-sm text-slate-600 dark:text-slate-400">
             <p>
-              These prices assume an exchange rate of ~₦1,600/$1. Since approximately 70% of solar equipment costs are USD-indexed, 
-              a 10% weakening of the Naira (e.g. to ₦1,760/$1) would increase the total system cost by around 
+              These prices assume an exchange rate of ~₦{(proposal.lockedFXRate || 1600).toLocaleString()}/$1. Since approximately 70% of solar equipment costs are USD-indexed, 
+              a 10% weakening of the Naira (e.g. to ₦{((proposal.lockedFXRate || 1600) * 1.1).toLocaleString(undefined, { maximumFractionDigits: 0 })}/$1) would increase the total system cost by around 
               <strong className="text-slate-800 dark:text-slate-200 ml-1">
                 ~₦{(finalPrice * 0.7 * 0.1).toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </strong>.

@@ -25,6 +25,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMarketplaceStore } from '@/store/marketplaceStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
+import { isEligibleForPremiumListing } from '@/utils/subscriptionRules';
+import ngStatesData from '@/data/ng_states.json';
 
 export default function InstallerListingDashboard() {
   const { 
@@ -62,6 +64,9 @@ export default function InstallerListingDashboard() {
   // Profile Form State
   const [businessName, setBusinessName] = React.useState(installer?.business_name || '');
   const [description, setDescription] = React.useState(installer?.description || '');
+  const [cacNumber, setCacNumber] = React.useState(installer?.cac_number || '');
+  const [contactPreference, setContactPreference] = React.useState<'WhatsApp' | 'Phone Call' | 'Email'>(installer?.contact_preference || 'WhatsApp');
+  const [responseSpeed, setResponseSpeed] = React.useState(installer?.response_speed || 'Usually under 2 hours');
   const [specialtyInput, setSpecialtyInput] = React.useState('');
   const [brandInput, setBrandInput] = React.useState('');
   const [activeTab, setActiveTab] = React.useState<'profile' | 'leads' | 'billing'>('leads');
@@ -71,12 +76,25 @@ export default function InstallerListingDashboard() {
     if (installer) {
       setBusinessName(installer.business_name);
       setDescription(installer.description);
+      setCacNumber(installer.cac_number || '');
+      setContactPreference(installer.contact_preference || 'WhatsApp');
+      setResponseSpeed(installer.response_speed || 'Usually under 2 hours');
     }
   }, [installer]);
 
+  // Predefined states and cities lookup
+  const statesAndCities = ngStatesData as Record<string, string[]>;
+  const statesList = Object.keys(statesAndCities);
+
   // Service Area Form State
-  const [newState, setNewState] = React.useState('Lagos');
-  const [newCity, setNewCity] = React.useState('');
+  const [newState, setNewState] = React.useState(statesList[0] || 'Lagos');
+  const [newCity, setNewCity] = React.useState(statesAndCities[statesList[0]]?.[0] || '');
+
+  const handleStateChange = (state: string) => {
+    setNewState(state);
+    const cities = statesAndCities[state] || [];
+    setNewCity(cities[0] || '');
+  };
 
   // Handle Profile Update
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -84,7 +102,10 @@ export default function InstallerListingDashboard() {
     if (!installer) return;
     updateInstallerProfile(installer.id, {
       business_name: businessName,
-      description
+      description,
+      cac_number: cacNumber,
+      contact_preference: contactPreference,
+      response_speed: responseSpeed
     });
     alert('Listing Profile updated successfully!');
   };
@@ -114,17 +135,18 @@ export default function InstallerListingDashboard() {
   // Add Service Area
   const handleAddArea = () => {
     if (!newCity) return;
-    addServiceArea(installer.id, newState, newCity);
-    setNewCity('');
+    const success = addServiceArea(installer.id, newState, newCity);
+    if (!success) {
+      alert('⚠️ Unable to add service area.\n- Make sure the area is not already added.\n- Ensure you haven\'t exceeded the limit of 10 service areas.');
+    }
   };
 
   // Handle Listing Upgrade
   const handleUpgradeListing = (tier: 'basic' | 'verified_partner' | 'verified_partner_plus') => {
     // Entitlement Rule Check: Must be on active Pro subscription to select a premium listing tier
-    const eligibleTiers = ['pro', 'business', 'enterprise'];
-    const isEligible = eligibleTiers.includes(softwareTier);
+    const isEligible = isEligibleForPremiumListing(softwareTier, tier);
 
-    if (!isEligible && tier !== 'basic') {
+    if (!isEligible) {
       alert(`⚠️ Listing Tier Restriction:\nTo purchase a Premium Listing subscription, your core proposal software plan must be upgraded to "Pro Workspace" (or above). Currently on: ${softwareTier.toUpperCase()}`);
       return;
     }
@@ -308,7 +330,7 @@ export default function InstallerListingDashboard() {
                     required
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
-                    className="w-full p-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 focus:outline-none"
+                    className="w-full p-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-855 focus:outline-none"
                   />
                 </div>
 
@@ -318,13 +340,55 @@ export default function InstallerListingDashboard() {
                     required
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 focus:outline-none h-24 resize-none"
+                    className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-855 focus:outline-none h-24 resize-none"
                   />
                 </div>
 
-                <Button type="submit" className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-black text-xs h-9 px-6 border-none">
-                  Save Profile Details
-                </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black uppercase text-slate-400">CAC Registration Number</label>
+                    <input
+                      type="text"
+                      value={cacNumber}
+                      onChange={(e) => setCacNumber(e.target.value)}
+                      placeholder="e.g. RC-1234567"
+                      className="w-full p-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-855 focus:outline-none font-semibold text-slate-700 dark:text-slate-300"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black uppercase text-slate-400">Preferred Contact Method</label>
+                    <select
+                      value={contactPreference}
+                      onChange={(e) => setContactPreference(e.target.value as any)}
+                      className="w-full p-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-855 focus:outline-none font-semibold text-slate-700 dark:text-slate-300"
+                    >
+                      <option value="WhatsApp">WhatsApp</option>
+                      <option value="Phone Call">Phone Call</option>
+                      <option value="Email">Email Address</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-black uppercase text-slate-400">Response Speed</label>
+                    <select
+                      value={responseSpeed}
+                      onChange={(e) => setResponseSpeed(e.target.value)}
+                      className="w-full p-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-855 focus:outline-none font-semibold text-slate-700 dark:text-slate-300"
+                    >
+                      <option value="Usually under 1 hour">Usually under 1 hour</option>
+                      <option value="Usually under 2 hours">Usually under 2 hours</option>
+                      <option value="Usually under 4 hours">Usually under 4 hours</option>
+                      <option value="Usually within 24 hours">Usually within 24 hours</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button type="submit" className="bg-teal-650 hover:bg-teal-700 text-white rounded-xl font-black text-xs h-9 px-6 border-none">
+                    Save Profile Details
+                  </Button>
+                </div>
               </form>
 
               <div className="h-px bg-slate-100 dark:bg-slate-800" />
@@ -370,24 +434,30 @@ export default function InstallerListingDashboard() {
                   <label className="text-[9px] font-black uppercase text-slate-400">State</label>
                   <select
                     value={newState}
-                    onChange={(e) => setNewState(e.target.value)}
+                    onChange={(e) => handleStateChange(e.target.value)}
                     className="w-full p-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border focus:outline-none"
                   >
-                    <option value="Lagos">Lagos</option>
-                    <option value="Abuja">Abuja</option>
-                    <option value="Rivers">Rivers</option>
+                    {statesList.map((state) => (
+                      <option key={state} value={state}>
+                        {state}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-black uppercase text-slate-400">City / Area Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Gbagada"
+                  <select
                     value={newCity}
                     onChange={(e) => setNewCity(e.target.value)}
                     className="w-full p-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border focus:outline-none"
-                  />
+                  >
+                    {(statesAndCities[newState] || []).map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <Button onClick={handleAddArea} className="w-full bg-teal-650 hover:bg-teal-700 text-white rounded-lg text-[10px] font-black h-8 border-none">
@@ -424,6 +494,45 @@ export default function InstallerListingDashboard() {
                 Upgrade your company listing tier separately from your proposal software plan. Get routed leads in real-time.
               </p>
             </div>
+            {/* Core Software Plan Toggle (Demo Controls) */}
+            <Card className="rounded-3xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="space-y-1">
+                  <h3 className="font-extrabold text-sm text-slate-850 dark:text-slate-50 flex items-center gap-1.5">
+                    ⚙️ Demo Control: Core Software Tier
+                  </h3>
+                  <p className="text-[10px] text-slate-455">
+                    Your current proposal software tier is: <span className="font-black text-teal-655 dark:text-teal-400 capitalize">{softwareTier}</span>
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(['free', 'starter', 'pro'] as const).map((t) => (
+                    <Button
+                      key={t}
+                      size="sm"
+                      variant={softwareTier === t ? 'default' : 'outline'}
+                      onClick={() => {
+                        const { setSubscription } = useSubscriptionStore.getState();
+                        setSubscription(t);
+                      }}
+                      className={`text-[10px] font-black uppercase rounded-xl h-8 ${
+                        softwareTier === t
+                          ? 'bg-teal-655 text-white hover:bg-teal-700 border-none shadow-sm'
+                          : 'border-slate-250 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      Set to {t}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="text-[10px] text-slate-455 bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/25 dark:border-amber-500/15 p-3 rounded-2xl flex items-start gap-2">
+                <span className="shrink-0">💡</span>
+                <span>
+                  <strong>Entitlement Gating Rule:</strong> Upgrading to a premium directory listing requires a <strong>Pro</strong> core software plan or above. Toggle the plan to <strong>Free</strong> or <strong>Starter</strong> to test the validation blockage, or to <strong>Pro</strong> to unlock upgrades.
+                </span>
+              </div>
+            </Card>
 
             {/* Current Active Listing status */}
             <Card className="rounded-3xl border border-slate-200 dark:border-slate-850 bg-slate-900 text-white p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -478,7 +587,7 @@ export default function InstallerListingDashboard() {
                 {
                   id: "verified_partner_plus",
                   name: "Partner Plus",
-                  price: "₦65,000",
+                  price: "₦75,000",
                   period: "/ month",
                   desc: "Premium routing tier for absolute visibility in core cities.",
                   benefits: [
@@ -526,8 +635,15 @@ export default function InstallerListingDashboard() {
 
                     <div className="pt-6">
                       {isActive ? (
-                        <Button disabled className="w-full bg-slate-100 text-slate-455 rounded-xl text-xs font-black h-9 border-none">
+                        <Button disabled className="w-full bg-slate-100 dark:bg-slate-800 text-slate-455 dark:text-slate-500 rounded-xl text-xs font-black h-9 border-none">
                           Current Subscription
+                        </Button>
+                      ) : !isEligibleForPremiumListing(softwareTier, tierCard.id as any) ? (
+                        <Button 
+                          onClick={() => handleUpgradeListing(tierCard.id as any)}
+                          className="w-full bg-red-500/5 hover:bg-red-500/10 text-red-650 dark:text-red-400 rounded-xl text-[10px] font-black h-9 border border-red-500/20 shadow-none"
+                        >
+                          🔒 Requires Pro Software
                         </Button>
                       ) : (
                         <Button 

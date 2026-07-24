@@ -28,6 +28,23 @@ export interface GridInputs {
 const INDUCTIVE_SURGE_MULTIPLIER = 3;
 const SURGE_DELTA = INDUCTIVE_SURGE_MULTIPLIER - 1; // 2
 
+export function getApplianceSurgeMultiplier(app: InputAppliance): number {
+  if (!app.isInductive) return 1;
+  const nameLower = app.name.toLowerCase();
+  if (nameLower.includes('inverter')) {
+    return 1.5;
+  }
+  if (
+    nameLower.includes('pump') ||
+    nameLower.includes('borehole') ||
+    nameLower.includes('compressor') ||
+    nameLower.includes('motor')
+  ) {
+    return 5.0;
+  }
+  return 3.0; // standard default
+}
+
 export const FUEL_PRICES_NGN = {
   petrol: 1250,  // ₦/litre — Lagos average, May 2026
   diesel: 1750,  // ₦/litre — Lagos average, May 2026
@@ -62,14 +79,20 @@ export function calculateInverterSize(appliances: InputAppliance[], pContinuous:
   // Pass 1: simultaneous starters — add full surge delta
   const simultaneousSurge = appliances
     .filter(a => a.isInductive && a.simultaneousStart)
-    .reduce((sum, a) => sum + (a.wattage * a.quantity * SURGE_DELTA), 0);
+    .reduce((sum, a) => {
+      const mult = getApplianceSurgeMultiplier(a);
+      return sum + (a.wattage * a.quantity * (mult - 1));
+    }, 0);
 
   // Pass 2: non-simultaneous — take only the single largest surge delta
   const nonSimultaneousStarters = appliances.filter(a => a.isInductive && !a.simultaneousStart);
   let nonSimultaneousMaxSurge = 0;
   if (nonSimultaneousStarters.length > 0) {
     nonSimultaneousMaxSurge = Math.max(
-      ...nonSimultaneousStarters.map(a => a.wattage * SURGE_DELTA)
+      ...nonSimultaneousStarters.map(a => {
+        const mult = getApplianceSurgeMultiplier(a);
+        return a.wattage * (mult - 1);
+      })
     );
   }
 
@@ -97,12 +120,30 @@ export function calculateBatteryBank(
   essentialDailyWh: number,
   backupHours: number,
   systemVoltage: number,
-  chemistry: 'lead-acid' | 'lithium'
+  chemistry: 'lead-acid' | 'lithium',
+  sizingMethod: 'backup-hours' | 'flat-load' = 'backup-hours',
+  appliances: InputAppliance[] = []
 ) {
   const dod = chemistry === 'lithium' ? 0.8 : 0.5;
 
-  const averageHourlyEssentialWh = essentialDailyWh / 24;
-  const backupReqWh = averageHourlyEssentialWh * backupHours;
+  let backupReqWh = 0;
+  if (sizingMethod === 'flat-load') {
+    const averageHourlyEssentialWh = essentialDailyWh / 24;
+    backupReqWh = averageHourlyEssentialWh * backupHours;
+  } else {
+    // Sizing method: backup-hours (Direct Load Runtime method)
+    for (const app of appliances) {
+      if (app.isIncludedInBackup && app.loadType === 'essential') {
+        const backupRuntime = Math.min(app.dailyRuntimeHours, backupHours);
+        backupReqWh += app.wattage * app.quantity * backupRuntime;
+      }
+    }
+    // Fallback if no essential appliances are provided
+    if (backupReqWh === 0) {
+      const averageHourlyEssentialWh = essentialDailyWh / 24;
+      backupReqWh = averageHourlyEssentialWh * backupHours;
+    }
+  }
 
   const reqAhRaw = backupReqWh / (systemVoltage * dod);
 
@@ -155,6 +196,20 @@ export function calculateBatteryBank(
   };
 }
 
+export const CITY_DERATING_FACTORS: Record<string, { thermalLoss: number; soilingLoss: number }> = {
+  'lagos': { thermalLoss: 0.15, soilingLoss: 0.05 },
+  'lagos-ikeja': { thermalLoss: 0.15, soilingLoss: 0.05 },
+  'abuja': { thermalLoss: 0.10, soilingLoss: 0.08 },
+  'port-harcourt': { thermalLoss: 0.12, soilingLoss: 0.08 },
+  'kano': { thermalLoss: 0.12, soilingLoss: 0.15 },
+  'ibadan': { thermalLoss: 0.11, soilingLoss: 0.10 },
+  'enugu': { thermalLoss: 0.11, soilingLoss: 0.07 },
+  'benin': { thermalLoss: 0.12, soilingLoss: 0.06 },
+  'jos': { thermalLoss: 0.08, soilingLoss: 0.12 },
+  'kaduna': { thermalLoss: 0.12, soilingLoss: 0.12 },
+  'yola': { thermalLoss: 0.15, soilingLoss: 0.15 },
+};
+
 /**
  * Calculates the required Solar Array size in Wp
  */
@@ -162,27 +217,43 @@ export function calculatePanelArray(
   totalDailyWh: number,
   peakSunHours: number,
   chemistry: 'lead-acid' | 'lithium',
-  panelUnitWp: number = 450
+  panelUnitWp: number = 450,
+  sizingBasis: 'total' | 'essential' = 'total',
+  essentialDailyWh: number = 0,
+  cityId?: string
 ) {
   const chargingOverheadFactor = chemistry === 'lithium' ? 1.05 : 1.25;
-  const etaCombined = 0.85 * 0.80 * 0.90; // 0.612
+  
+  // Localized derating values
+  const derating = CITY_DERATING_FACTORS[cityId || ''] || { thermalLoss: 0.12, soilingLoss: 0.08 };
+  const deratingFactor = (1 - derating.thermalLoss) * (1 - derating.soilingLoss);
+  
+  const etaBase = 0.85 * 0.80 * 0.90; // 0.612
+  const etaCombined = etaBase * deratingFactor;
 
-  const reqArrayWp = (totalDailyWh * chargingOverheadFactor) / (peakSunHours * etaCombined);
+  const baseWh = sizingBasis === 'essential' ? essentialDailyWh : totalDailyWh;
+  const reqArrayWp = (baseWh * chargingOverheadFactor) / (peakSunHours * etaCombined);
   
   let panelCount = Math.ceil(reqArrayWp / panelUnitWp);
-  if (panelCount === 0 && totalDailyWh > 0) panelCount = 1;
+  if (panelCount === 0 && baseWh > 0) panelCount = 1;
 
   return { reqArrayWp, panelCount, panelUnitWp, totalWp: panelCount * panelUnitWp };
 }
 
 const FUEL_CONSUMPTION_TABLE: Record<number, { petrol?: number; diesel?: number }> = {
+  1.0:  { petrol: 0.45 },
   1.5:  { petrol: 0.6 },
+  2.0:  { petrol: 0.85 },
   2.5:  { petrol: 1.0 },
   3.5:  { petrol: 1.4 },
   5.0:  { petrol: 1.8, diesel: 1.4 },
-  7.5:  { diesel: 2.1 },
-  10.0: { diesel: 2.5 },
+  6.5:  { petrol: 2.2, diesel: 1.7 },
+  7.5:  { diesel: 2.1, petrol: 2.5 },
+  10.0: { diesel: 2.5, petrol: 3.2 },
+  12.5: { diesel: 3.0 },
   15.0: { diesel: 3.5, petrol: 4.0 },
+  20.0: { diesel: 4.8 },
+  25.0: { diesel: 5.8 },
 };
 
 /**
@@ -210,10 +281,18 @@ export function calculateROI(
   totalCapEx: number,
   genInputs: GeneratorInputs | null,
   gridInputs: GridInputs | null,
-  essentialDailyWh: number
+  essentialDailyWh: number,
+  actualBilling?: {
+    monthlyGridBill?: number;
+    monthlyGenFuel?: number;
+    monthlyGenMaint?: number;
+  },
+  annualInflationRate: number = 0 // default 0 to preserve test cases
 ) {
   let genMonthlyCost = 0;
-  if (genInputs && genInputs.dailyHours > 0) {
+  if (actualBilling && actualBilling.monthlyGenFuel !== undefined && actualBilling.monthlyGenFuel > 0) {
+    genMonthlyCost = (actualBilling.monthlyGenFuel || 0) + (actualBilling.monthlyGenMaint || 0);
+  } else if (genInputs && genInputs.dailyHours > 0) {
     const fuelRate = getGeneratorFuelRate(genInputs.capacityKva, genInputs.fuelType);
     const fuelCost = genInputs.dailyHours * fuelRate * genInputs.fuelPricePerLiter * 30.4;
     
@@ -225,7 +304,9 @@ export function calculateROI(
   }
 
   let gridMonthlyCost = 0;
-  if (gridInputs && gridInputs.dailyHours > 0) {
+  if (actualBilling && actualBilling.monthlyGridBill !== undefined && actualBilling.monthlyGridBill > 0) {
+    gridMonthlyCost = actualBilling.monthlyGridBill;
+  } else if (gridInputs && gridInputs.dailyHours > 0) {
     const avgEssentialKw = essentialDailyWh / 24 / 1000;
     const gridDailyKwh = avgEssentialKw * gridInputs.dailyHours;
     gridMonthlyCost = gridDailyKwh * gridInputs.tariffPerKwh * 30.4;
@@ -239,18 +320,63 @@ export function calculateROI(
   let remaining = totalCapEx;
   let month = 0;
 
-  if (baseMonthlySavings <= 0) return { paybackMonths: Infinity, baseMonthlySavings };
+  if (baseMonthlySavings <= 0) return { paybackMonths: Infinity, baseMonthlySavings, genMonthlyCost, gridMonthlyCost };
 
   while (remaining > 0 && month < MAX_MONTHS) {
     const year = Math.floor(month / 12) + 1;
-    const monthlySavings = baseMonthlySavings * Math.pow(1 - PANEL_DEGRADATION_RATE, year - 1);
-    if (monthlySavings <= 0) return { paybackMonths: Infinity, baseMonthlySavings };
+    const inflatedLegacyCost = (genMonthlyCost + gridMonthlyCost) * Math.pow(1 + annualInflationRate, year - 1);
+    const inflatedSolarOM = solarOMMonthly * Math.pow(1 + annualInflationRate, year - 1);
+    const monthlySavings = (inflatedLegacyCost * Math.pow(1 - PANEL_DEGRADATION_RATE, year - 1)) - inflatedSolarOM;
+
+    if (monthlySavings <= 0) return { paybackMonths: Infinity, baseMonthlySavings, genMonthlyCost, gridMonthlyCost };
     remaining -= monthlySavings;
     month++;
   }
 
   const paybackMonths = month >= MAX_MONTHS ? Infinity : month;
   return { paybackMonths, baseMonthlySavings, genMonthlyCost, gridMonthlyCost };
+}
+
+export type TariffBand = 'Band A' | 'Band B' | 'Band C' | 'Band D' | 'Band E';
+
+export interface TariffBandInfo {
+  band: TariffBand;
+  minHoursPerDay: number;
+  avgTariffPerKwh: number;
+  description: string;
+}
+
+export const NERC_TARIFF_BANDS: Record<TariffBand, TariffBandInfo> = {
+  'Band A': { band: 'Band A', minHoursPerDay: 20, avgTariffPerKwh: 209, description: '20+ hrs grid/day (Highest tariff)' },
+  'Band B': { band: 'Band B', minHoursPerDay: 16, avgTariffPerKwh: 145, description: '16–20 hrs grid/day' },
+  'Band C': { band: 'Band C', minHoursPerDay: 12, avgTariffPerKwh: 110, description: '12–16 hrs grid/day' },
+  'Band D': { band: 'Band D', minHoursPerDay: 8, avgTariffPerKwh: 75, description: '8–12 hrs grid/day' },
+  'Band E': { band: 'Band E', minHoursPerDay: 4, avgTariffPerKwh: 50, description: '<8 hrs grid/day (High generator reliance)' },
+};
+
+/**
+ * Calculates 10-Year Total Cost of Ownership (TCO) comparison for Lithium (LiFePO4) vs Lead-Acid
+ */
+export function calculateBatteryTCO(initialLithiumCost: number, initialLeadAcidCost: number) {
+  const leadAcidReplacements = 3; // at yr 2.5, yr 5.0, yr 7.5
+  const leadAcidInflationRate = 0.12; // 12% annual replacement cost inflation in NGN
+  
+  let totalLeadAcidCost = initialLeadAcidCost;
+  for (let i = 1; i <= leadAcidReplacements; i++) {
+    const year = i * 2.5;
+    totalLeadAcidCost += initialLeadAcidCost * Math.pow(1 + leadAcidInflationRate, year);
+  }
+
+  const totalLithiumCost = initialLithiumCost;
+  const net10YearSavings = totalLeadAcidCost - totalLithiumCost;
+
+  return {
+    initialLithiumCost,
+    initialLeadAcidCost,
+    totalLithium10Yr: Math.round(totalLithiumCost),
+    totalLeadAcid10Yr: Math.round(totalLeadAcidCost),
+    net10YearSavings: Math.round(net10YearSavings),
+  };
 }
 
 export interface TierSummary {
@@ -270,7 +396,8 @@ export interface TierSummary {
  */
 export function generateWhatsAppComparison(
   customerName: string,
-  tiers: TierSummary[]
+  tiers: TierSummary[],
+  proposalUrl?: string
 ): string {
   const lines = tiers.map(t =>
     `*${t.tier.toUpperCase()} TIER:* ₦${t.price.toLocaleString()}\n` +
@@ -280,8 +407,12 @@ export function generateWhatsAppComparison(
     `• Payback: ${t.payback === Infinity ? 'N/A' : t.payback.toFixed(0) + 'mo payback'}\n`
   ).join('\n');
 
+  const linkText = proposalUrl ? `\n\n📄 *View Interactive PDF Proposal:* ${proposalUrl}` : '';
+
   return `*Solar Proposal for ${customerName}*\n\n` +
          `Here are three tailored solar options for your load profile:\n\n` +
-         `${lines}\n` +
-         `Reply with your preferred option (BUDGET, STANDARD, or PREMIUM) to get the detailed PDF contract.`;
+         `${lines}` +
+         `${linkText}\n\n` +
+         `Reply to this message with your preferred option (BUDGET, STANDARD, or PREMIUM) to finalize installation.`;
 }
+

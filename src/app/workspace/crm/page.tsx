@@ -7,7 +7,7 @@ export default function WorkspaceCrmRedirect() {
   const router = useRouter();
   
   React.useEffect(() => {
-    router.replace('/history');
+    router.replace('/workspace/listing');
   }, [router]);
 
   return (

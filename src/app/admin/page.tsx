@@ -131,23 +131,31 @@ export default function AdminOverview() {
   const [searchQuery, setSearchQuery] = React.useState('');
 
   React.useEffect(() => {
+    let isInitial = true;
     async function fetchOverview() {
       try {
         const res = await fetch('/api/admin/overview');
         const json = await res.json();
         if (json.error) {
-          toast.error(json.error);
+          if (isInitial) toast.error(json.error);
         } else if (json.data) {
           setData(json.data);
         }
       } catch (err) {
         console.error('Failed to load admin overview:', err);
-        toast.error('Could not connect to operations telemetry service.');
+        if (isInitial) toast.error('Could not connect to operations telemetry service.');
       } finally {
-        setLoading(false);
+        if (isInitial) {
+          setLoading(false);
+          isInitial = false;
+        }
       }
     }
     fetchOverview();
+
+    // Poll for live metrics updates every 15 seconds
+    const interval = setInterval(fetchOverview, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const formatNaira = (value: number) =>

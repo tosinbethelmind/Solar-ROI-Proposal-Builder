@@ -142,13 +142,13 @@ await page.route('**/open.er-api.com/**', route => {
     await expect(page.locator('text=Inverter').first()).toBeVisible();
   });
 
-  test('Free subscription tier limits user to exactly 1 proposal', async ({ page }) => {
+  test('Free subscription tier limits user to exactly 3 proposals', async ({ page }) => {
     test.setTimeout(120000);
     // Listen to browser console and error logs
     page.on('console', msg => console.log(`[BROWSER-FREE]: ${msg.type().toUpperCase()}: ${msg.text()}`));
     page.on('pageerror', err => console.error(`[BROWSER-FREE-ERROR]: ${err.message}\n${err.stack}`));
 
-    // 1. Inject Free subscription tier, 1 pre-existing saved proposal, and seed FX rate cache
+    // 1. Inject Free subscription tier, 3 pre-existing saved proposals, and seed FX rate cache
     await page.addInitScript(() => {
       localStorage.removeItem('solar-wizard-store');
       localStorage.setItem('solarquotepro_last_fx_rate', '1600');
@@ -166,23 +166,59 @@ await page.route('**/open.er-api.com/**', route => {
 
       localStorage.setItem('solar-history-store', JSON.stringify({
         state: {
-          savedProposals: [{
-            id: 'existing-proposal-id',
-            client_token: 'existing-client-token',
-            createdAt: Date.now() - 3600000,
-            updatedAt: Date.now() - 3600000,
-            flowType: 'wizard',
-            step: 5,
-            proposal: {
-              customer_name: 'First Free Client',
-              customer_email: 'first@free.local',
-              backup_hours: 8,
-              peak_sun_hours: 4.2,
-              battery_chemistry: 'lithium',
-              selected_tier: 'standard',
-              appliances: []
+          savedProposals: [
+            {
+              id: 'existing-proposal-id-1',
+              client_token: 'existing-client-token-1',
+              createdAt: Date.now() - 3600000 * 3,
+              updatedAt: Date.now() - 3600000 * 3,
+              flowType: 'wizard',
+              step: 5,
+              proposal: {
+                customer_name: 'First Free Client',
+                customer_email: 'first@free.local',
+                backup_hours: 8,
+                peak_sun_hours: 4.2,
+                battery_chemistry: 'lithium',
+                selected_tier: 'standard',
+                appliances: []
+              }
+            },
+            {
+              id: 'existing-proposal-id-2',
+              client_token: 'existing-client-token-2',
+              createdAt: Date.now() - 3600000 * 2,
+              updatedAt: Date.now() - 3600000 * 2,
+              flowType: 'wizard',
+              step: 5,
+              proposal: {
+                customer_name: 'Second Free Client',
+                customer_email: 'second@free.local',
+                backup_hours: 8,
+                peak_sun_hours: 4.2,
+                battery_chemistry: 'lithium',
+                selected_tier: 'standard',
+                appliances: []
+              }
+            },
+            {
+              id: 'existing-proposal-id-3',
+              client_token: 'existing-client-token-3',
+              createdAt: Date.now() - 3600000,
+              updatedAt: Date.now() - 3600000,
+              flowType: 'wizard',
+              step: 5,
+              proposal: {
+                customer_name: 'Third Free Client',
+                customer_email: 'third@free.local',
+                backup_hours: 8,
+                peak_sun_hours: 4.2,
+                battery_chemistry: 'lithium',
+                selected_tier: 'standard',
+                appliances: []
+              }
             }
-          }]
+          ]
         }
       }));
     });

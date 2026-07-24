@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { CopyrightYear } from '@/components/ui/CopyrightYear';
+import { LegalNotice } from '@/components/ui/LegalNotice';
 import {
   BookOpen,
   Clock,
@@ -23,30 +24,14 @@ import {
   ShieldCheck,
   Calendar
 } from 'lucide-react';
-import { BlogArticle } from '@/lib/blog';
+import { BlogArticle, BLOG_ARTICLES } from '@/lib/blog';
 
 export default function BlogHubPage() {
   const [selectedPillar, setSelectedPillar] = React.useState<string>('All');
   const [searchQuery, setSearchQuery] = React.useState<string>('');
-  const [articles, setArticles] = React.useState<BlogArticle[]>([]);
-
-  // Fetch articles from the admin content API on mount
-  React.useEffect(() => {
-    async function loadArticles() {
-      try {
-        const res = await fetch('/api/admin/content');
-        const json = await res.json();
-        if (json.data) {
-          setArticles(json.data);
-        } else {
-          console.error('Failed to load articles', json.error);
-        }
-      } catch (e) {
-        console.error('Error fetching articles', e);
-      }
-    }
-    loadArticles();
-  }, []);
+  // Articles served from static export — no blocking network fetch on mount.
+  // To add dynamic articles, update BLOG_ARTICLES in @/lib/blog instead.
+  const [articles] = React.useState<BlogArticle[]>(BLOG_ARTICLES);
 
   // Interactive Slider State (₦ Generator Displacement Calculator)
   const [genSpend, setGenSpend] = React.useState<number>(150000);
@@ -166,6 +151,56 @@ export default function BlogHubPage() {
             </Card>
           ))}
         </section>
+
+        {/* ═══ INSTALLER RESOURCE VAULT ═══ */}
+        <section className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 text-white rounded-3xl p-6 sm:p-8 border border-teal-500/25 relative overflow-hidden shadow-xl">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5">
+                Downloadable Trust Assets
+              </Badge>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black">Installer Resource Vault</h2>
+            <p className="text-xs text-slate-350 max-w-2xl">
+              Elevate your sales cycle and clear regulatory hurdles using our standardized, Nigerian-market optimized templates. Used by top solar installers across Lagos and Abuja.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <span className="text-2xl">📋</span>
+                  <h3 className="font-extrabold text-sm text-white">Landlord Consent Addendum (Printable PDF)</h3>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Standardized agreement identifying the removable solar installation as tenant personal property. Instantly resolves landlord tenancy disputes.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => window.open('/estimator/landlord-consent?city=lagos', '_blank')}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl h-9 cursor-pointer border-none"
+                >
+                  Generate &amp; Download PDF ⬇️
+                </Button>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <span className="text-2xl">📖</span>
+                  <h3 className="font-extrabold text-sm text-white">Solar Installer Business Pitch Guide (PDF)</h3>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    A comprehensive guide outlining how to present ROI calculations, counter objections, navigate NERC Bands, and pitch to premium Nigerian estates.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => window.open('/solarquotepro_business_pitch_guide.pdf', '_blank')}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl h-9 cursor-pointer border-none"
+                >
+                  Download Free Pitch Guide ⬇️
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Savings Calculator (demo) */}
         <section className="bg-teal-50 dark:bg-teal-950 p-6 rounded-xl">
           <h2 className="text-xl font-bold mb-4">Generator Displacement Savings (Demo)</h2>
@@ -205,7 +240,10 @@ export default function BlogHubPage() {
         </section>
       </main>
       <footer className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-        © <CopyrightYear /> SolarQuotePro Insights. All rights reserved.
+        <div>
+          <p>© <CopyrightYear /> SolarQuotePro Insights. All rights reserved.</p>
+          <LegalNotice />
+        </div>
       </footer>
     </div>
   );

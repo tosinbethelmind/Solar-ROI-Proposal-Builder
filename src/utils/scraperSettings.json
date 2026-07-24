@@ -1,0 +1,6 @@
+{
+  "googlePlacesApiKey": "mock-places-api-key",
+  "apifyToken": "mock-apify-token",
+  "apifyDatasetId": "mock-dataset-id",
+  "googleSpreadsheetId": "1mockSpreadsheetId1234567890abcdef"
+}

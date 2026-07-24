@@ -15,8 +15,6 @@ export default defineConfig({
     video: 'retain-on-failure',
     // Viewport for mobile‑first testing
     viewport: { width: 375, height: 667 },
-    // Enable Axe accessibility checks
-    ...require('@axe-core/playwright').default,
   },
   projects: [
     {

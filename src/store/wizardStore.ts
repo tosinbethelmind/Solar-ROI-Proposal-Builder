@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getGeneratorFuelRate } from '../utils/calculations';
 
 export type BatteryChemistry = 'lead-acid' | 'lithium';
 export type FuelType = 'petrol' | 'diesel';
@@ -35,6 +36,11 @@ export interface SizingResult {
   panelCount: number;
   panelUnitWp: number;
   panelTotalWp: number;
+  regulatory?: {
+    nerc_tariff_class: string;
+    disco_region: string;
+    grid_availability_assumption: number;
+  };
 }
 
 export interface ProposalState {
@@ -42,6 +48,7 @@ export interface ProposalState {
   customer_email?: string;
   customer_phone?: string;
   region_id?: number;
+  city_id?: string;
   backup_hours: number;
   peak_sun_hours: number;
   battery_chemistry: BatteryChemistry;
@@ -65,6 +72,7 @@ export interface ProposalState {
   roi_fuel_consumption?: number;
   roi_gen_hours_per_day?: number;
   roi_fuel_price?: number;
+  roi_gen_maintenance_cost_per_event?: number;
   roi_years_to_calculate?: number;
   
   // Legacy energy costs (monthly ₦)
@@ -123,6 +131,22 @@ export interface ProposalState {
   proposal_notes?: string;
   proposal_exclusions?: string;
   include_vat?: boolean;
+  
+  // Interactive Checkouts & Trust Registry Properties
+  surveyFee?: number;
+  offerInsurance?: boolean;
+  surveyPaid?: boolean;
+  paystackRef?: string;
+  insurancePremium?: number;
+  insurancePaid?: boolean;
+  componentsVerified?: boolean;
+
+  // Custom Sizing Properties
+  battery_sizing_method?: 'backup-hours' | 'flat-load';
+  panel_sizing_basis?: 'essential' | 'total';
+  annual_inflation_rate?: number; // annual compounded fuel/grid inflation rate (e.g. 0.20 for 20%)
+  tariff_band?: 'Band A' | 'Band B' | 'Band C' | 'Band D' | 'Band E';
+  disco_provider?: string;
 }
 
 interface WizardStore {
@@ -144,6 +168,7 @@ interface WizardStore {
 
 const defaultProposal: ProposalState = {
   customer_name: '',
+  city_id: 'lagos',
   backup_hours: 8,
   peak_sun_hours: 4.2,
   battery_chemistry: 'lithium',
@@ -152,6 +177,8 @@ const defaultProposal: ProposalState = {
   selectedBatteryBrand: 'Felicity Lithium',
   selectedPanelBrand: 'Jinko',
   gen_daily_hours: 0,
+  tariff_band: 'Band A',
+  disco_provider: 'Eko Electricity Distribution (EKEDC)',
   fuelPrices: {
     petrolPerLitre: 1250,
     dieselPerLitre: 1750,
@@ -162,6 +189,7 @@ const defaultProposal: ProposalState = {
   roi_fuel_consumption: 1.2,
   roi_gen_hours_per_day: 4,
   roi_fuel_price: 1200,
+  roi_gen_maintenance_cost_per_event: 6000,
   roi_years_to_calculate: 5,
   monthly_phcn_bill: 8000,
   monthly_gen_fuel_cost: 85000,
@@ -205,7 +233,17 @@ const defaultProposal: ProposalState = {
   proposal_exclusions: '',
   include_vat: true,
   appliedTemplateId: '',
-  isCustomized: false
+  isCustomized: false,
+  surveyFee: 15000,
+  offerInsurance: false,
+  surveyPaid: false,
+  paystackRef: '',
+  insurancePremium: 0,
+  insurancePaid: false,
+  componentsVerified: false,
+  battery_sizing_method: 'backup-hours',
+  panel_sizing_basis: 'essential',
+  annual_inflation_rate: 0.20
 };
 
 export const useWizardStore = create<WizardStore>()(
@@ -218,6 +256,34 @@ export const useWizardStore = create<WizardStore>()(
       updateProposal: (data) =>
         set((state) => {
           const nextProposal = { ...state.proposal, ...data };
+          
+          // Synced generator and fuel values:
+          if ('gen_capacity_kva' in data && data.gen_capacity_kva !== undefined) {
+            nextProposal.roi_gen_size_kva = data.gen_capacity_kva;
+            try {
+              nextProposal.roi_fuel_consumption = getGeneratorFuelRate(data.gen_capacity_kva, nextProposal.gen_fuel_type || 'petrol');
+            } catch (e) {}
+          }
+          if ('gen_fuel_type' in data && data.gen_fuel_type !== undefined) {
+            nextProposal.roi_fuel_price = data.gen_fuel_type === 'diesel'
+              ? nextProposal.fuelPrices.dieselPerLitre
+              : nextProposal.fuelPrices.petrolPerLitre;
+            nextProposal.roi_gen_maintenance_cost_per_event = data.gen_fuel_type === 'diesel' ? 35000 : 6000;
+            if (nextProposal.gen_capacity_kva) {
+              try {
+                nextProposal.roi_fuel_consumption = getGeneratorFuelRate(nextProposal.gen_capacity_kva, data.gen_fuel_type);
+              } catch (e) {}
+            }
+          }
+          if ('gen_daily_hours' in data && data.gen_daily_hours !== undefined) {
+            nextProposal.roi_gen_hours_per_day = data.gen_daily_hours;
+          }
+          if ('fuelPrices' in data && data.fuelPrices) {
+            nextProposal.roi_fuel_price = nextProposal.gen_fuel_type === 'diesel'
+              ? data.fuelPrices.dieselPerLitre
+              : data.fuelPrices.petrolPerLitre;
+          }
+          
           console.log('WizardStore Proposal Update:', nextProposal);
           return { proposal: nextProposal };
         }),

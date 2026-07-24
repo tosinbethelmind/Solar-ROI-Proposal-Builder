@@ -185,6 +185,21 @@ export default function HistoryPage() {
 
   const activeProposals = isCrmLocked ? PLACEHOLDER_PROPOSALS : localProposals;
 
+  /* ── Monthly Revenue Stats (calculated from existing state, no extra query) ── */
+  const monthlyStats = React.useMemo(() => {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    const monthProposals = localProposals.filter((p) => {
+      const d = new Date(p.createdAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+    const count = monthProposals.length;
+    const totalValue = monthProposals.reduce((s, p) => s + (p.proposal.final_quoted_price_ngn || 0), 0);
+    const avg = count > 0 ? Math.round(totalValue / count) : 0;
+    return { count, totalValue, avg };
+  }, [localProposals]);
+
   const handleStatusChange = (id: string, newStatus: typeof COLUMNS[number]['id']) => {
     if (isCrmLocked) {
       openUpgradeModal('crmPipeline');
@@ -260,7 +275,27 @@ export default function HistoryPage() {
         </div>
 
         {viewMode === 'list' ? (
-          localProposals.length === 0 ? (
+          <>
+            {/* ── Monthly Revenue Summary Cards ── */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              {/* Card 1: Proposals This Month */}
+              <div className="flex-1 bg-slate-900 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl px-5 py-4 flex flex-col gap-1">
+                <p className="text-2xl font-black text-emerald-400 tabular-nums">{monthlyStats.count}</p>
+                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Proposals This Month</p>
+              </div>
+              {/* Card 2: Total Value Quoted */}
+              <div className="flex-1 bg-slate-900 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl px-5 py-4 flex flex-col gap-1">
+                <p className="text-2xl font-black text-emerald-400 tabular-nums">{monthlyStats.totalValue > 0 ? formatCurrency(monthlyStats.totalValue) : '₦0'}</p>
+                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Value Quoted</p>
+              </div>
+              {/* Card 3: Avg Deal Size */}
+              <div className="flex-1 bg-slate-900 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl px-5 py-4 flex flex-col gap-1">
+                <p className="text-2xl font-black text-emerald-400 tabular-nums">{monthlyStats.count > 0 ? formatCurrency(monthlyStats.avg) : '—'}</p>
+                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Avg Deal Size</p>
+              </div>
+            </div>
+
+          {localProposals.length === 0 ? (
             /* Empty State */
             <Card className="border-dashed bg-card/50">
               <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -384,7 +419,8 @@ export default function HistoryPage() {
                 </Table>
               </div>
             </Card>
-          )
+          )}
+          </>
         ) : (
           /* CRM Lead Pipeline View */
           <div className="relative border rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 p-6 min-h-[500px] overflow-hidden">

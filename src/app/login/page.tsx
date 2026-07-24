@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { CopyrightYear } from '@/components/ui/CopyrightYear'
+import { LegalNotice } from '@/components/ui/LegalNotice'
 import { 
   Sun, 
   ArrowRight, 
@@ -489,7 +490,10 @@ export default function LoginPage() {
           </div>
 
           <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-500 flex justify-between">
-            <span>© <CopyrightYear /> SolarQuotePro NG</span>
+            <div>
+              <span>© <CopyrightYear /> SolarQuotePro NG</span>
+              <LegalNotice />
+            </div>
             <span>Reliable solar operations</span>
           </div>
         </div>

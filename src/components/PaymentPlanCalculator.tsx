@@ -94,9 +94,58 @@ export function PaymentPlanCalculator({ systemCost, monthlyGeneratorCost }: Paym
 
       {plan.includeInProposal && (
         <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4">
-          <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
-            <span>⚙️</span> Customize Instalment Terms
-          </h4>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-3 dark:border-slate-800">
+            <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+              <span>⚙️</span> Customize Instalment Terms
+            </h4>
+            <div className="flex items-center gap-2">
+              <label htmlFor="finance-provider-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Financing Partner:
+              </label>
+              <select
+                id="finance-provider-select"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'sterling') {
+                    updateProposal({
+                      paymentPlan: {
+                        ...plan,
+                        markup6Months: 12,
+                        markup12Months: 24,
+                        markup24Months: 48,
+                        downPaymentPercent: 20
+                      }
+                    });
+                  } else if (val === 'sunfi') {
+                    updateProposal({
+                      paymentPlan: {
+                        ...plan,
+                        markup6Months: 15,
+                        markup12Months: 30,
+                        markup24Months: 60,
+                        downPaymentPercent: 30
+                      }
+                    });
+                  } else {
+                    updateProposal({
+                      paymentPlan: {
+                        ...plan,
+                        markup6Months: 10,
+                        markup12Months: 15,
+                        markup24Months: 20,
+                        downPaymentPercent: 20
+                      }
+                    });
+                  }
+                }}
+                className="bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-[10px] font-black rounded-lg px-2 py-1 outline-none text-slate-700 dark:text-slate-300"
+              >
+                <option value="custom">Standard / Custom</option>
+                <option value="sterling">Sterling Bank (24% Green Loan)</option>
+                <option value="sunfi">SunFi (30% Solar Lease)</option>
+              </select>
+            </div>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
               <label htmlFor="down-payment-input" className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">

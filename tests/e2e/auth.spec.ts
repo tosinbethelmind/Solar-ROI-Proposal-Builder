@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 // Path to a pre‑authenticated storage state (if needed for other tests)
 const installerState = 'tests/e2e/.auth/installer.json';
@@ -6,7 +6,7 @@ const installerState = 'tests/e2e/.auth/installer.json';
 /**
  * Helper to attempt a login with given credentials and capture the error message.
  */
-async function attemptLogin(page, email, password) {
+async function attemptLogin(page: Page, email: string, password: string) {
   await page.goto('/login');
   await page.waitForSelector('#email');
   await page.fill('#email', email);
