@@ -9,6 +9,12 @@ type Cycle = 'monthly' | 'annual';
 
 const PLANS = [
   {
+    id: 'payg', name: 'Pay-Per-Proposal', audience: 'Freelancers', monthlyPrice: 1500, annualPrice: 1500,
+    btnText: 'Buy Tokens', btnLink: '/pricing#payment-section', highlight: false, border: 'border-slate-300 dark:border-slate-700',
+    badge: 'PAY AS YOU GO',
+    features: { proposals: '₦1,500/token', watermark: true, fx: true, fullLoad: false, genRoi: false, whatsapp: true, whiteLabel: false, users: '1', accountMgr: false, offline: true },
+  },
+  {
     id: 'free', name: 'Free Starter Plan', audience: 'Homeowners', monthlyPrice: 0, annualPrice: 0,
     btnText: 'Start Free', btnLink: '/estimator', highlight: false, border: 'border-slate-300 dark:border-slate-700',
     features: { proposals: '2', watermark: false, fx: false, fullLoad: false, genRoi: false, whatsapp: false, whiteLabel: false, users: '1', accountMgr: false, offline: true },

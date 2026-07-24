@@ -49,10 +49,30 @@ export interface PricingPlan {
 /* ─── 1. Proposal Builder SaaS Plans Configuration ─── */
 const proposalPlans: PricingPlan[] = [
   {
+    id: 'payg',
+    name: 'Pay-Per-Proposal',
+    category: 'proposal',
+    bestFor: 'Freelancers & casual installers',
+    priceMonthly: 1500,
+    priceQuarterly: 1500,
+    priceAnnual: 1500,
+    badge: 'Pay As You Go',
+    features: [
+      '₦1,500 per proposal PDF export',
+      'Tokens never expire (Use anytime)',
+      'Watermark-free Custom Branding',
+      'Live parallel FX interbank sync',
+      'Direct WhatsApp quote sharing',
+      'No monthly recurring commitment'
+    ],
+    ctaLabel: 'Buy Proposal Tokens (₦1,500)',
+    ctaHref: '#payment-section'
+  },
+  {
     id: 'free',
     name: 'Free Starter Plan',
     category: 'proposal',
-    bestFor: 'Solo installers & active technicians',
+    bestFor: 'Homeowners & testing',
     priceMonthly: 0,
     priceQuarterly: 0,
     priceAnnual: 0,
@@ -62,7 +82,7 @@ const proposalPlans: PricingPlan[] = [
       'Standard PDF (Watermarked)',
       'Single user seat included'
     ],
-    ctaLabel: 'Activate Free Starter Workspace',
+    ctaLabel: 'Activate Free Workspace',
     ctaHref: '/'
   },
   {
@@ -107,7 +127,7 @@ const proposalPlans: PricingPlan[] = [
     id: 'enterprise',
     name: 'Enterprise Plan',
     category: 'proposal',
-    bestFor: 'EPCs & larger solar corporate companies',
+    bestFor: 'EPCs & corporate solar groups',
     priceMonthly: 95000,
     priceQuarterly: 256500, // ₦85,500/mo * 3 (10% off)
     priceAnnual: 912000, // ₦76,000/mo * 12 (20% off)
@@ -705,7 +725,7 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 items-stretch">
             {proposalPlans.map((plan) => {
               const currentPrice = getPrice(plan);
               const totalPrice = getTotalPrice(plan);
@@ -1017,6 +1037,7 @@ export default function PricingPage() {
                   onChange={(e) => setManualPlan(e.target.value)} 
                   className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white dark:border-slate-880 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:outline-none"
                 >
+                  <option value="payg">Pay-Per-Proposal Token (₦1,500/proposal)</option>
                   <option value="starter">Starter Proposal (₦15,000/mo)</option>
                   <option value="pro">Professional Proposal (₦35,000/mo)</option>
                   <option value="enterprise">Enterprise Proposal (₦95,000/mo)</option>

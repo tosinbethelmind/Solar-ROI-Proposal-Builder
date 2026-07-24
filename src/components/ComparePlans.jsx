@@ -4,9 +4,10 @@ import * as React from 'react';
 import { Check, X, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const PLAN_KEYS = ['free', 'starter', 'professional', 'enterprise'];
+const PLAN_KEYS = ['payg', 'free', 'starter', 'professional', 'enterprise'];
 
 const PLAN_HEADERS = {
+  payg: { name: 'Pay-Per-Proposal', price: '₦1,500', label: 'Pay As You Go' },
   free: { name: 'Free Starter Plan', price: '₦0', label: 'Homeowners' },
   starter: { name: 'Starter Plan', price: '₦15,000', label: 'Solo Installers' },
   professional: { name: 'Professional', price: '₦35,000', label: 'Growing Teams' },
@@ -14,23 +15,23 @@ const PLAN_HEADERS = {
 };
 
 const COMPARE_ROWS = [
-  { group: 'Core Sizing & Proposals', label: 'Proposals / Month', free: '2 Proposals', starter: '10 Proposals', professional: '40 Proposals', enterprise: 'Unlimited' },
-  { group: 'Core Sizing & Proposals', label: 'Watermark-free PDF export', free: false, starter: true, professional: true, enterprise: true },
-  { group: 'Core Sizing & Proposals', label: 'WhatsApp direct sharing', free: false, starter: true, professional: true, enterprise: true },
-  { group: 'Core Sizing & Proposals', label: 'Offline field mode cache', free: true, starter: true, professional: true, enterprise: true },
+  { group: 'Core Sizing & Proposals', label: 'Proposals / Month', payg: '₦1,500/token', free: '2 Proposals', starter: '10 Proposals', professional: '40 Proposals', enterprise: 'Unlimited' },
+  { group: 'Core Sizing & Proposals', label: 'Watermark-free PDF export', payg: true, free: false, starter: true, professional: true, enterprise: true },
+  { group: 'Core Sizing & Proposals', label: 'WhatsApp direct sharing', payg: true, free: false, starter: true, professional: true, enterprise: true },
+  { group: 'Core Sizing & Proposals', label: 'Offline field mode cache', payg: true, free: true, starter: true, professional: true, enterprise: true },
   
-  { group: 'Naira ROI Engine', label: 'Live FX Interbank sync', free: false, starter: true, professional: true, enterprise: true },
-  { group: 'Naira ROI Engine', label: 'Full load capacity sizing', free: false, starter: false, professional: true, enterprise: true },
-  { group: 'Naira ROI Engine', label: 'Generator ROI fuel offset charts', free: false, starter: false, professional: true, enterprise: true },
-  { group: 'Naira ROI Engine', label: 'Custom markups & dynamic VAT', free: false, starter: false, professional: true, enterprise: true },
+  { group: 'Naira ROI Engine', label: 'Live FX Interbank sync', payg: true, free: false, starter: true, professional: true, enterprise: true },
+  { group: 'Naira ROI Engine', label: 'Full load capacity sizing', payg: false, free: false, starter: false, professional: true, enterprise: true },
+  { group: 'Naira ROI Engine', label: 'Generator ROI fuel offset charts', payg: false, free: false, starter: false, professional: true, enterprise: true },
+  { group: 'Naira ROI Engine', label: 'Custom markups & dynamic VAT', payg: false, free: false, starter: false, professional: true, enterprise: true },
   
-  { group: 'Branding & Teams', label: 'Team seats', free: '1 User', starter: '1 User', professional: '3 Users', enterprise: 'Unlimited' },
-  { group: 'Branding & Teams', label: 'White-label custom domain', free: false, starter: false, professional: false, enterprise: true },
-  { group: 'Branding & Teams', label: 'LSEB Lagos compliance permits', free: false, starter: true, professional: true, enterprise: true },
-  { group: 'Branding & Teams', label: 'Landlord Consent templates', free: false, starter: true, professional: true, enterprise: true },
+  { group: 'Branding & Teams', label: 'Team seats', payg: '1 User', free: '1 User', starter: '1 User', professional: '3 Users', enterprise: 'Unlimited' },
+  { group: 'Branding & Teams', label: 'White-label custom domain', payg: false, free: false, starter: false, professional: false, enterprise: true },
+  { group: 'Branding & Teams', label: 'LSEB Lagos compliance permits', payg: true, free: false, starter: true, professional: true, enterprise: true },
+  { group: 'Branding & Teams', label: 'Landlord Consent templates', payg: true, free: false, starter: true, professional: true, enterprise: true },
   
-  { group: 'Support & Management', label: 'Support level', free: 'Community', starter: 'Standard Email', professional: 'Priority 24/7', enterprise: 'Dedicated SLA' },
-  { group: 'Support & Management', label: 'Dedicated Account Manager', free: false, starter: false, professional: false, enterprise: true }
+  { group: 'Support & Management', label: 'Support level', payg: 'Community', free: 'Community', starter: 'Standard Email', professional: 'Priority 24/7', enterprise: 'Dedicated SLA' },
+  { group: 'Support & Management', label: 'Dedicated Account Manager', payg: false, free: false, starter: false, professional: false, enterprise: true }
 ];
 
 export default function ComparePlans() {
